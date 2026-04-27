@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MessageCircle, Phone, Truck, ChevronRight, CheckCircle, Tag } from "lucide-react";
+import { MessageCircle, Phone, Truck, ChevronRight, CheckCircle, Tag, ShieldCheck } from "lucide-react";
 import { getProductBySlug, products } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
 import { FadeIn, StaggerGrid, StaggerItem } from "@/components/FadeIn";
@@ -52,26 +52,31 @@ export default async function ProductDetailPage({
 
   return (
     <div style={{ background: "#f8fafc", minHeight: "60vh" }}>
-      {/* ── Breadcrumb bar ── */}
-      <div style={{ background: "#fff", borderBottom: "1px solid #f1f5f9", padding: "12px 24px" }}>
-        <div style={{ maxWidth: 1320, margin: "0 auto", display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#94a3b8", flexWrap: "wrap" }}>
+
+      {/* ── Breadcrumb ── */}
+      <div style={{ background: "#fff", borderBottom: "1px solid #f1f5f9", padding: "11px 20px" }}>
+        <div style={{ maxWidth: 1320, margin: "0 auto", display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#94a3b8", flexWrap: "wrap" }}>
           <Link href="/" style={{ color: "#64748b", textDecoration: "none", fontWeight: 500 }}>Home</Link>
-          <ChevronRight size={13} strokeWidth={2} />
+          <ChevronRight size={12} strokeWidth={2} />
           <Link href="/products" style={{ color: "#64748b", textDecoration: "none", fontWeight: 500 }}>Products</Link>
-          <ChevronRight size={13} strokeWidth={2} />
-          <Link href={`/products?category=${product.category}`} style={{ color: "#64748b", textDecoration: "none", fontWeight: 500 }}>{product.category}</Link>
-          <ChevronRight size={13} strokeWidth={2} />
-          <span style={{ color: "#111827", fontWeight: 600 }} className="line-clamp-1">{product.name}</span>
+          <ChevronRight size={12} strokeWidth={2} />
+          <Link href={`/products?category=${product.category}`} style={{ color: "#64748b", textDecoration: "none", fontWeight: 500 }}>
+            {product.category}
+          </Link>
+          <ChevronRight size={12} strokeWidth={2} />
+          <span style={{ color: "#111827", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 160 }}>
+            {product.name}
+          </span>
         </div>
       </div>
 
-      {/* ── Main card ── */}
-      <div style={{ maxWidth: 1320, margin: "0 auto", padding: "32px 24px" }}>
+      <div style={{ maxWidth: 1320, margin: "0 auto", padding: "24px 16px 48px" }}>
         <FadeIn>
-          <div style={{ background: "#fff", borderRadius: 24, overflow: "hidden", border: "1px solid #f1f5f9", boxShadow: "0 4px 32px rgba(0,0,0,0.06)", display: "grid", gridTemplateColumns: "1fr 1fr" }} className="product-detail-grid">
+          {/* ── Card: image top on mobile, side by side on desktop ── */}
+          <div className="product-detail-card">
 
-            {/* ── Image panel ── */}
-            <div style={{ position: "relative", minHeight: 420, background: "#f8fafc" }}>
+            {/* Image */}
+            <div className="product-detail-img">
               <Image
                 src={product.image}
                 alt={product.name}
@@ -80,92 +85,104 @@ export default async function ProductDetailPage({
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
               />
-              {/* Badges */}
-              <div style={{ position: "absolute", top: 16, left: 16, display: "flex", gap: 8, zIndex: 2 }}>
-                <span style={{ background: catStyle.bg, color: catStyle.text, fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: 999, display: "flex", alignItems: "center", gap: 4 }}>
-                  <Tag size={11} strokeWidth={2.5} />
-                  {product.category}
+              {/* Badges top-left */}
+              <div style={{ position: "absolute", top: 14, left: 14, display: "flex", gap: 6, zIndex: 2, flexWrap: "wrap" }}>
+                <span style={{ background: catStyle.bg, color: catStyle.text, fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 999, display: "flex", alignItems: "center", gap: 3, backdropFilter: "blur(4px)" }}>
+                  <Tag size={10} strokeWidth={2.5} /> {product.category}
                 </span>
                 {product.inStock && (
-                  <span style={{ background: "#dcfce7", color: "#15803d", fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: 999, display: "flex", alignItems: "center", gap: 4 }}>
-                    <CheckCircle size={11} strokeWidth={2.5} />
-                    In Stock
+                  <span style={{ background: "rgba(220,252,231,0.95)", color: "#15803d", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 999, display: "flex", alignItems: "center", gap: 3 }}>
+                    <CheckCircle size={10} strokeWidth={2.5} /> In Stock
                   </span>
                 )}
               </div>
             </div>
 
-            {/* ── Info panel ── */}
-            <div style={{ padding: "40px 40px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            {/* Info */}
+            <div className="product-detail-info">
 
-              <h1 style={{ fontSize: "clamp(1.4rem, 2.5vw, 2rem)", fontWeight: 900, color: "#111827", lineHeight: 1.15, marginBottom: 10, letterSpacing: "-0.02em" }}>
+              <h1 style={{ fontSize: "clamp(1.35rem, 3vw, 1.9rem)", fontWeight: 900, color: "#111827", lineHeight: 1.2, marginBottom: 8, letterSpacing: "-0.02em" }}>
                 {product.name}
               </h1>
 
               {/* Price */}
-              <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 18 }}>
-                <span style={{ fontSize: "clamp(1.6rem, 3vw, 2.2rem)", fontWeight: 900, color: "#ea580c", letterSpacing: "-0.02em" }}>
+              <div style={{ marginBottom: 16 }}>
+                <span style={{ fontSize: "clamp(1.7rem, 4vw, 2.4rem)", fontWeight: 900, color: "#ea580c", letterSpacing: "-0.02em" }}>
                   {product.priceDisplay}
                 </span>
               </div>
 
-              {/* Divider */}
-              <div style={{ height: 1, background: "#f1f5f9", marginBottom: 18 }} />
+              <div style={{ height: 1, background: "#f1f5f9", marginBottom: 16 }} />
 
               {/* Description */}
-              <p style={{ fontSize: 15, color: "#4b5563", lineHeight: 1.75, marginBottom: 28 }}>
+              <p style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.8, marginBottom: 24 }}>
                 {product.description}
               </p>
 
-              {/* CTA buttons */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
+              {/* CTAs */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
                 <a
                   href={`https://wa.me/250784734956?text=${waMsg}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: "#16a34a", color: "#fff", fontWeight: 800, padding: "15px 24px", borderRadius: 14, textDecoration: "none", fontSize: 16, boxShadow: "0 4px 18px rgba(22,163,74,0.3)" }}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    background: "#16a34a", color: "#fff", fontWeight: 800,
+                    padding: "15px 20px", borderRadius: 14, textDecoration: "none",
+                    fontSize: 15, boxShadow: "0 4px 16px rgba(22,163,74,0.28)",
+                  }}
                 >
-                  <MessageCircle size={19} strokeWidth={2.5} />
+                  <MessageCircle size={18} strokeWidth={2.5} />
                   Order on WhatsApp
                 </a>
                 <a
                   href="tel:+250784734956"
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: "#fff", color: "#111827", fontWeight: 700, padding: "14px 24px", borderRadius: 14, textDecoration: "none", fontSize: 15, border: "1.5px solid #e5e7eb" }}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    background: "#fff", color: "#111827", fontWeight: 700,
+                    padding: "13px 20px", borderRadius: 14, textDecoration: "none",
+                    fontSize: 14, border: "1.5px solid #e5e7eb",
+                  }}
                 >
-                  <Phone size={17} strokeWidth={2.5} />
-                  Call to Order · 0784 734 956
+                  <Phone size={16} strokeWidth={2.5} />
+                  Call: 0784 734 956
                 </a>
               </div>
 
-              {/* Delivery note */}
-              <div style={{ background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: 14, padding: "13px 16px", display: "flex", alignItems: "center", gap: 10 }}>
-                <Truck size={17} color="#16a34a" strokeWidth={2.5} />
-                <span style={{ fontSize: 13, fontWeight: 600, color: "#15803d" }}>
-                  Fast delivery available across Kigali and surrounding areas
-                </span>
+              {/* Trust chips */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {[
+                  { Icon: Truck,       text: "Fast Kigali delivery",  color: "#16a34a" },
+                  { Icon: ShieldCheck, text: "Quality guaranteed",    color: "#2563eb" },
+                  { Icon: MessageCircle,text: "Easy WhatsApp order",  color: "#ea580c" },
+                ].map(({ Icon, text, color }) => (
+                  <div key={text} style={{ display: "flex", alignItems: "center", gap: 5, background: "#f8fafc", border: "1px solid #e5e7eb", borderRadius: 999, padding: "5px 12px", fontSize: 12, fontWeight: 600, color: "#374151" }}>
+                    <Icon size={12} color={color} strokeWidth={2.5} />
+                    {text}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </FadeIn>
 
-        {/* ── Related products ── */}
+        {/* ── Related ── */}
         {related.length > 0 && (
-          <section style={{ marginTop: 52 }}>
+          <section style={{ marginTop: 48 }}>
             <FadeIn>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 22 }}>
                 <div>
                   <div className="section-label" style={{ display: "inline-flex" }}>More like this</div>
-                  <h2 style={{ fontSize: 20, fontWeight: 900, color: "#111827", marginTop: 6 }}>
+                  <h2 style={{ fontSize: 19, fontWeight: 900, color: "#111827", marginTop: 5 }}>
                     More in {product.category}
                   </h2>
                 </div>
-                <Link href={`/products?category=${product.category}`} style={{ color: "#f97316", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+                <Link href={`/products?category=${product.category}`} style={{ color: "#f97316", fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
                   See all →
                 </Link>
               </div>
             </FadeIn>
-
-            <StaggerGrid style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 20 }}>
+            <StaggerGrid style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }}>
               {related.map((p) => (
                 <StaggerItem key={p.id}>
                   <ProductCard product={p} />

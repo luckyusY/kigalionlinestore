@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SmoothScroll from "@/components/SmoothScroll";
+import DiscountPopup from "@/components/DiscountPopup";
 
 export const metadata: Metadata = {
   title: "Kigali Online Store | Quality Products Delivered to You",
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </main>
           <Footer />
+          <DiscountPopup />
         </SmoothScroll>
       </body>
     </html>
