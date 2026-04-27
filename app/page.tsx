@@ -20,24 +20,70 @@ export default function HomePage() {
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-orange-600 via-orange-500 to-amber-500 text-white py-16 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-10">
-          <div className="flex-1 text-center lg:text-left">
-            <div className="inline-block bg-white/20 backdrop-blur-sm text-sm font-semibold px-4 py-1.5 rounded-full mb-4">
+      {/* ── Hero ── */}
+      <section
+        style={{
+          background: "linear-gradient(135deg, #ea580c 0%, #f97316 50%, #f59e0b 100%)",
+          color: "#fff",
+          padding: "60px 16px",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1200,
+            margin: "0 auto",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 40,
+          }}
+          className="lg:flex-row"
+        >
+          {/* Text side */}
+          <div style={{ flex: 1, textAlign: "center" }} className="lg:text-left">
+            <div
+              style={{
+                display: "inline-block",
+                background: "rgba(255,255,255,0.2)",
+                padding: "6px 16px",
+                borderRadius: 999,
+                fontSize: 13,
+                fontWeight: 700,
+                marginBottom: 16,
+              }}
+            >
               🇷🇼 Kigali, Rwanda
             </div>
-            <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">
-              Shop Smart,<br />
-              <span className="text-amber-200">Live Better</span>
+
+            <h1
+              style={{
+                fontSize: "clamp(2rem, 5vw, 3.25rem)",
+                fontWeight: 900,
+                lineHeight: 1.1,
+                marginBottom: 16,
+              }}
+            >
+              Shop Smart,{" "}
+              <span style={{ color: "#fde68a" }}>Live Better</span>
             </h1>
-            <p className="text-orange-100 text-lg mb-8 max-w-lg mx-auto lg:mx-0">
-              Quality home, kitchen, fitness & lifestyle products delivered right to your door in Kigali.
+
+            <p style={{ fontSize: 17, color: "rgba(255,255,255,0.9)", marginBottom: 28, maxWidth: 500 }}>
+              Quality home, kitchen, fitness &amp; lifestyle products delivered right to your door in Kigali.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }} className="lg:justify-start">
               <Link
                 href="/products"
-                className="bg-white text-orange-600 font-bold px-8 py-3 rounded-full hover:bg-orange-50 transition-colors shadow-lg"
+                style={{
+                  background: "#fff",
+                  color: "#ea580c",
+                  fontWeight: 800,
+                  padding: "12px 28px",
+                  borderRadius: 999,
+                  textDecoration: "none",
+                  fontSize: 15,
+                  boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
+                }}
               >
                 Shop Now
               </Link>
@@ -45,42 +91,64 @@ export default function HomePage() {
                 href="https://wa.me/250784734956"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-3 rounded-full transition-colors shadow-lg flex items-center justify-center gap-2"
+                style={{
+                  background: "#22c55e",
+                  color: "#fff",
+                  fontWeight: 800,
+                  padding: "12px 28px",
+                  borderRadius: 999,
+                  textDecoration: "none",
+                  fontSize: 15,
+                  boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
+                }}
               >
                 💬 WhatsApp Us
               </a>
             </div>
+
             {/* Stats */}
-            <div className="flex gap-8 mt-10 justify-center lg:justify-start">
-              <div className="text-center">
-                <div className="text-3xl font-extrabold">{products.length}+</div>
-                <div className="text-orange-200 text-sm">Products</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-extrabold">🚀</div>
-                <div className="text-orange-200 text-sm">Fast Delivery</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-extrabold">⭐</div>
-                <div className="text-orange-200 text-sm">Top Quality</div>
-              </div>
+            <div style={{ display: "flex", gap: 32, marginTop: 36, justifyContent: "center" }} className="lg:justify-start">
+              {[
+                { value: `${products.length}+`, label: "Products" },
+                { value: "🚀", label: "Fast Delivery" },
+                { value: "⭐", label: "Top Quality" },
+              ].map((s) => (
+                <div key={s.label} style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 26, fontWeight: 900 }}>{s.value}</div>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", marginTop: 2 }}>{s.label}</div>
+                </div>
+              ))}
             </div>
           </div>
-          {/* Hero image collage */}
-          <div className="flex-1 max-w-sm lg:max-w-md w-full">
-            <div className="grid grid-cols-2 gap-3">
-              {featured.slice(0, 4).map((p, i) => (
+
+          {/* Image collage — fixed grid with explicit heights */}
+          <div style={{ width: "100%", maxWidth: 380 }}>
+            <div className="hero-img-grid">
+              {/* Large image — spans 2 rows */}
+              {featured[0] && (
+                <div className="hero-img-main" style={{ boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>
+                  <Image
+                    src={featured[0].image}
+                    alt={featured[0].name}
+                    fill
+                    style={{ objectFit: "cover" }}
+                    sizes="190px"
+                  />
+                </div>
+              )}
+              {/* Small images */}
+              {featured.slice(1, 3).map((p) => (
                 <div
                   key={p.id}
-                  className={`relative rounded-2xl overflow-hidden shadow-xl ${i === 0 ? "row-span-2 h-56" : "h-26"}`}
-                  style={{ height: i === 0 ? "240px" : "112px" }}
+                  className="hero-img-sm"
+                  style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
                 >
                   <Image
                     src={p.image}
                     alt={p.name}
                     fill
-                    className="object-cover"
-                    sizes="200px"
+                    style={{ objectFit: "cover" }}
+                    sizes="140px"
                   />
                 </div>
               ))}
@@ -89,16 +157,31 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Category Pills */}
-      <section className="py-10 px-4 bg-white border-b">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">Shop by Category</h2>
-          <div className="flex flex-wrap gap-3 justify-center">
+      {/* ── Categories ── */}
+      <section style={{ background: "#fff", padding: "40px 16px", borderBottom: "1px solid #f3f4f6" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: "#1f2937", textAlign: "center", marginBottom: 20 }}>
+            Shop by Category
+          </h2>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
             {allCategories.map((cat) => (
               <Link
                 key={cat}
                 href={`/products?category=${cat}`}
-                className="flex items-center gap-2 bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-700 font-medium px-5 py-2.5 rounded-full transition-colors"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "#fff7ed",
+                  border: "1.5px solid #fed7aa",
+                  color: "#c2410c",
+                  fontWeight: 700,
+                  padding: "10px 20px",
+                  borderRadius: 999,
+                  textDecoration: "none",
+                  fontSize: 14,
+                  transition: "all 0.2s",
+                }}
               >
                 <span>{categoryIcons[cat] || "📦"}</span>
                 {cat}
@@ -108,22 +191,28 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section className="py-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
+      {/* ── Featured Products ── */}
+      <section style={{ padding: "48px 16px", background: "#f9fafb" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 28 }}>
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">Featured Products</h2>
-              <p className="text-gray-500 text-sm mt-1">Our most popular picks</p>
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#1f2937" }}>Featured Products</h2>
+              <p style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>Our most popular picks</p>
             </div>
             <Link
               href="/products"
-              className="text-orange-600 font-semibold text-sm hover:text-orange-700 transition-colors"
+              style={{ color: "#ea580c", fontWeight: 700, fontSize: 14, textDecoration: "none" }}
             >
               View All →
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+              gap: 20,
+            }}
+          >
             {featured.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -131,41 +220,65 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* WhatsApp CTA Banner */}
-      <section className="bg-green-500 py-12 px-4 text-white">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="text-5xl mb-3">💬</div>
-          <h2 className="text-3xl font-bold mb-3">Order via WhatsApp</h2>
-          <p className="text-green-100 mb-6 text-lg">
-            See something you like? Send us a message and we'll arrange delivery!
-          </p>
-          <a
-            href="https://wa.me/250784734956?text=Hello%21%20I%27d%20like%20to%20order%20from%20Kigali%20Online%20Store."
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-white text-green-600 font-bold px-8 py-3 rounded-full hover:bg-green-50 transition-colors shadow-lg text-lg"
-          >
-            <span>💬</span> Chat with us: 0784 734 956
-          </a>
-        </div>
+      {/* ── WhatsApp CTA ── */}
+      <section style={{ background: "#16a34a", color: "#fff", padding: "56px 16px", textAlign: "center" }}>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>💬</div>
+        <h2 style={{ fontSize: 28, fontWeight: 900, marginBottom: 10 }}>Order via WhatsApp</h2>
+        <p style={{ color: "rgba(255,255,255,0.85)", marginBottom: 24, fontSize: 16 }}>
+          See something you like? Send us a message and we&apos;ll arrange delivery!
+        </p>
+        <a
+          href="https://wa.me/250784734956?text=Hello%21%20I%27d%20like%20to%20order%20from%20Kigali%20Online%20Store."
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            background: "#fff",
+            color: "#16a34a",
+            fontWeight: 800,
+            padding: "14px 32px",
+            borderRadius: 999,
+            textDecoration: "none",
+            fontSize: 16,
+            boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
+          }}
+        >
+          💬 Chat with us: 0784 734 956
+        </a>
       </section>
 
-      {/* All Products Grid */}
-      <section className="py-12 px-4 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
+      {/* ── All Products preview ── */}
+      <section style={{ padding: "48px 16px", background: "#fff" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 28 }}>
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">All Products</h2>
-              <p className="text-gray-500 text-sm mt-1">{products.length} items available</p>
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#1f2937" }}>All Products</h2>
+              <p style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>{products.length} items available</p>
             </div>
             <Link
               href="/products"
-              className="bg-orange-600 hover:bg-orange-700 text-white font-semibold text-sm px-5 py-2 rounded-full transition-colors"
+              style={{
+                background: "#ea580c",
+                color: "#fff",
+                fontWeight: 700,
+                padding: "9px 20px",
+                borderRadius: 999,
+                textDecoration: "none",
+                fontSize: 13,
+              }}
             >
               Browse All
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+              gap: 20,
+            }}
+          >
             {products.slice(0, 8).map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -173,21 +286,38 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Why Us */}
-      <section className="py-12 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-800 text-center mb-10">Why Shop With Us?</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* ── Why Us ── */}
+      <section style={{ padding: "48px 16px", background: "#f9fafb" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: "#1f2937", textAlign: "center", marginBottom: 32 }}>
+            Why Shop With Us?
+          </h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+              gap: 20,
+            }}
+          >
             {[
               { icon: "🚚", title: "Fast Delivery", desc: "Quick delivery across Kigali and surrounding areas" },
               { icon: "✅", title: "Quality Products", desc: "Carefully selected products that meet your needs" },
               { icon: "💬", title: "Easy Ordering", desc: "Just WhatsApp us to order — simple and convenient" },
-              { icon: "💰", title: "Best Prices", desc: "Competitive prices in Rwandan Francs with no hidden fees" },
+              { icon: "💰", title: "Best Prices", desc: "Competitive prices in Rwandan Francs, no hidden fees" },
             ].map((item) => (
-              <div key={item.title} className="text-center p-6 rounded-2xl bg-orange-50">
-                <div className="text-4xl mb-3">{item.icon}</div>
-                <h3 className="font-bold text-gray-800 mb-2">{item.title}</h3>
-                <p className="text-gray-600 text-sm">{item.desc}</p>
+              <div
+                key={item.title}
+                style={{
+                  background: "#fff7ed",
+                  borderRadius: 20,
+                  padding: "28px 20px",
+                  textAlign: "center",
+                  border: "1px solid #fed7aa",
+                }}
+              >
+                <div style={{ fontSize: 36, marginBottom: 10 }}>{item.icon}</div>
+                <h3 style={{ fontWeight: 800, color: "#1f2937", marginBottom: 6, fontSize: 15 }}>{item.title}</h3>
+                <p style={{ color: "#6b7280", fontSize: 13, lineHeight: 1.5 }}>{item.desc}</p>
               </div>
             ))}
           </div>

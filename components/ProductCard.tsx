@@ -8,49 +8,109 @@ export default function ProductCard({ product }: { product: Product }) {
   );
 
   return (
-    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group">
+    <div
+      style={{
+        background: "#fff",
+        borderRadius: 20,
+        boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        transition: "box-shadow 0.25s, transform 0.25s",
+      }}
+      className="product-card-hover"
+    >
       {/* Image */}
-      <Link href={`/products/${product.slug}`}>
-        <div className="relative h-52 w-full overflow-hidden bg-gray-100">
+      <Link href={`/products/${product.slug}`} style={{ display: "block", textDecoration: "none" }}>
+        <div className="product-img-wrap" style={{ height: 200 }}>
           <Image
             src={product.image}
             alt={product.name}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            style={{ objectFit: "cover", transition: "transform 0.4s" }}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 280px"
           />
-          <div className="absolute top-3 left-3">
-            <span className="bg-orange-100 text-orange-700 text-xs font-semibold px-2 py-1 rounded-full">
-              {product.category}
-            </span>
-          </div>
+          {/* Category badge */}
+          <span
+            style={{
+              position: "absolute",
+              top: 10,
+              left: 10,
+              background: "rgba(255,237,213,0.95)",
+              color: "#c2410c",
+              fontSize: 11,
+              fontWeight: 700,
+              padding: "3px 10px",
+              borderRadius: 999,
+              zIndex: 1,
+            }}
+          >
+            {product.category}
+          </span>
           {product.inStock && (
-            <div className="absolute top-3 right-3">
-              <span className="bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded-full">
-                In Stock
-              </span>
-            </div>
+            <span
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                background: "rgba(220,252,231,0.95)",
+                color: "#15803d",
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "3px 10px",
+                borderRadius: 999,
+                zIndex: 1,
+              }}
+            >
+              In Stock
+            </span>
           )}
         </div>
       </Link>
 
       {/* Content */}
-      <div className="p-4">
-        <Link href={`/products/${product.slug}`}>
-          <h3 className="font-semibold text-gray-800 text-sm leading-tight hover:text-orange-600 transition-colors line-clamp-2 mb-2">
+      <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", flex: 1 }}>
+        <Link href={`/products/${product.slug}`} style={{ textDecoration: "none" }}>
+          <h3
+            className="line-clamp-2"
+            style={{
+              fontWeight: 700,
+              fontSize: 14,
+              color: "#1f2937",
+              lineHeight: 1.4,
+              marginBottom: 6,
+            }}
+          >
             {product.name}
           </h3>
         </Link>
-        <p className="text-gray-500 text-xs line-clamp-2 mb-3">{product.description}</p>
-        <div className="flex items-center justify-between">
-          <span className="text-orange-600 font-bold text-base">{product.priceDisplay}</span>
+        <p
+          className="line-clamp-2"
+          style={{ fontSize: 12, color: "#6b7280", marginBottom: 12, lineHeight: 1.5, flex: 1 }}
+        >
+          {product.description}
+        </p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontWeight: 800, fontSize: 15, color: "#ea580c" }}>{product.priceDisplay}</span>
           <a
             href={`https://wa.me/250784734956?text=${whatsappMessage}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors flex items-center gap-1"
+            style={{
+              background: "#22c55e",
+              color: "#fff",
+              fontSize: 12,
+              fontWeight: 700,
+              padding: "7px 14px",
+              borderRadius: 10,
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              whiteSpace: "nowrap",
+            }}
           >
-            <span>💬</span> Order
+            💬 Order
           </a>
         </div>
       </div>

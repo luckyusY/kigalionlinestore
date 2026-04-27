@@ -10,16 +10,14 @@ export const metadata: Metadata = {
   keywords: "Kigali online store, Rwanda shopping, home products, kitchen appliances, fitness equipment",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen flex flex-col bg-gray-50">
+      <body style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#f9fafb" }}>
         <Header />
-        <main className="flex-1">{children}</main>
+        <main className="page-main" style={{ flex: 1 }}>
+          {children}
+        </main>
         <Footer />
       </body>
     </html>
