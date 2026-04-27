@@ -1,40 +1,99 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [mobileQuery, setMobileQuery] = useState("");
+  const router = useRouter();
+
+  const doSearch = useCallback(
+    (q: string) => {
+      const trimmed = q.trim();
+      if (trimmed) {
+        router.push(`/products?search=${encodeURIComponent(trimmed)}`);
+        setMenuOpen(false);
+      }
+    },
+    [router]
+  );
 
   return (
     <header className="site-header">
-      {/* Main bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+      {/* ── Top bar ── */}
+      <div className="header-top">
         {/* Logo */}
         <Link
           href="/"
-          style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 800, fontSize: 18, color: "#fff", textDecoration: "none" }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontWeight: 900,
+            fontSize: 17,
+            color: "#fff",
+            textDecoration: "none",
+            letterSpacing: "-0.02em",
+            flexShrink: 0,
+          }}
         >
-          <span style={{ fontSize: 22 }}>🛒</span>
-          <span>Kigali Online Store</span>
+          <span
+            style={{
+              background: "linear-gradient(135deg, #f97316, #fbbf24)",
+              borderRadius: 10,
+              width: 34,
+              height: 34,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 18,
+              flexShrink: 0,
+            }}
+          >
+            🛒
+          </span>
+          <span>
+            Kigali{" "}
+            <span style={{ color: "#f97316" }}>Online</span>
+          </span>
         </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6" style={{ fontSize: 14, fontWeight: 600 }}>
-          <Link href="/" className="hover:text-orange-200 transition-colors" style={{ color: "#fff" }}>
-            Home
-          </Link>
-          <Link href="/products" className="hover:text-orange-200 transition-colors" style={{ color: "#fff" }}>
-            Products
-          </Link>
-          <Link href="/contact" className="hover:text-orange-200 transition-colors" style={{ color: "#fff" }}>
-            Contact
-          </Link>
+        {/* Desktop nav */}
+        <nav
+          className="hidden md:flex"
+          style={{ alignItems: "center", gap: 6 }}
+        >
+          {[
+            { href: "/", label: "Home" },
+            { href: "/products", label: "Products" },
+            { href: "/contact", label: "Contact" },
+          ].map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              style={{
+                color: "rgba(255,255,255,0.82)",
+                textDecoration: "none",
+                fontWeight: 600,
+                fontSize: 14,
+                padding: "7px 14px",
+                borderRadius: 8,
+                transition: "background 0.15s, color 0.15s",
+              }}
+              className="nav-link"
+            >
+              {label}
+            </Link>
+          ))}
           <a
             href="https://wa.me/250784734956"
             target="_blank"
             rel="noopener noreferrer"
             style={{
+              marginLeft: 8,
               background: "#22c55e",
               color: "#fff",
               padding: "8px 18px",
@@ -45,25 +104,24 @@ export default function Header() {
               alignItems: "center",
               gap: 6,
               textDecoration: "none",
-              transition: "background 0.2s",
             }}
           >
-            💬 WhatsApp Order
+            💬 WhatsApp
           </a>
         </nav>
 
         {/* Mobile hamburger */}
         <button
           className="md:hidden"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
+          onClick={() => setMenuOpen((o) => !o)}
+          aria-label="Menu"
           style={{
-            background: "rgba(255,255,255,0.15)",
-            border: "none",
-            borderRadius: 8,
-            padding: "6px 10px",
+            background: "rgba(255,255,255,0.1)",
+            border: "1.5px solid rgba(255,255,255,0.18)",
+            borderRadius: 10,
+            padding: "7px 12px",
             color: "#fff",
-            fontSize: 20,
+            fontSize: 18,
             cursor: "pointer",
           }}
         >
@@ -71,50 +129,142 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Mobile dropdown */}
-      {menuOpen && (
-        <div className="mobile-menu md:hidden">
-          <nav style={{ display: "flex", flexDirection: "column", padding: "12px 16px", gap: 4 }}>
-            {[
-              { href: "/", label: "Home" },
-              { href: "/products", label: "Products" },
-              { href: "/contact", label: "Contact" },
-            ].map(({ href, label }) => (
+      {/* ── Search bar row (desktop) ── */}
+      <div className="header-search-bar hidden md:flex">
+        <div className="header-search-inner">
+          {/* Categories quick links */}
+          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+            {["Kitchen", "Bathroom", "Fitness", "Home"].map((cat) => (
               <Link
-                key={href}
-                href={href}
-                onClick={() => setMenuOpen(false)}
+                key={cat}
+                href={`/products?category=${cat}`}
                 style={{
-                  color: "#fff",
-                  padding: "10px 0",
+                  color: "rgba(255,255,255,0.6)",
+                  fontSize: 12,
                   fontWeight: 600,
-                  fontSize: 15,
                   textDecoration: "none",
-                  borderBottom: "1px solid rgba(255,255,255,0.1)",
+                  padding: "4px 10px",
+                  borderRadius: 6,
+                  background: "rgba(255,255,255,0.06)",
+                  transition: "all 0.15s",
+                  whiteSpace: "nowrap",
                 }}
               >
-                {label}
+                {cat}
               </Link>
             ))}
-            <a
-              href="https://wa.me/250784734956"
-              target="_blank"
-              rel="noopener noreferrer"
+          </div>
+
+          <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.12)", flexShrink: 0 }} />
+
+          {/* Search */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              doSearch(query);
+            }}
+            style={{ display: "flex", flex: 1 }}
+          >
+            <div className="header-search-input-wrap">
+              <span className="header-search-icon">🔍</span>
+              <input
+                className="header-search-input"
+                type="text"
+                placeholder="Search products — blender, rain coat, air fryer…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                aria-label="Search"
+              />
+              <button type="submit" className="header-search-btn">
+                Search
+              </button>
+            </div>
+          </form>
+
+          <a
+            href="tel:+250784734956"
+            style={{
+              color: "rgba(255,255,255,0.6)",
+              fontSize: 12,
+              fontWeight: 600,
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+            }}
+          >
+            📞 0784 734 956
+          </a>
+        </div>
+      </div>
+
+      {/* ── Mobile drawer ── */}
+      {menuOpen && (
+        <div className="mobile-menu md:hidden">
+          {/* Mobile search */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              doSearch(mobileQuery);
+            }}
+          >
+            <div className="mobile-search-wrap">
+              <input
+                className="mobile-search-input"
+                type="text"
+                placeholder="Search products…"
+                value={mobileQuery}
+                onChange={(e) => setMobileQuery(e.target.value)}
+                autoFocus
+              />
+              <button type="submit" className="mobile-search-btn">
+                🔍
+              </button>
+            </div>
+          </form>
+
+          {/* Nav links */}
+          {[
+            { href: "/", label: "🏠 Home" },
+            { href: "/products", label: "🛍️ Products" },
+            { href: "/contact", label: "📞 Contact" },
+          ].map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setMenuOpen(false)}
               style={{
-                marginTop: 12,
-                background: "#22c55e",
-                color: "#fff",
-                padding: "12px",
-                borderRadius: 12,
-                textAlign: "center",
-                fontWeight: 700,
+                display: "block",
+                color: "rgba(255,255,255,0.85)",
+                padding: "12px 0",
+                fontWeight: 600,
                 fontSize: 15,
                 textDecoration: "none",
+                borderBottom: "1px solid rgba(255,255,255,0.07)",
               }}
             >
-              💬 WhatsApp Order
-            </a>
-          </nav>
+              {label}
+            </Link>
+          ))}
+
+          <a
+            href="https://wa.me/250784734956"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "block",
+              marginTop: 14,
+              background: "#22c55e",
+              color: "#fff",
+              padding: "13px",
+              borderRadius: 12,
+              textAlign: "center",
+              fontWeight: 800,
+              fontSize: 15,
+              textDecoration: "none",
+            }}
+          >
+            💬 WhatsApp Order
+          </a>
         </div>
       )}
     </header>

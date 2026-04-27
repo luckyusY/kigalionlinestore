@@ -1,86 +1,320 @@
 @import "tailwindcss";
 
-/* ── Brand colours ── */
-@theme {
-  --color-brand-50:  #fff7ed;
-  --color-brand-100: #ffedd5;
-  --color-brand-500: #f97316;
-  --color-brand-600: #ea580c;
-  --color-brand-700: #c2410c;
-}
-
-/* ── Resets ── */
-*, *::before, *::after { box-sizing: border-box; }
+/* ─────────────────────────────────────────
+   Reset
+───────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { max-width: 100vw; overflow-x: hidden; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f9fafb; }
 
-/* ── Fixed header offset ── */
-.page-main { padding-top: 64px; }
-
-/* ── Header always on top ── */
+/* ─────────────────────────────────────────
+   Site Header  (two-tier, fixed)
+   Desktop: top bar (64px) + search bar (48px) = 112px total
+   Mobile:  single bar (60px)
+───────────────────────────────────────── */
 .site-header {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 64px;
+  top: 0; left: 0; right: 0;
   z-index: 9999;
-  background: #ea580c;
+  background: #1e1e2e;
   color: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.25);
 }
 
-/* mobile dropdown is part of the header but extends below the 64px bar */
-.site-header .mobile-menu {
+/* Top bar row */
+.header-top {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Search bar row (desktop only) */
+.header-search-bar {
+  background: #16162a;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.header-search-inner {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-search-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.header-search-input-wrap:focus-within {
+  border-color: #f97316;
+  background: rgba(255,255,255,0.12);
+}
+
+.header-search-icon {
+  padding: 0 12px;
+  color: rgba(255,255,255,0.5);
+  font-size: 15px;
+  pointer-events: none;
+}
+
+.header-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 14px;
+  padding: 10px 0;
+}
+.header-search-input::placeholder { color: rgba(255,255,255,0.4); }
+
+.header-search-btn {
+  background: #f97316;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.header-search-btn:hover { background: #ea580c; }
+
+/* mobile search (inside drawer) */
+.mobile-search-wrap {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.mobile-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 14px;
+  padding: 11px 12px;
+}
+.mobile-search-input::placeholder { color: rgba(255,255,255,0.4); }
+.mobile-search-btn {
+  background: #f97316;
+  border: none;
+  color: #fff;
+  padding: 11px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* Mobile drawer */
+.mobile-menu {
   position: absolute;
-  top: 64px;
-  left: 0;
-  right: 0;
+  top: 60px;
+  left: 0; right: 0;
+  background: #1e1e2e;
+  border-top: 1px solid rgba(255,255,255,0.08);
   z-index: 9999;
-  background: #c2410c;
-  border-top: 1px solid rgba(255,255,255,0.15);
+  padding: 16px 20px 20px;
 }
 
-/* ── Product image helper ── */
+/* Offset for fixed header */
+.page-main { padding-top: 112px; }
+
+@media (max-width: 767px) {
+  .header-search-bar { display: none; }
+  .site-header { }
+  .header-top { height: 60px; }
+  .page-main { padding-top: 60px; }
+  .mobile-menu { top: 60px; }
+}
+
+/* ─────────────────────────────────────────
+   Hero Carousel
+───────────────────────────────────────── */
+.hero-carousel {
+  position: relative;
+  width: 100%;
+  height: 520px;
+  overflow: hidden;
+  background: #111;
+}
+
+@media (max-width: 640px) {
+  .hero-carousel { height: 420px; }
+}
+
+.hero-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.hero-slide {
+  min-width: 100%;
+  height: 100%;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Dark gradient overlay so text is always readable */
+.hero-slide-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    rgba(0,0,0,0.82) 0%,
+    rgba(0,0,0,0.5) 50%,
+    rgba(0,0,0,0.15) 100%
+  );
+  z-index: 1;
+}
+
+.hero-slide-content {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 48px;
+  max-width: 680px;
+}
+
+@media (max-width: 640px) {
+  .hero-slide-content { padding: 28px 24px; }
+}
+
+/* Arrow buttons */
+.hero-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(6px);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  color: #fff;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background 0.2s, border-color 0.2s;
+  user-select: none;
+}
+.hero-arrow:hover {
+  background: rgba(249,115,22,0.7);
+  border-color: #f97316;
+}
+.hero-arrow-left  { left: 16px; }
+.hero-arrow-right { right: 16px; }
+
+/* Dots */
+.hero-dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.hero-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  cursor: pointer;
+  border: none;
+  transition: all 0.25s;
+}
+.hero-dot.active {
+  background: #f97316;
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* ─────────────────────────────────────────
+   Product cards & utilities
+───────────────────────────────────────── */
 .product-img-wrap {
   position: relative;
   overflow: hidden;
   background: #f3f4f6;
 }
 
-/* ── Hero image grid ── */
-.hero-img-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 140px 140px;
-  gap: 12px;
+.product-card-hover {
+  transition: box-shadow 0.25s, transform 0.25s;
 }
-
-.hero-img-grid .hero-img-main {
-  grid-row: span 2;
-  height: 100%;
-  position: relative;
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-.hero-img-grid .hero-img-sm {
-  height: 140px;
-  position: relative;
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-/* ── Product card hover ── */
 .product-card-hover:hover {
-  box-shadow: 0 8px 28px rgba(0,0,0,0.13);
-  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.13);
+  transform: translateY(-3px);
 }
 
-/* ── Line-clamp utility (for older browsers) ── */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Category pill hover */
+.cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  color: #374151;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.18s;
+  cursor: pointer;
+}
+.cat-pill:hover, .cat-pill.active {
+  background: #fff7ed;
+  border-color: #f97316;
+  color: #ea580c;
+}
+
+/* Scrolling marquee banner */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: flex;
+  animation: marquee 22s linear infinite;
+  white-space: nowrap;
+}
+.marquee-track:hover { animation-play-state: paused; }

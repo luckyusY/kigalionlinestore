@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { products, categories } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
 import { Suspense } from "react";
@@ -20,59 +20,149 @@ const categoryIcons: Record<string, string> = {
 
 function ProductsContent() {
   const searchParams = useSearchParams();
-  const initialCategory = searchParams.get("category") || "All";
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+
+  const [selectedCategory, setSelectedCategory] = useState(
+    searchParams.get("category") || "All"
+  );
+  const [searchQuery, setSearchQuery] = useState(
+    searchParams.get("search") || ""
+  );
+  const [inputValue, setInputValue] = useState(
+    searchParams.get("search") || ""
+  );
 
   useEffect(() => {
-    const cat = searchParams.get("category") || "All";
-    setSelectedCategory(cat);
+    setSelectedCategory(searchParams.get("category") || "All");
+    const s = searchParams.get("search") || "";
+    setSearchQuery(s);
+    setInputValue(s);
   }, [searchParams]);
 
   const filtered = products.filter((p) => {
     const matchCat = selectedCategory === "All" || p.category === selectedCategory;
+    const q = searchQuery.toLowerCase();
     const matchSearch =
-      searchQuery === "" ||
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchQuery.toLowerCase());
+      !q ||
+      p.name.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q) ||
+      p.category.toLowerCase().includes(q);
     return matchCat && matchSearch;
   });
 
+  function applyFilter(cat: string, q: string) {
+    const params = new URLSearchParams();
+    if (cat !== "All") params.set("category", cat);
+    if (q) params.set("search", q);
+    router.push(`/products?${params.toString()}`);
+  }
+
   return (
     <div>
-      {/* Page Header */}
-      <div className="bg-gradient-to-r from-orange-600 to-amber-500 text-white py-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-extrabold mb-2">Our Products</h1>
-          <p className="text-orange-100">
-            {products.length} quality products available in Kigali, Rwanda
+      {/* Page header */}
+      <div
+        style={{
+          background: "linear-gradient(135deg, #1e1e2e 0%, #2d1f3d 100%)",
+          color: "#fff",
+          padding: "36px 20px",
+        }}
+      >
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 4 }}>
+            🛍️ All Products
+          </h1>
+          <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>
+            {products.length} quality products available · Kigali, Rwanda
           </p>
+
+          {/* In-page search */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setSearchQuery(inputValue);
+              applyFilter(selectedCategory, inputValue);
+            }}
+            style={{ marginTop: 18, display: "flex", maxWidth: 520 }}
+          >
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                background: "rgba(255,255,255,0.1)",
+                border: "1.5px solid rgba(255,255,255,0.18)",
+                borderRadius: 12,
+                overflow: "hidden",
+              }}
+            >
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Search products…"
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  color: "#fff",
+                  padding: "12px 16px",
+                  fontSize: 14,
+                }}
+              />
+              <button
+                type="submit"
+                style={{
+                  background: "#f97316",
+                  color: "#fff",
+                  border: "none",
+                  padding: "0 20px",
+                  fontWeight: 700,
+                  fontSize: 13,
+                  cursor: "pointer",
+                }}
+              >
+                Search
+              </button>
+            </div>
+            {(searchQuery || selectedCategory !== "All") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setInputValue("");
+                  setSearchQuery("");
+                  setSelectedCategory("All");
+                  router.push("/products");
+                }}
+                style={{
+                  marginLeft: 10,
+                  background: "rgba(255,255,255,0.12)",
+                  border: "1.5px solid rgba(255,255,255,0.2)",
+                  color: "#fff",
+                  borderRadius: 10,
+                  padding: "0 14px",
+                  cursor: "pointer",
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
+              >
+                Clear
+              </button>
+            )}
+          </form>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Search Bar */}
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full max-w-md px-5 py-3 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 text-gray-700"
-          />
-        </div>
-
-        {/* Category Filter */}
-        <div className="flex flex-wrap gap-2 mb-8">
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 20px" }}>
+        {/* Category filters */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
           {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                selectedCategory === cat
-                  ? "bg-orange-600 text-white shadow-md"
-                  : "bg-white text-gray-600 border border-gray-200 hover:border-orange-300 hover:text-orange-600"
-              }`}
+              onClick={() => {
+                setSelectedCategory(cat);
+                applyFilter(cat, searchQuery);
+              }}
+              className={`cat-pill${selectedCategory === cat ? " active" : ""}`}
             >
               <span>{categoryIcons[cat] || "📦"}</span>
               {cat}
@@ -80,30 +170,54 @@ function ProductsContent() {
           ))}
         </div>
 
-        {/* Results Count */}
-        <p className="text-gray-500 text-sm mb-6">
-          Showing {filtered.length} product{filtered.length !== 1 ? "s" : ""}
-          {selectedCategory !== "All" ? ` in ${selectedCategory}` : ""}
-          {searchQuery && ` for "${searchQuery}"`}
+        {/* Results meta */}
+        <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 20 }}>
+          {filtered.length} product{filtered.length !== 1 ? "s" : ""}
+          {selectedCategory !== "All" && ` in ${selectedCategory}`}
+          {searchQuery && ` matching "${searchQuery}"`}
         </p>
 
-        {/* Products Grid */}
+        {/* Grid */}
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+              gap: 20,
+            }}
+          >
             {filtered.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-20">
-            <div className="text-5xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No products found</h3>
-            <p className="text-gray-500 mb-6">Try a different search or category</p>
+          <div style={{ textAlign: "center", padding: "80px 20px" }}>
+            <div style={{ fontSize: 52, marginBottom: 12 }}>🔍</div>
+            <h3 style={{ fontSize: 20, fontWeight: 700, color: "#1f2937", marginBottom: 8 }}>
+              No products found
+            </h3>
+            <p style={{ color: "#6b7280", marginBottom: 20 }}>
+              Try a different search term or browse all categories
+            </p>
             <button
-              onClick={() => { setSelectedCategory("All"); setSearchQuery(""); }}
-              className="bg-orange-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-orange-700 transition-colors"
+              onClick={() => {
+                setInputValue("");
+                setSearchQuery("");
+                setSelectedCategory("All");
+                router.push("/products");
+              }}
+              style={{
+                background: "#f97316",
+                color: "#fff",
+                border: "none",
+                padding: "11px 28px",
+                borderRadius: 999,
+                fontWeight: 700,
+                cursor: "pointer",
+                fontSize: 14,
+              }}
             >
-              View All Products
+              Show all products
             </button>
           </div>
         )}
@@ -114,7 +228,11 @@ function ProductsContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<div className="text-center py-20 text-gray-400">Loading products...</div>}>
+    <Suspense fallback={
+      <div style={{ textAlign: "center", padding: "80px 20px", color: "#9ca3af" }}>
+        Loading products…
+      </div>
+    }>
       <ProductsContent />
     </Suspense>
   );
