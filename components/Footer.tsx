@@ -1,86 +1,130 @@
 import Link from "next/link";
+import { Phone, MapPin, Truck, Clock, MessageCircle, ShoppingBag, ArrowUpRight } from "lucide-react";
+
+const quickLinks = [
+  { href: "/",                      label: "Home" },
+  { href: "/products",              label: "All Products" },
+  { href: "/products?category=Kitchen",   label: "Kitchen" },
+  { href: "/products?category=Bathroom",  label: "Bathroom" },
+  { href: "/products?category=Fitness",   label: "Fitness" },
+  { href: "/products?category=Home",      label: "Home & Living" },
+  { href: "/contact",               label: "Contact Us" },
+];
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Brand */}
-          <div>
-            <h3 className="text-white text-lg font-bold mb-3">🛒 Kigali Online Store</h3>
-            <p className="text-sm leading-relaxed">
-              Your trusted online shop in Kigali, Rwanda. Quality products at great prices, delivered to your door.
+    <footer style={{ background: "#0a0a14", color: "#94a3b8" }}>
+      {/* Main grid */}
+      <div style={{ maxWidth: 1320, margin: "0 auto", padding: "52px 24px 40px" }}>
+        <div className="footer-grid">
+
+          {/* Brand col — full-width on mobile */}
+          <div className="footer-brand">
+            <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none", marginBottom: 16 }}>
+              <div style={{ width: 38, height: 38, borderRadius: 11, background: "linear-gradient(135deg, #f97316, #fbbf24)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <ShoppingBag size={18} color="#fff" strokeWidth={2.5} />
+              </div>
+              <div>
+                <div style={{ color: "#fff", fontWeight: 900, fontSize: 16, letterSpacing: "-0.02em" }}>
+                  Kigali <span style={{ color: "#f97316" }}>Online</span> Store
+                </div>
+                <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 10, fontWeight: 600, letterSpacing: "0.07em", textTransform: "uppercase" }}>
+                  Kigali, Rwanda 🇷🇼
+                </div>
+              </div>
+            </Link>
+
+            <p style={{ fontSize: 13, lineHeight: 1.7, maxWidth: 280, marginBottom: 20 }}>
+              Your trusted online shop in Kigali. Quality products at great prices — delivered fast.
             </p>
-            <div className="flex gap-3 mt-4">
-              <a
-                href="https://wa.me/250784734956"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-              >
-                💬 WhatsApp
-              </a>
-            </div>
+
+            <a
+              href="https://wa.me/250784734956"
+              target="_blank" rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "#16a34a", color: "#fff", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, textDecoration: "none" }}
+            >
+              <MessageCircle size={14} strokeWidth={2.5} /> WhatsApp Us
+            </a>
           </div>
 
-          {/* Quick Links */}
+          {/* Quick links */}
           <div>
-            <h3 className="text-white text-lg font-bold mb-3">Quick Links</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/" className="hover:text-white transition-colors">Home</Link>
-              </li>
-              <li>
-                <Link href="/products" className="hover:text-white transition-colors">All Products</Link>
-              </li>
-              <li>
-                <Link href="/products?category=Kitchen" className="hover:text-white transition-colors">Kitchen</Link>
-              </li>
-              <li>
-                <Link href="/products?category=Bathroom" className="hover:text-white transition-colors">Bathroom</Link>
-              </li>
-              <li>
-                <Link href="/products?category=Fitness" className="hover:text-white transition-colors">Fitness</Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link>
-              </li>
+            <h4 style={{ color: "#fff", fontWeight: 800, fontSize: 13, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 16 }}>
+              Quick Links
+            </h4>
+            <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 9 }}>
+              {quickLinks.map(({ href, label }) => (
+                <li key={href}>
+                  <Link href={href} style={{ display: "flex", alignItems: "center", gap: 5, color: "#94a3b8", textDecoration: "none", fontSize: 13, fontWeight: 500, transition: "color 0.15s" }}
+                    onMouseEnter={undefined}
+                  >
+                    <ArrowUpRight size={12} strokeWidth={2} style={{ opacity: 0.4 }} />
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Contact */}
           <div>
-            <h3 className="text-white text-lg font-bold mb-3">Contact Us</h3>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-start gap-2">
-                <span>📱</span>
+            <h4 style={{ color: "#fff", fontWeight: 800, fontSize: 13, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 16 }}>
+              Contact
+            </h4>
+            <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 13 }}>
+              <li>
+                <a href="tel:+250784734956" style={{ display: "flex", gap: 10, textDecoration: "none", color: "#94a3b8", alignItems: "flex-start" }}>
+                  <div style={{ width: 30, height: 30, background: "rgba(255,255,255,0.06)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Phone size={13} color="#f97316" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <div style={{ color: "#cbd5e1", fontSize: 12, fontWeight: 700, marginBottom: 1 }}>Phone / WhatsApp</div>
+                    <div style={{ fontSize: 13 }}>0784 734 956</div>
+                  </div>
+                </a>
+              </li>
+              <li style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <div style={{ width: 30, height: 30, background: "rgba(255,255,255,0.06)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <MapPin size={13} color="#f97316" strokeWidth={2.5} />
+                </div>
                 <div>
-                  <div className="text-white font-medium">Phone / WhatsApp</div>
-                  <a href="tel:+250784734956" className="hover:text-white transition-colors">
-                    0784 734 956
-                  </a>
+                  <div style={{ color: "#cbd5e1", fontSize: 12, fontWeight: 700, marginBottom: 1 }}>Location</div>
+                  <div style={{ fontSize: 13 }}>Kigali, Rwanda 🇷🇼</div>
                 </div>
               </li>
-              <li className="flex items-start gap-2">
-                <span>📍</span>
+              <li style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <div style={{ width: 30, height: 30, background: "rgba(255,255,255,0.06)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Truck size={13} color="#f97316" strokeWidth={2.5} />
+                </div>
                 <div>
-                  <div className="text-white font-medium">Location</div>
-                  <span>Kigali, Rwanda</span>
+                  <div style={{ color: "#cbd5e1", fontSize: 12, fontWeight: 700, marginBottom: 1 }}>Delivery</div>
+                  <div style={{ fontSize: 13 }}>Kigali &amp; surrounding areas</div>
                 </div>
               </li>
-              <li className="flex items-start gap-2">
-                <span>🚚</span>
+              <li style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <div style={{ width: 30, height: 30, background: "rgba(255,255,255,0.06)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Clock size={13} color="#f97316" strokeWidth={2.5} />
+                </div>
                 <div>
-                  <div className="text-white font-medium">Delivery</div>
-                  <span>Kigali & surrounding areas</span>
+                  <div style={{ color: "#cbd5e1", fontSize: 12, fontWeight: 700, marginBottom: 1 }}>Hours</div>
+                  <div style={{ fontSize: 13 }}>Mon–Sat: 8am – 8pm</div>
+                  <div style={{ fontSize: 13 }}>Sun: 9am – 6pm</div>
                 </div>
               </li>
             </ul>
           </div>
         </div>
+      </div>
 
-        <div className="border-t border-gray-700 mt-8 pt-6 text-center text-sm text-gray-500">
-          <p>© {new Date().getFullYear()} Kigali Online Store. All rights reserved.</p>
+      {/* Bottom bar */}
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "14px 24px" }}>
+        <div style={{ maxWidth: 1320, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+          <p style={{ fontSize: 12, color: "#475569" }}>
+            © {new Date().getFullYear()} Kigali Online Store · All rights reserved
+          </p>
+          <p style={{ fontSize: 12, color: "#475569" }}>
+            Made with ❤️ in Rwanda
+          </p>
         </div>
       </div>
     </footer>

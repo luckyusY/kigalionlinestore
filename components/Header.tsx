@@ -3,270 +3,186 @@
 import Link from "next/link";
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { Search, Menu, X, Phone, ShoppingBag, Home, Grid3X3, MessageCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const NAV = [
+  { href: "/",         label: "Home",     Icon: Home },
+  { href: "/products", label: "Products", Icon: Grid3X3 },
+  { href: "/contact",  label: "Contact",  Icon: Phone },
+];
+
+const QUICK_CATS = ["Kitchen", "Bathroom", "Fitness", "Home", "Office"];
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [mobileQuery, setMobileQuery] = useState("");
+  const [desktopQ, setDesktopQ] = useState("");
+  const [mobileQ,  setMobileQ]  = useState("");
   const router = useRouter();
 
-  const doSearch = useCallback(
-    (q: string) => {
-      const trimmed = q.trim();
-      if (trimmed) {
-        router.push(`/products?search=${encodeURIComponent(trimmed)}`);
-        setMenuOpen(false);
-      }
-    },
-    [router]
-  );
+  const doSearch = useCallback((q: string) => {
+    const t = q.trim();
+    if (t) { router.push(`/products?search=${encodeURIComponent(t)}`); setMenuOpen(false); }
+  }, [router]);
 
   return (
     <header className="site-header">
       {/* ── Top bar ── */}
       <div className="header-top">
         {/* Logo */}
-        <Link
-          href="/"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            fontWeight: 900,
-            fontSize: 17,
-            color: "#fff",
-            textDecoration: "none",
-            letterSpacing: "-0.02em",
-            flexShrink: 0,
-          }}
-        >
-          <span
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
+          <motion.div
+            whileHover={{ rotate: -8, scale: 1.1 }}
+            transition={{ type: "spring", stiffness: 300 }}
             style={{
+              width: 36, height: 36, borderRadius: 10,
               background: "linear-gradient(135deg, #f97316, #fbbf24)",
-              borderRadius: 10,
-              width: 34,
-              height: 34,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 18,
-              flexShrink: 0,
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
             }}
           >
-            🛒
-          </span>
-          <span>
-            Kigali{" "}
-            <span style={{ color: "#f97316" }}>Online</span>
-          </span>
+            <ShoppingBag size={18} color="#fff" strokeWidth={2.5} />
+          </motion.div>
+          <div style={{ lineHeight: 1 }}>
+            <div style={{ color: "#fff", fontWeight: 900, fontSize: 15, letterSpacing: "-0.03em" }}>
+              Kigali <span style={{ color: "#f97316" }}>Online</span>
+            </div>
+            <div style={{ color: "rgba(255,255,255,0.38)", fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+              Store · Kigali, Rwanda
+            </div>
+          </div>
         </Link>
 
         {/* Desktop nav */}
-        <nav
-          className="hidden md:flex"
-          style={{ alignItems: "center", gap: 6 }}
-        >
-          {[
-            { href: "/", label: "Home" },
-            { href: "/products", label: "Products" },
-            { href: "/contact", label: "Contact" },
-          ].map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              style={{
-                color: "rgba(255,255,255,0.82)",
-                textDecoration: "none",
-                fontWeight: 600,
-                fontSize: 14,
-                padding: "7px 14px",
-                borderRadius: 8,
-                transition: "background 0.15s, color 0.15s",
-              }}
-              className="nav-link"
-            >
+        <nav className="hidden md:flex" style={{ alignItems: "center", gap: 2 }}>
+          {NAV.map(({ href, label, Icon }) => (
+            <Link key={href} href={href} className="nav-link">
+              <Icon size={14} strokeWidth={2.5} />
               {label}
             </Link>
           ))}
-          <a
+          <motion.a
             href="https://wa.me/250784734956"
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              marginLeft: 8,
-              background: "#22c55e",
-              color: "#fff",
-              padding: "8px 18px",
-              borderRadius: 999,
-              fontWeight: 700,
-              fontSize: 13,
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              textDecoration: "none",
-            }}
+            className="wa-badge"
+            style={{ marginLeft: 10 }}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
           >
-            💬 WhatsApp
-          </a>
+            <MessageCircle size={14} strokeWidth={2.5} />
+            WhatsApp
+          </motion.a>
         </nav>
 
-        {/* Mobile hamburger */}
-        <button
+        {/* Mobile toggle */}
+        <motion.button
           className="md:hidden"
-          onClick={() => setMenuOpen((o) => !o)}
+          onClick={() => setMenuOpen(o => !o)}
           aria-label="Menu"
+          whileTap={{ scale: 0.9 }}
           style={{
-            background: "rgba(255,255,255,0.1)",
-            border: "1.5px solid rgba(255,255,255,0.18)",
-            borderRadius: 10,
-            padding: "7px 12px",
-            color: "#fff",
-            fontSize: 18,
-            cursor: "pointer",
+            background: "rgba(255,255,255,0.07)",
+            border: "1.5px solid rgba(255,255,255,0.12)",
+            borderRadius: 10, padding: "7px 10px",
+            color: "#fff", cursor: "pointer", display: "flex", alignItems: "center",
           }}
         >
-          {menuOpen ? "✕" : "☰"}
-        </button>
+          {menuOpen ? <X size={20} /> : <Menu size={20} />}
+        </motion.button>
       </div>
 
-      {/* ── Search bar row (desktop) ── */}
+      {/* ── Search bar (desktop) ── */}
       <div className="header-search-bar hidden md:flex">
         <div className="header-search-inner">
-          {/* Categories quick links */}
-          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-            {["Kitchen", "Bathroom", "Fitness", "Home"].map((cat) => (
-              <Link
-                key={cat}
-                href={`/products?category=${cat}`}
-                style={{
-                  color: "rgba(255,255,255,0.6)",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  textDecoration: "none",
-                  padding: "4px 10px",
-                  borderRadius: 6,
-                  background: "rgba(255,255,255,0.06)",
-                  transition: "all 0.15s",
-                  whiteSpace: "nowrap",
-                }}
-              >
+          {/* Quick category pills */}
+          <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
+            {QUICK_CATS.map(cat => (
+              <Link key={cat} href={`/products?category=${cat}`} className="hs-pill">
                 {cat}
               </Link>
             ))}
           </div>
+          <div className="hs-divider" />
 
-          <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.12)", flexShrink: 0 }} />
-
-          {/* Search */}
+          {/* Search input */}
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              doSearch(query);
-            }}
-            style={{ display: "flex", flex: 1 }}
+            className="hs-form"
+            onSubmit={e => { e.preventDefault(); doSearch(desktopQ); }}
           >
-            <div className="header-search-input-wrap">
-              <span className="header-search-icon">🔍</span>
+            <div className="hs-input-wrap">
+              <span className="hs-input-icon"><Search size={13} strokeWidth={2.5} /></span>
               <input
-                className="header-search-input"
+                className="hs-input"
                 type="text"
-                placeholder="Search products — blender, rain coat, air fryer…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search for blender, rain coat, air fryer, fitness…"
+                value={desktopQ}
+                onChange={e => setDesktopQ(e.target.value)}
                 aria-label="Search"
               />
-              <button type="submit" className="header-search-btn">
-                Search
+              <button type="submit" className="hs-btn">
+                <Search size={12} strokeWidth={3} /> Search
               </button>
             </div>
           </form>
 
-          <a
-            href="tel:+250784734956"
-            style={{
-              color: "rgba(255,255,255,0.6)",
-              fontSize: 12,
-              fontWeight: 600,
-              textDecoration: "none",
-              whiteSpace: "nowrap",
-              flexShrink: 0,
-            }}
-          >
-            📞 0784 734 956
+          <div className="hs-divider" />
+          <a href="tel:+250784734956" className="hs-phone">
+            <Phone size={12} strokeWidth={2.5} />
+            0784 734 956
           </a>
         </div>
       </div>
 
       {/* ── Mobile drawer ── */}
-      {menuOpen && (
-        <div className="mobile-menu md:hidden">
-          {/* Mobile search */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              doSearch(mobileQuery);
-            }}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            key="drawer"
+            className="mobile-drawer md:hidden"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
           >
-            <div className="mobile-search-wrap">
-              <input
-                className="mobile-search-input"
-                type="text"
-                placeholder="Search products…"
-                value={mobileQuery}
-                onChange={(e) => setMobileQuery(e.target.value)}
-                autoFocus
-              />
-              <button type="submit" className="mobile-search-btn">
-                🔍
-              </button>
-            </div>
-          </form>
+            {/* Mobile search */}
+            <form onSubmit={e => { e.preventDefault(); doSearch(mobileQ); }}>
+              <div className="mobile-search-wrap">
+                <input
+                  className="mobile-search-input"
+                  type="text"
+                  placeholder="Search products…"
+                  value={mobileQ}
+                  onChange={e => setMobileQ(e.target.value)}
+                  autoFocus
+                />
+                <button type="submit" className="mobile-search-btn">
+                  <Search size={16} color="#fff" />
+                </button>
+              </div>
+            </form>
 
-          {/* Nav links */}
-          {[
-            { href: "/", label: "🏠 Home" },
-            { href: "/products", label: "🛍️ Products" },
-            { href: "/contact", label: "📞 Contact" },
-          ].map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              onClick={() => setMenuOpen(false)}
-              style={{
-                display: "block",
-                color: "rgba(255,255,255,0.85)",
-                padding: "12px 0",
-                fontWeight: 600,
-                fontSize: 15,
-                textDecoration: "none",
-                borderBottom: "1px solid rgba(255,255,255,0.07)",
-              }}
+            {/* Nav */}
+            {NAV.map(({ href, label, Icon }) => (
+              <Link key={href} href={href} onClick={() => setMenuOpen(false)} className="mobile-nav-link">
+                <Icon size={16} strokeWidth={2.5} />
+                {label}
+              </Link>
+            ))}
+
+            <motion.a
+              href="https://wa.me/250784734956"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="wa-badge"
+              style={{ display: "flex", justifyContent: "center", marginTop: 14, padding: "13px 0" }}
+              whileTap={{ scale: 0.97 }}
             >
-              {label}
-            </Link>
-          ))}
-
-          <a
-            href="https://wa.me/250784734956"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "block",
-              marginTop: 14,
-              background: "#22c55e",
-              color: "#fff",
-              padding: "13px",
-              borderRadius: 12,
-              textAlign: "center",
-              fontWeight: 800,
-              fontSize: 15,
-              textDecoration: "none",
-            }}
-          >
-            💬 WhatsApp Order
-          </a>
-        </div>
-      )}
+              <MessageCircle size={16} strokeWidth={2.5} />
+              WhatsApp Order · 0784 734 956
+            </motion.a>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
