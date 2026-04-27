@@ -122,9 +122,6 @@ export default function Footer() {
           <p style={{ fontSize: 12, color: "#475569" }}>
             © {new Date().getFullYear()} Kigali Online Store · All rights reserved
           </p>
-          <p style={{ fontSize: 12, color: "#475569" }}>
-            Made with ❤️ in Rwanda
-          </p>
         </div>
       </div>
     </footer>
