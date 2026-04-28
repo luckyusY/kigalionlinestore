@@ -1,108 +1,94 @@
 import Link from "next/link";
-import { Phone, MapPin, Truck, Clock, MessageCircle, ShoppingBag } from "lucide-react";
+import {
+  Camera,
+  MapPin,
+  MessageCircle,
+  Music2,
+  Phone,
+  ShieldCheck,
+  ShoppingBag,
+  Truck,
+  UsersRound,
+} from "lucide-react";
 
 const quickLinks = [
-  { href: "/",                             label: "Home" },
-  { href: "/products",                     label: "All Products" },
-  { href: "/products?category=Kitchen",    label: "Kitchen" },
-  { href: "/products?category=Bathroom",   label: "Bathroom" },
-  { href: "/products?category=Fitness",    label: "Fitness" },
-  { href: "/products?category=Home",       label: "Home & Living" },
-  { href: "/contact",                      label: "Contact Us" },
+  { href: "/", label: "Home" },
+  { href: "/products", label: "All Products" },
+  { href: "/contact", label: "Contact Us" },
+  { href: "/admin", label: "Admin Panel" },
 ];
 
-const contactItems = [
-  { Icon: Phone,    label: "Phone / WhatsApp", value: "0784 734 956",              href: "tel:+250784734956" },
-  { Icon: MapPin,   label: "Location",         value: "Kigali, Rwanda 🇷🇼",        href: null },
-  { Icon: Truck,    label: "Delivery",         value: "Kigali & surroundings",     href: null },
-  { Icon: Clock,    label: "Hours",            value: "Mon–Sat 8am–8pm",           href: null },
+const shopLinks = [
+  { href: "/products?category=Kitchen", label: "Kitchen" },
+  { href: "/products?category=Bathroom", label: "Bathroom" },
+  { href: "/products?category=Fitness", label: "Fitness" },
+  { href: "/products?category=Home", label: "Home & Living" },
+  { href: "/products?category=Accessories", label: "Accessories" },
+];
+
+const socials = [
+  { href: "https://www.tiktok.com/@kigalionlinestore", label: "TikTok", Icon: Music2 },
+  { href: "https://www.instagram.com/kigali_online_store/", label: "Instagram", Icon: Camera },
+  { href: "https://web.facebook.com/kigalionlinestore/", label: "Facebook", Icon: UsersRound },
 ];
 
 export default function Footer() {
   return (
-    <footer style={{ background: "#0a0a14", color: "#64748b" }}>
-
-      {/* ── Main content ── */}
-      <div style={{ maxWidth: 1320, margin: "0 auto", padding: "44px 20px 32px" }}>
-
-        {/* Brand row — always full width */}
-        <div style={{ marginBottom: 36, paddingBottom: 28, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 10, textDecoration: "none", marginBottom: 12 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,#f97316,#fbbf24)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <ShoppingBag size={17} color="#fff" strokeWidth={2.5} />
-            </div>
-            <span style={{ color: "#fff", fontWeight: 900, fontSize: 16, letterSpacing: "-0.02em" }}>
-              Kigali <span style={{ color: "#f97316" }}>Online</span> Store
+    <footer className="site-footer">
+      <div className="footer-shell">
+        <div className="footer-brand-panel">
+          <Link href="/" className="footer-brand">
+            <span className="brand-mark">
+              <ShoppingBag size={18} color="#fff" strokeWidth={2.5} />
             </span>
+            <span>Kigali <strong>Online</strong> Store</span>
           </Link>
-          <p style={{ fontSize: 13, lineHeight: 1.65, maxWidth: 340, marginBottom: 16 }}>
-            Your trusted online shop in Kigali, Rwanda. Quality products at great prices — delivered fast.
+          <p>
+            Trusted online shopping in Kigali with practical home, kitchen, fitness, and lifestyle
+            products delivered fast.
           </p>
-          <a
-            href="https://wa.me/250784734956"
-            target="_blank" rel="noopener noreferrer"
-            style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#16a34a", color: "#fff", fontWeight: 700, fontSize: 13, padding: "9px 18px", borderRadius: 999, textDecoration: "none" }}
-          >
-            <MessageCircle size={14} strokeWidth={2.5} /> WhatsApp Us
-          </a>
+          <div className="footer-socials">
+            {socials.map(({ href, label, Icon }) => (
+              <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
+                <Icon size={16} strokeWidth={2.4} />
+              </a>
+            ))}
+          </div>
         </div>
 
-        {/* 2-col grid: links + contact */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px 32px" }}>
+        <div className="footer-column">
+          <h4>Store</h4>
+          {quickLinks.map((link) => (
+            <Link key={link.href} href={link.href}>
+              {link.label}
+            </Link>
+          ))}
+        </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 style={{ color: "#fff", fontWeight: 800, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 14 }}>
-              Quick Links
-            </h4>
-            <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
-              {quickLinks.map(({ href, label }) => (
-                <li key={href}>
-                  <Link href={href} style={{ color: "#64748b", textDecoration: "none", fontSize: 13, fontWeight: 500, transition: "color 0.15s", display: "flex", alignItems: "center", gap: 5 }}>
-                    <span style={{ color: "#334155", fontSize: 9 }}>›</span>
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div className="footer-column">
+          <h4>Shop</h4>
+          {shopLinks.map((link) => (
+            <Link key={link.href} href={link.href}>
+              {link.label}
+            </Link>
+          ))}
+        </div>
 
-          {/* Contact */}
-          <div>
-            <h4 style={{ color: "#fff", fontWeight: 800, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 14 }}>
-              Contact
-            </h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {contactItems.map(({ Icon, label, value, href }) => {
-                const inner = (
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 9 }}>
-                    <div style={{ marginTop: 1, flexShrink: 0 }}>
-                      <Icon size={13} color="#f97316" strokeWidth={2.5} />
-                    </div>
-                    <div>
-                      <div style={{ color: "#94a3b8", fontSize: 10, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 1 }}>
-                        {label}
-                      </div>
-                      <div style={{ color: "#cbd5e1", fontSize: 13, fontWeight: 500 }}>
-                        {value}
-                      </div>
-                    </div>
-                  </div>
-                );
-                return href
-                  ? <a key={label} href={href} style={{ textDecoration: "none" }}>{inner}</a>
-                  : <div key={label}>{inner}</div>;
-              })}
-            </div>
-          </div>
+        <div className="footer-contact">
+          <h4>Contact</h4>
+          <a href="tel:+250784734956"><Phone size={15} /> 0784 734 956</a>
+          <a href="https://wa.me/250784734956" target="_blank" rel="noopener noreferrer">
+            <MessageCircle size={15} /> WhatsApp Orders
+          </a>
+          <span><MapPin size={15} /> Kigali, Rwanda</span>
+          <span><Truck size={15} /> Kigali & surroundings</span>
+          <span><ShieldCheck size={15} /> Quality checked products</span>
         </div>
       </div>
 
-      {/* ── Bottom bar ── */}
-      <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "12px 20px", textAlign: "center" }}>
-        <p style={{ fontSize: 12, color: "#334155" }}>
-          © {new Date().getFullYear()} Kigali Online Store · All rights reserved
-        </p>
+      <div className="footer-bottom">
+        <span>© {new Date().getFullYear()} Kigali Online Store. All rights reserved.</span>
+        <span>Fast delivery / WhatsApp ordering / RWF prices</span>
       </div>
     </footer>
   );
