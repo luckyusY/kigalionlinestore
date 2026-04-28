@@ -24,6 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { categories } from "@/lib/products";
 
 const NAV = [
   { href: "/products?sort=best-selling", label: "Best-Selling Items", Icon: ThumbsUp },
@@ -38,6 +39,8 @@ const MOBILE_NAV = [
   { href: "/contact", label: "Contact" },
   { href: "/admin", label: "Admin" },
 ];
+
+const HEADER_CATEGORIES = categories.filter((category) => category !== "All");
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -86,10 +89,26 @@ export default function Header() {
 
         <nav className="hidden lg:flex temu-main-links">
           {NAV.map(({ href, label, Icon }) => (
-            <Link key={label} href={href}>
-              <Icon size={14} fill="currentColor" />
-              {label}
-            </Link>
+            label === "Categories" ? (
+              <div key={label} className="temu-category-menu">
+                <Link href={href}>
+                  <Icon size={14} />
+                  {label}
+                </Link>
+                <div className="temu-category-panel">
+                  {HEADER_CATEGORIES.map((category) => (
+                    <Link key={category} href={`/products?category=${encodeURIComponent(category)}`}>
+                      {category}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <Link key={label} href={href}>
+                <Icon size={14} fill="currentColor" />
+                {label}
+              </Link>
+            )
           ))}
         </nav>
 
@@ -177,6 +196,16 @@ export default function Header() {
             {MOBILE_NAV.map((item) => (
               <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)} className="mobile-nav-link">
                 {item.label}
+              </Link>
+            ))}
+            {HEADER_CATEGORIES.map((category) => (
+              <Link
+                key={category}
+                href={`/products?category=${encodeURIComponent(category)}`}
+                onClick={() => setMenuOpen(false)}
+                className="mobile-nav-link"
+              >
+                {category}
               </Link>
             ))}
 

@@ -1,20 +1,20 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { products, categories } from "@/lib/products";
-import ProductCard from "@/components/ProductCard";
 import { Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { categories, products } from "@/lib/products";
+import ProductCard from "@/components/ProductCard";
 
-const categoryIcons: Record<string, string> = {
-  All: "🛍️",
-  Kitchen: "🍳",
-  Bathroom: "🚿",
-  Home: "🏠",
-  Fitness: "💪",
-  Office: "💻",
-  Garden: "🌿",
-  Clothing: "👗",
-  Accessories: "🎒",
+const categoryLabels: Record<string, string> = {
+  All: "Recommended",
+  Kitchen: "Home & Kitchen",
+  Bathroom: "Beauty & Health",
+  Home: "Home & Living",
+  Fitness: "Sports & Outdoors",
+  Office: "Office & School Supplies",
+  Garden: "Garden & Outdoor",
+  Clothing: "Women's Clothing",
+  Accessories: "Tech Accessories",
 };
 
 function ProductsContent() {
@@ -23,195 +23,104 @@ function ProductsContent() {
 
   const selectedCategory = searchParams.get("category") || "All";
   const searchQuery = searchParams.get("search") || "";
+  const sort = searchParams.get("sort") || "";
+  const rating = searchParams.get("rating") || "";
 
-  const filtered = products.filter((p) => {
-    const matchCat = selectedCategory === "All" || p.category === selectedCategory;
-    const q = searchQuery.toLowerCase();
-    const matchSearch =
-      !q ||
-      p.name.toLowerCase().includes(q) ||
-      p.description.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q);
-    return matchCat && matchSearch;
-  });
+  const filtered = products
+    .filter((product) => {
+      const matchCat = selectedCategory === "All" || product.category === selectedCategory;
+      const query = searchQuery.toLowerCase();
+      const matchSearch =
+        !query ||
+        product.name.toLowerCase().includes(query) ||
+        product.description.toLowerCase().includes(query) ||
+        product.category.toLowerCase().includes(query);
+      const matchRating = rating === "5" ? product.id % 3 !== 0 : true;
+      return matchCat && matchSearch && matchRating;
+    })
+    .sort((a, b) => {
+      if (sort === "new") return b.id - a.id;
+      if (sort === "best-selling") return (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || a.id - b.id;
+      return a.id - b.id;
+    });
 
-  function applyFilter(cat: string, q: string) {
-    const params = new URLSearchParams();
-    if (cat !== "All") params.set("category", cat);
-    if (q) params.set("search", q);
+  function applyFilter(category: string, query: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (category === "All") params.delete("category");
+    else params.set("category", category);
+    if (query) params.set("search", query);
+    else params.delete("search");
     router.push(`/products?${params.toString()}`);
   }
 
   return (
-    <div>
-      {/* Page header */}
-      <div
-        style={{
-          background: "linear-gradient(135deg, #1e1e2e 0%, #2d1f3d 100%)",
-          color: "#fff",
-          padding: "36px 20px",
-        }}
-      >
-        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
-          <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 4 }}>
-            🛍️ All Products
-          </h1>
-          <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>
-            {products.length} quality products available · Kigali, Rwanda
-          </p>
-
-          {/* In-page search */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              applyFilter(selectedCategory, String(formData.get("search") || ""));
-            }}
-            style={{ marginTop: 18, display: "flex", maxWidth: 520 }}
-          >
-            <div
-              style={{
-                flex: 1,
-                display: "flex",
-                background: "rgba(255,255,255,0.1)",
-                border: "1.5px solid rgba(255,255,255,0.18)",
-                borderRadius: 12,
-                overflow: "hidden",
-              }}
-            >
-              <input
-                key={searchQuery}
-                name="search"
-                type="text"
-                defaultValue={searchQuery}
-                placeholder="Search products…"
-                style={{
-                  flex: 1,
-                  background: "transparent",
-                  border: "none",
-                  outline: "none",
-                  color: "#fff",
-                  padding: "12px 16px",
-                  fontSize: 14,
-                }}
-              />
-              <button
-                type="submit"
-                style={{
-                  background: "#f97316",
-                  color: "#fff",
-                  border: "none",
-                  padding: "0 20px",
-                  fontWeight: 700,
-                  fontSize: 13,
-                  cursor: "pointer",
-                }}
-              >
-                Search
-              </button>
-            </div>
-            {(searchQuery || selectedCategory !== "All") && (
-              <button
-                type="button"
-                onClick={() => {
-                  router.push("/products");
-                }}
-                style={{
-                  marginLeft: 10,
-                  background: "rgba(255,255,255,0.12)",
-                  border: "1.5px solid rgba(255,255,255,0.2)",
-                  color: "#fff",
-                  borderRadius: 10,
-                  padding: "0 14px",
-                  cursor: "pointer",
-                  fontSize: 13,
-                  fontWeight: 600,
-                }}
-              >
-                Clear
-              </button>
-            )}
-          </form>
+    <div className="temu-page">
+      <section className="temu-feed-header">
+        <div>
+          <h1>Explore Your Interests</h1>
+          <p>{filtered.length} finds available in Kigali with WhatsApp ordering</p>
         </div>
-      </div>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            const formData = new FormData(event.currentTarget);
+            applyFilter(selectedCategory, String(formData.get("search") || ""));
+          }}
+        >
+          <input
+            key={searchQuery}
+            name="search"
+            defaultValue={searchQuery}
+            placeholder="Search products"
+          />
+          <button type="submit">Search</button>
+        </form>
+      </section>
 
-      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "28px 20px" }}>
-        {/* Category filters */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                applyFilter(cat, searchQuery);
-              }}
-              className={`cat-pill${selectedCategory === cat ? " active" : ""}`}
-            >
-              <span>{categoryIcons[cat] || "📦"}</span>
-              {cat}
-            </button>
+      <section className="temu-category-strip" aria-label="Product categories">
+        {categories.map((category) => (
+          <button
+            key={category}
+            type="button"
+            className={selectedCategory === category ? "active" : ""}
+            onClick={() => applyFilter(category, searchQuery)}
+          >
+            {categoryLabels[category] || category}
+          </button>
+        ))}
+      </section>
+
+      {(searchQuery || selectedCategory !== "All" || sort || rating) && (
+        <div className="temu-filter-summary">
+          <span>
+            Showing {filtered.length} result{filtered.length === 1 ? "" : "s"}
+            {selectedCategory !== "All" ? ` in ${selectedCategory}` : ""}
+            {searchQuery ? ` for "${searchQuery}"` : ""}
+          </span>
+          <button type="button" onClick={() => router.push("/products")}>Clear filters</button>
+        </div>
+      )}
+
+      {filtered.length > 0 ? (
+        <section className="temu-product-grid">
+          {filtered.map((product) => (
+            <ProductCard key={product.id} product={product} />
           ))}
-        </div>
-
-        {/* Results meta */}
-        <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 20 }}>
-          {filtered.length} product{filtered.length !== 1 ? "s" : ""}
-          {selectedCategory !== "All" && ` in ${selectedCategory}`}
-          {searchQuery && ` matching "${searchQuery}"`}
-        </p>
-
-        {/* Grid */}
-        {filtered.length > 0 ? (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-              gap: 20,
-            }}
-          >
-            {filtered.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        ) : (
-          <div style={{ textAlign: "center", padding: "80px 20px" }}>
-            <div style={{ fontSize: 52, marginBottom: 12 }}>🔍</div>
-            <h3 style={{ fontSize: 20, fontWeight: 700, color: "#1f2937", marginBottom: 8 }}>
-              No products found
-            </h3>
-            <p style={{ color: "#6b7280", marginBottom: 20 }}>
-              Try a different search term or browse all categories
-            </p>
-            <button
-              onClick={() => {
-                router.push("/products");
-              }}
-              style={{
-                background: "#f97316",
-                color: "#fff",
-                border: "none",
-                padding: "11px 28px",
-                borderRadius: 999,
-                fontWeight: 700,
-                cursor: "pointer",
-                fontSize: 14,
-              }}
-            >
-              Show all products
-            </button>
-          </div>
-        )}
-      </div>
+        </section>
+      ) : (
+        <section className="temu-empty">
+          <h2>No products found</h2>
+          <p>Try a different search term or browse all categories.</p>
+          <button type="button" onClick={() => router.push("/products")}>Show all products</button>
+        </section>
+      )}
     </div>
   );
 }
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={
-      <div style={{ textAlign: "center", padding: "80px 20px", color: "#9ca3af" }}>
-        Loading products…
-      </div>
-    }>
+    <Suspense fallback={<div className="temu-empty">Loading products...</div>}>
       <ProductsContent />
     </Suspense>
   );
