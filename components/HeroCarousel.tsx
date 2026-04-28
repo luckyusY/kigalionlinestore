@@ -37,7 +37,10 @@ export default function HeroCarousel({ slides }: { slides: Product[] }) {
   const onTouchStart = (e: React.TouchEvent) => { touchX.current = e.touches[0].clientX; };
   const onTouchEnd   = (e: React.TouchEvent) => {
     const d = touchX.current - e.changedTouches[0].clientX;
-    if (Math.abs(d) > 44) d > 0 ? next() : prev();
+    if (Math.abs(d) > 44) {
+      if (d > 0) next();
+      else prev();
+    }
   };
 
   const slide = slides[current];

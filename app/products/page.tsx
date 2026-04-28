@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { products, categories } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
@@ -22,22 +21,8 @@ function ProductsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [selectedCategory, setSelectedCategory] = useState(
-    searchParams.get("category") || "All"
-  );
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get("search") || ""
-  );
-  const [inputValue, setInputValue] = useState(
-    searchParams.get("search") || ""
-  );
-
-  useEffect(() => {
-    setSelectedCategory(searchParams.get("category") || "All");
-    const s = searchParams.get("search") || "";
-    setSearchQuery(s);
-    setInputValue(s);
-  }, [searchParams]);
+  const selectedCategory = searchParams.get("category") || "All";
+  const searchQuery = searchParams.get("search") || "";
 
   const filtered = products.filter((p) => {
     const matchCat = selectedCategory === "All" || p.category === selectedCategory;
@@ -79,8 +64,8 @@ function ProductsContent() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              setSearchQuery(inputValue);
-              applyFilter(selectedCategory, inputValue);
+              const formData = new FormData(e.currentTarget);
+              applyFilter(selectedCategory, String(formData.get("search") || ""));
             }}
             style={{ marginTop: 18, display: "flex", maxWidth: 520 }}
           >
@@ -95,9 +80,10 @@ function ProductsContent() {
               }}
             >
               <input
+                key={searchQuery}
+                name="search"
                 type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                defaultValue={searchQuery}
                 placeholder="Search products…"
                 style={{
                   flex: 1,
@@ -128,9 +114,6 @@ function ProductsContent() {
               <button
                 type="button"
                 onClick={() => {
-                  setInputValue("");
-                  setSearchQuery("");
-                  setSelectedCategory("All");
                   router.push("/products");
                 }}
                 style={{
@@ -159,7 +142,6 @@ function ProductsContent() {
             <button
               key={cat}
               onClick={() => {
-                setSelectedCategory(cat);
                 applyFilter(cat, searchQuery);
               }}
               className={`cat-pill${selectedCategory === cat ? " active" : ""}`}
@@ -201,9 +183,6 @@ function ProductsContent() {
             </p>
             <button
               onClick={() => {
-                setInputValue("");
-                setSearchQuery("");
-                setSelectedCategory("All");
                 router.push("/products");
               }}
               style={{

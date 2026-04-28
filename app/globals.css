@@ -1,30 +1,26 @@
-/* ── Google Fonts — must come before other imports ── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
 @import "tailwindcss";
 
-/* ── Reset ── */
+/* Reset */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: auto; } /* lenis handles this */
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: #f8fafc;
   color: #111827;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
-/* ── Lenis ── */
+/* Lenis */
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
 .lenis.lenis-stopped { overflow: hidden; }
 
-/* ─────────────────────────────────────────
-   SITE HEADER — fixed two-tier dark bar
+/* Site header - fixed two-tier dark bar
    Desktop: 64px top + 46px search = 110px
    Mobile:  60px
-───────────────────────────────────────── */
+*/
 .site-header {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -171,9 +167,7 @@ html.lenis, html.lenis body { height: auto; }
   .page-main { padding-top: 60px; }
 }
 
-/* ─────────────────────────────────────────
-   HERO CAROUSEL
-───────────────────────────────────────── */
+/* Hero carousel */
 .hero-carousel { position: relative; width: 100%; height: 540px; overflow: hidden; background: #0f0f1a; }
 @media (max-width: 640px) { .hero-carousel { height: 480px; } }
 
@@ -217,21 +211,15 @@ html.lenis, html.lenis body { height: auto; }
 }
 .hero-dot.active { background: #f97316; width: 22px; border-radius: 4px; }
 
-/* ─────────────────────────────────────────
-   PRODUCT CARD
-───────────────────────────────────────── */
+/* Product card */
 .product-img-wrap { position: relative; overflow: hidden; background: #f1f5f9; }
 
-/* ─────────────────────────────────────────
-   MARQUEE
-───────────────────────────────────────── */
+/* Marquee */
 @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 .marquee-track { display: flex; animation: marquee 28s linear infinite; white-space: nowrap; }
 .marquee-track:hover { animation-play-state: paused; }
 
-/* ─────────────────────────────────────────
-   CATEGORY PILLS
-───────────────────────────────────────── */
+/* Category pills */
 .cat-pill {
   display: inline-flex; align-items: center; gap: 6px;
   background: #fff; border: 1.5px solid #e5e7eb; color: #374151;
@@ -244,9 +232,7 @@ html.lenis, html.lenis body { height: auto; }
   box-shadow: 0 2px 10px rgba(249,115,22,0.2);
 }
 
-/* ─────────────────────────────────────────
-   FOOTER
-───────────────────────────────────────── */
+/* Footer */
 .footer-grid {
   display: grid;
   grid-template-columns: 1.4fr 1fr 1fr;
@@ -263,9 +249,7 @@ html.lenis, html.lenis body { height: auto; }
   .footer-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
 }
 
-/* ─────────────────────────────────────────
-   PRODUCT DETAIL CARD
-───────────────────────────────────────── */
+/* Product detail card */
 .product-detail-card {
   background: #fff;
   border-radius: 20px;
@@ -294,18 +278,14 @@ html.lenis, html.lenis body { height: auto; }
   .product-detail-info { padding: 24px 20px; }
 }
 
-/* ─────────────────────────────────────────
-   CONTACT GRID
-───────────────────────────────────────── */
+/* Contact grid */
 .contact-grid { grid-template-columns: 1fr 1fr; }
 @media (max-width: 768px) { .contact-grid { grid-template-columns: 1fr; } }
 
 /* Card quick-view btn visible on hover */
 .product-img-wrap:hover .card-view-btn { opacity: 1 !important; }
 
-/* ─────────────────────────────────────────
-   UTILITIES
-───────────────────────────────────────── */
+/* Utilities */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;

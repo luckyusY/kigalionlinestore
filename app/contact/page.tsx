@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MessageCircle, Phone, MapPin, Clock, ArrowRight, CheckCircle } from "lucide-react";
-import { FadeIn, StaggerGrid, StaggerItem } from "@/components/FadeIn";
+import { FadeIn } from "@/components/FadeIn";
 
 export const metadata: Metadata = {
   title: "Contact Us | Kigali Online Store",
