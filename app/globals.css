@@ -749,6 +749,10 @@ html.lenis, html.lenis body { height: auto; }
   font-weight: 850;
   max-width: 390px;
   margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .payweek-price-pill {
   min-height: 54px;
@@ -866,6 +870,10 @@ html.lenis, html.lenis body { height: auto; }
 }
 .payweek-arrow-left {
   left: 16px;
+  transform: translateY(-50%);
+}
+.payweek-arrow-right {
+  right: 16px;
   transform: translateY(-50%);
 }
 .payweek-dots {
@@ -1231,6 +1239,10 @@ html.lenis, html.lenis body { height: auto; }
   }
   .payweek-arrow-left {
     left: 12px;
+    top: 48%;
+  }
+  .payweek-arrow-right {
+    right: 12px;
     top: 48%;
   }
   .payweek-shop {

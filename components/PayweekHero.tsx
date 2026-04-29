@@ -62,8 +62,12 @@ export default function PayweekHero({ products }: { products: Product[] }) {
   const secondaryProduct = heroProducts[(current + 1) % heroProducts.length] || product;
   const tertiaryProduct = heroProducts[(current + 2) % heroProducts.length] || product;
   const copy = copyModes[current % copyModes.length];
-  const numericPrice = product.priceDisplay.match(/\d[\d,]*/)?.[0] ?? product.priceDisplay;
-  const oldPrice = product.price ? `${Math.round(product.price * 1.42).toLocaleString()} RWF` : "Ask for quote";
+  const numericPrice = product.price
+    ? product.priceDisplay.match(/\d[\d,]*/)?.[0] ?? product.priceDisplay
+    : null;
+  const oldPrice = product.price
+    ? `${Math.round(product.price * 1.42).toLocaleString()} RWF`
+    : null;
 
   const goTo = (nextIndex: number) => {
     setDirection(nextIndex > current ? 1 : -1);
@@ -71,6 +75,7 @@ export default function PayweekHero({ products }: { products: Product[] }) {
   };
 
   const prev = () => goTo((current - 1 + heroProducts.length) % heroProducts.length);
+  const next = () => goTo((current + 1) % heroProducts.length);
 
   return (
     <section className="payweek-hero" aria-label="Pay week deals">
@@ -87,6 +92,9 @@ export default function PayweekHero({ products }: { products: Product[] }) {
         <button className="payweek-arrow payweek-arrow-left" onClick={prev} aria-label="Previous deal">
           <ChevronLeft size={24} />
         </button>
+        <button className="payweek-arrow payweek-arrow-right" onClick={next} aria-label="Next deal">
+          <ChevronRight size={24} />
+        </button>
 
         <div className="payweek-copy">
           <h1>
@@ -95,9 +103,17 @@ export default function PayweekHero({ products }: { products: Product[] }) {
           </h1>
           <h2>{product.name}</h2>
           <div className="payweek-price-pill">
-            <span>UGX</span>
-            <del>{oldPrice}</del>
-            <strong>{numericPrice}</strong>
+            {numericPrice ? (
+              <>
+                <span>RWF</span>
+                <del>{oldPrice}</del>
+                <strong>{numericPrice}</strong>
+              </>
+            ) : (
+              <strong style={{ fontSize: "1.05rem", letterSpacing: "0.01em" }}>
+                Ask for price
+              </strong>
+            )}
           </div>
           <p>{copy.accent}</p>
           <small>T&Cs Apply</small>
@@ -121,6 +137,7 @@ export default function PayweekHero({ products }: { products: Product[] }) {
                   src={product.image}
                   alt={product.name}
                   fill
+                  style={{ objectFit: "contain" }}
                   sizes="(max-width: 900px) 72vw, 330px"
                   priority
                   unoptimized
@@ -131,6 +148,7 @@ export default function PayweekHero({ products }: { products: Product[] }) {
                   src={secondaryProduct.image}
                   alt={secondaryProduct.name}
                   fill
+                  style={{ objectFit: "contain" }}
                   sizes="140px"
                   unoptimized
                 />
@@ -140,6 +158,7 @@ export default function PayweekHero({ products }: { products: Product[] }) {
                   src={tertiaryProduct.image}
                   alt={tertiaryProduct.name}
                   fill
+                  style={{ objectFit: "contain" }}
                   sizes="120px"
                   unoptimized
                 />
