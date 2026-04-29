@@ -106,33 +106,13 @@ export default function PayweekHero({ slides }: { slides: HeroSlide[] }) {
           >
             <div className="payweek-product-card payweek-product-main">
               <Image
-                src={slide.mainImage}
+                src={slide.image}
                 alt={slide.title}
                 fill
-                sizes="(max-width: 900px) 72vw, 330px"
+                sizes="(max-width: 900px) 72vw, 380px"
                 priority
                 unoptimized
               />
-            </div>
-            <div className="payweek-product-support">
-              <div className="payweek-product-card">
-                <Image
-                  src={slide.thumb1}
-                  alt={slide.title}
-                  fill
-                  sizes="92px"
-                  unoptimized
-                />
-              </div>
-              <div className="payweek-product-card">
-                <Image
-                  src={slide.thumb2}
-                  alt={slide.title}
-                  fill
-                  sizes="92px"
-                  unoptimized
-                />
-              </div>
             </div>
           </motion.div>
         </div>

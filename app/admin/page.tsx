@@ -309,7 +309,7 @@ export default function AdminPage() {
   function addHeroSlide() {
     setHeroSlides((prev) => [
       ...prev,
-      { mainImage: "", thumb1: "", thumb2: "", title: "New Slide", price: "0 RWF", oldPrice: "0 RWF", link: "/products", accent: "Limited time offer" },
+      { image: "", title: "New Slide", price: "0 RWF", oldPrice: "0 RWF", link: "/products", accent: "Limited time offer" },
     ]);
   }
 
@@ -1085,48 +1085,43 @@ export default function AdminPage() {
                         </button>
                       </div>
 
-                      {/* Image slots */}
-                      {(["mainImage", "thumb1", "thumb2"] as const).map((field) => {
-                        const labels = { mainImage: "Main Image (large centre)", thumb1: "Thumbnail 1 (small left)", thumb2: "Thumbnail 2 (small right)" };
-                        return (
-                          <div key={field} style={{ marginBottom: 14 }}>
-                            <label style={{ display: "block", fontWeight: 700, fontSize: 12, color: "#374151", marginBottom: 6 }}>
-                              <ImagePlus size={11} style={{ display: "inline", marginRight: 4 }} />
-                              {labels[field]}
+                      {/* Image slot */}
+                      <div style={{ marginBottom: 14 }}>
+                        <label style={{ display: "block", fontWeight: 700, fontSize: 12, color: "#374151", marginBottom: 6 }}>
+                          <ImagePlus size={11} style={{ display: "inline", marginRight: 4 }} />
+                          Slide Image
+                        </label>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          {slide.image && (
+                            <img
+                              src={slide.image}
+                              alt=""
+                              style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: "1.5px solid #e5e7eb", flexShrink: 0 }}
+                            />
+                          )}
+                          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
+                            <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#f8fafc", border: "1.5px dashed #cbd5e1", borderRadius: 8, padding: "9px 12px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#475569" }}>
+                              {isUploading("image") ? <Loader2 size={13} className="admin-spin" /> : <CloudUpload size={13} />}
+                              {isUploading("image") ? "Uploading…" : "Upload your designed image"}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                style={{ display: "none" }}
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) void uploadHeroImage(file, index, "image");
+                                }}
+                              />
                             </label>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              {slide[field] && (
-                                <img
-                                  src={slide[field]}
-                                  alt=""
-                                  style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 8, border: "1.5px solid #e5e7eb", flexShrink: 0 }}
-                                />
-                              )}
-                              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
-                                <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#f8fafc", border: "1.5px dashed #cbd5e1", borderRadius: 8, padding: "7px 10px", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#475569" }}>
-                                  {isUploading(field) ? <Loader2 size={12} className="admin-spin" /> : <CloudUpload size={12} />}
-                                  {isUploading(field) ? "Uploading…" : "Upload image"}
-                                  <input
-                                    type="file"
-                                    accept="image/*"
-                                    style={{ display: "none" }}
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0];
-                                      if (file) void uploadHeroImage(file, index, field);
-                                    }}
-                                  />
-                                </label>
-                                <input
-                                  value={slide[field]}
-                                  onChange={(e) => updateHeroSlide(index, field, e.target.value)}
-                                  placeholder="Or paste image URL"
-                                  style={{ border: "1.5px solid #e5e7eb", borderRadius: 8, padding: "7px 10px", fontSize: 12, outline: "none", width: "100%", boxSizing: "border-box" }}
-                                />
-                              </div>
-                            </div>
+                            <input
+                              value={slide.image}
+                              onChange={(e) => updateHeroSlide(index, "image", e.target.value)}
+                              placeholder="Or paste image URL"
+                              style={{ border: "1.5px solid #e5e7eb", borderRadius: 8, padding: "8px 10px", fontSize: 12, outline: "none", width: "100%", boxSizing: "border-box" }}
+                            />
                           </div>
-                        );
-                      })}
+                        </div>
+                      </div>
 
                       {/* Text fields */}
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 6 }}>
