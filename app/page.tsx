@@ -2,7 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
-import { categories, getFeaturedProducts, products } from "@/lib/products";
+import { categories, products as staticProducts, Product } from "@/lib/products";
+import { getDb } from "@/lib/mongodb";
+
+export const dynamic = "force-dynamic";
 
 const categoryLabels: Record<string, string> = {
   Kitchen: "Home & Kitchen",
@@ -15,10 +18,23 @@ const categoryLabels: Record<string, string> = {
   Accessories: "Tech Accessories",
 };
 
-export default function HomePage() {
-  const featured = getFeaturedProducts();
-  const lightningDeals = products.slice(0, 6);
-  const clearanceDeals = products.slice(6, 12);
+async function getMergedProducts(): Promise<Product[]> {
+  try {
+    const db = await getDb();
+    const docs = await db.collection("products").find({}).sort({ createdAt: -1 }).toArray();
+    const dbProducts = docs.map(({ _id, ...p }) => ({ ...p, id: _id.toString() })) as Product[];
+    const dbSlugs = new Set(dbProducts.map((p) => p.slug));
+    return [...dbProducts, ...staticProducts.filter((p) => !dbSlugs.has(p.slug))];
+  } catch {
+    return staticProducts;
+  }
+}
+
+export default async function HomePage() {
+  const allProducts = await getMergedProducts();
+  const featured = allProducts.filter((p) => p.featured);
+  const lightningDeals = allProducts.slice(0, 6);
+  const clearanceDeals = allProducts.slice(6, 12);
 
   return (
     <div className="temu-page">
@@ -31,7 +47,7 @@ export default function HomePage() {
           <div className="temu-mini-rail">
             {lightningDeals.map((product) => (
               <Link key={product.id} href={`/products/${product.slug}`} className="temu-mini-deal">
-                <Image src={product.image} alt={product.name} width={170} height={170} />
+                <Image src={product.image} alt={product.name} width={170} height={170} unoptimized />
                 <strong>{product.priceDisplay}</strong>
               </Link>
             ))}
@@ -46,7 +62,7 @@ export default function HomePage() {
           <div className="temu-mini-rail">
             {clearanceDeals.map((product) => (
               <Link key={product.id} href={`/products/${product.slug}`} className="temu-mini-deal">
-                <Image src={product.image} alt={product.name} width={170} height={170} />
+                <Image src={product.image} alt={product.name} width={170} height={170} unoptimized />
                 <strong>{product.priceDisplay}</strong>
               </Link>
             ))}
@@ -74,7 +90,7 @@ export default function HomePage() {
       </section>
 
       <section className="temu-product-grid">
-        {[...featured, ...products.filter((product) => !product.featured)].slice(0, 36).map((product) => (
+        {[...featured, ...allProducts.filter((product) => !product.featured)].slice(0, 36).map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </section>

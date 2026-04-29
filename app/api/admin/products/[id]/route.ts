@@ -1,0 +1,66 @@
+import { ObjectId } from "mongodb";
+import { NextRequest, NextResponse } from "next/server";
+import { getDb } from "@/lib/mongodb";
+
+export const runtime = "nodejs";
+
+function isAuthorized(request: NextRequest) {
+  const adminSecret = process.env.ADMIN_SECRET;
+  return Boolean(adminSecret && request.headers.get("x-admin-secret") === adminSecret);
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+
+  try {
+    const db = await getDb();
+    const result = await db.collection("products").deleteOne({ _id: new ObjectId(id) });
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ error: "Product not found." }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ error: "Failed to delete product." }, { status: 500 });
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const body = await request.json() as Record<string, unknown>;
+
+  const update: Record<string, unknown> = { updatedAt: new Date() };
+  if (body.name)         update.name         = String(body.name).trim();
+  if (body.priceDisplay) update.priceDisplay = String(body.priceDisplay).trim();
+  if (body.category)     update.category     = String(body.category).trim();
+  if (body.description)  update.description  = String(body.description).trim();
+  if (body.image)        update.image        = String(body.image).trim();
+  if (body.slug)         update.slug         = String(body.slug).trim();
+  if ("price" in body)   update.price        = body.price === null ? null : Number(body.price);
+  if ("inStock"  in body) update.inStock     = Boolean(body.inStock);
+  if ("featured" in body) update.featured    = Boolean(body.featured);
+
+  try {
+    const db = await getDb();
+    await db.collection("products").updateOne(
+      { _id: new ObjectId(id) },
+      { $set: update }
+    );
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ error: "Failed to update product." }, { status: 500 });
+  }
+}

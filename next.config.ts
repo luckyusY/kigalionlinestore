@@ -5,7 +5,12 @@ const nextConfig: NextConfig = {
     root: process.cwd(),
   },
   images: {
-    domains: [],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+    ],
     unoptimized: true,
   },
 };

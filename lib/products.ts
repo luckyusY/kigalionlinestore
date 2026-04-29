@@ -1,5 +1,5 @@
 export type Product = {
-  id: number;
+  id: number | string;
   slug: string;
   name: string;
   description: string;
@@ -342,4 +342,11 @@ export function getFeaturedProducts(): Product[] {
 export function getProductsByCategory(category: string): Product[] {
   if (category === "All") return products;
   return products.filter((p) => p.category === category);
+}
+
+export function numericId(id: number | string): number {
+  if (typeof id === "number") return id;
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (Math.imul(h, 31) + id.charCodeAt(i)) | 0;
+  return Math.abs(h) || 1;
 }

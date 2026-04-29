@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { categories, products } from "@/lib/products";
+import { categories, numericId, products as staticProducts, Product } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
 
 const categoryLabels: Record<string, string> = {
@@ -20,13 +20,21 @@ const categoryLabels: Record<string, string> = {
 function ProductsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [allProducts, setAllProducts] = useState<Product[]>(staticProducts);
+
+  useEffect(() => {
+    fetch("/api/products")
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data.products)) setAllProducts(data.products); })
+      .catch(() => {});
+  }, []);
 
   const selectedCategory = searchParams.get("category") || "All";
   const searchQuery = searchParams.get("search") || "";
   const sort = searchParams.get("sort") || "";
   const rating = searchParams.get("rating") || "";
 
-  const filtered = products
+  const filtered = allProducts
     .filter((product) => {
       const matchCat = selectedCategory === "All" || product.category === selectedCategory;
       const query = searchQuery.toLowerCase();
@@ -35,13 +43,18 @@ function ProductsContent() {
         product.name.toLowerCase().includes(query) ||
         product.description.toLowerCase().includes(query) ||
         product.category.toLowerCase().includes(query);
-      const matchRating = rating === "5" ? product.id % 3 !== 0 : true;
+      const matchRating = rating === "5" ? numericId(product.id) % 3 !== 0 : true;
       return matchCat && matchSearch && matchRating;
     })
     .sort((a, b) => {
-      if (sort === "new") return b.id - a.id;
-      if (sort === "best-selling") return (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || a.id - b.id;
-      return a.id - b.id;
+      if (sort === "new") {
+        if (typeof a.id === "string" && typeof b.id === "string") return 0;
+        if (typeof a.id === "string") return -1;
+        if (typeof b.id === "string") return 1;
+        return (b.id as number) - (a.id as number);
+      }
+      if (sort === "best-selling") return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
+      return 0;
     });
 
   function applyFilter(category: string, query: string) {

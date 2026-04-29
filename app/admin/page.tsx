@@ -12,6 +12,7 @@ import {
   Loader2,
   PackagePlus,
   ShieldCheck,
+  Trash2,
 } from "lucide-react";
 import { categories } from "@/lib/products";
 
@@ -154,6 +155,26 @@ export default function AdminPage() {
     setSettings({ ...defaultSettings, ...data.settings });
     setStatus("Loaded site settings from MongoDB.");
   }, [adminSecret, authHeaders]);
+
+  async function deleteProduct(id: string) {
+    if (!adminSecret) { setError("Enter the admin secret first."); return; }
+    if (!window.confirm("Delete this product permanently?")) return;
+
+    setError("");
+    const response = await fetch(`/api/admin/products/${id}`, {
+      method: "DELETE",
+      headers: authHeaders,
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError(data.error || "Failed to delete product.");
+      return;
+    }
+
+    setRecentProducts((prev) => prev.filter((p) => p.id !== id));
+    setStatus("Product deleted.");
+  }
 
   async function saveSettings(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -520,11 +541,19 @@ export default function AdminPage() {
                 recentProducts.map((product) => (
                   <div key={product.id} className="admin-product-row">
                     <img src={product.image} alt="" />
-                    <div>
+                    <div style={{ flex: 1 }}>
                       <strong>{product.name}</strong>
                       <span>{product.category} / {product.priceDisplay}</span>
                     </div>
-                    <CheckCircle size={16} color="#16a34a" />
+                    <CheckCircle size={16} color="#16a34a" style={{ flexShrink: 0 }} />
+                    <button
+                      type="button"
+                      onClick={() => void deleteProduct(product.id)}
+                      title="Delete product"
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: "#ef4444", flexShrink: 0 }}
+                    >
+                      <Trash2 size={15} />
+                    </button>
                   </div>
                 ))
               )}

@@ -3,11 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { MessageCircle, Star } from "lucide-react";
-import { Product } from "@/lib/products";
+import { numericId, Product } from "@/lib/products";
 
 function productStats(product: Product) {
-  const sold = 39 + ((product.id * 137) % 8300);
-  const reviews = 12 + ((product.id * 41) % 420);
+  const n = numericId(product.id);
+  const sold = 39 + ((n * 137) % 8300);
+  const reviews = 12 + ((n * 41) % 420);
   const oldPrice = product.price ? Math.round(product.price * 1.42) : null;
 
   return {

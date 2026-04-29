@@ -2,17 +2,44 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MessageCircle, Phone, Truck, ChevronRight, CheckCircle, Tag, ShieldCheck } from "lucide-react";
-import { getProductBySlug, products } from "@/lib/products";
+import { getProductBySlug, products as staticProducts, Product } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
 import { FadeIn, StaggerGrid, StaggerItem } from "@/components/FadeIn";
+import { getDb } from "@/lib/mongodb";
 
-export async function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
+export const dynamic = "force-dynamic";
+
+async function getProduct(slug: string): Promise<Product | undefined> {
+  const staticProduct = getProductBySlug(slug);
+  if (staticProduct) return staticProduct;
+
+  try {
+    const db = await getDb();
+    const doc = await db.collection("products").findOne({ slug });
+    if (doc) {
+      const { _id, ...rest } = doc;
+      return { ...rest, id: _id.toString() } as Product;
+    }
+  } catch {}
+
+  return undefined;
+}
+
+async function getMergedProducts(): Promise<Product[]> {
+  try {
+    const db = await getDb();
+    const docs = await db.collection("products").find({}).sort({ createdAt: -1 }).toArray();
+    const dbProducts = docs.map(({ _id, ...p }) => ({ ...p, id: _id.toString() })) as Product[];
+    const dbSlugs = new Set(dbProducts.map((p) => p.slug));
+    return [...dbProducts, ...staticProducts.filter((p) => !dbSlugs.has(p.slug))];
+  } catch {
+    return staticProducts;
+  }
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProduct(slug);
   if (!product) return {};
   return {
     title: `${product.name} | Kigali Online Store`,
@@ -37,11 +64,12 @@ export default async function ProductDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProduct(slug);
   if (!product) notFound();
 
-  const related = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
+  const allProducts = await getMergedProducts();
+  const related = allProducts
+    .filter((p) => p.category === product.category && p.slug !== product.slug)
     .slice(0, 4);
 
   const waMsg = encodeURIComponent(
@@ -81,6 +109,7 @@ export default async function ProductDetailPage({
                 src={product.image}
                 alt={product.name}
                 fill
+                unoptimized
                 style={{ objectFit: "cover" }}
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
@@ -115,9 +144,10 @@ export default async function ProductDetailPage({
               <div style={{ height: 1, background: "#f1f5f9", marginBottom: 16 }} />
 
               {/* Description */}
-              <p style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.8, marginBottom: 24 }}>
-                {product.description}
-              </p>
+              <div
+                style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.8, marginBottom: 24 }}
+                dangerouslySetInnerHTML={{ __html: product.description }}
+              />
 
               {/* CTAs */}
               <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
