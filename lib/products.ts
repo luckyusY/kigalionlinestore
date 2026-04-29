@@ -7,6 +7,7 @@ export type Product = {
   priceDisplay: string;
   category: string;
   image: string;
+  images?: string[];
   inStock: boolean;
   featured?: boolean;
 };

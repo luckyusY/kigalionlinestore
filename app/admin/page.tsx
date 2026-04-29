@@ -43,6 +43,7 @@ type FullProduct = {
   priceDisplay: string;
   category: string;
   image: string;
+  images?: string[];
   inStock: boolean;
   featured?: boolean;
 };
@@ -79,6 +80,10 @@ const defaultSettings: SiteSettings = {
 
 function slugify(v: string) {
   return v.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+function imageList(primary: string, images: string[]) {
+  return Array.from(new Set([primary, ...images].map((image) => image.trim()).filter(Boolean)));
 }
 
 type AdminTab = "manage" | "add" | "settings";
@@ -138,6 +143,7 @@ export default function AdminPage() {
   // Add product
   const [editorLoaded, setEditorLoaded] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -147,6 +153,7 @@ export default function AdminPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<FullProduct>>({});
   const [editImageUrl, setEditImageUrl] = useState("");
+  const [editImageUrls, setEditImageUrls] = useState<string[]>([]);
   const [savingEdit, setSavingEdit] = useState(false);
   const [uploadingEdit, setUploadingEdit] = useState(false);
   const [productSearch, setProductSearch] = useState("");
@@ -223,6 +230,21 @@ export default function AdminPage() {
     }
   }
 
+  async function uploadMany(files: FileList | null, onUploaded: (urls: string[]) => void) {
+    if (!files?.length) return;
+
+    const uploaded: string[] = [];
+    for (const file of Array.from(files)) {
+      const url = await doUpload(file);
+      if (url) uploaded.push(url);
+    }
+
+    if (uploaded.length > 0) {
+      onUploaded(uploaded);
+      setStatus(`${uploaded.length} image${uploaded.length === 1 ? "" : "s"} uploaded to Cloudinary.`);
+    }
+  }
+
   async function saveProduct(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
@@ -248,6 +270,7 @@ export default function AdminPage() {
           priceDisplay: String(fd.get("priceDisplay") ?? ""),
           category: String(fd.get("category") ?? ""),
           image: imageUrl || String(fd.get("image") ?? ""),
+          images: imageList(imageUrl || String(fd.get("image") ?? ""), imageUrls),
           inStock: fd.get("inStock") === "on",
           featured: fd.get("featured") === "on",
         }),
@@ -257,6 +280,7 @@ export default function AdminPage() {
       setStatus(`Saved "${data.product?.name}". Switch to All Products to see it.`);
       form.reset();
       setImageUrl("");
+      setImageUrls([]);
       window.tinymce?.get("admin-description")?.remove();
       setEditorLoaded(false);
       window.setTimeout(() => setEditorLoaded(Boolean(window.tinymce)), 0);
@@ -270,6 +294,7 @@ export default function AdminPage() {
   function startEdit(product: FullProduct) {
     setEditingId(String(product.id));
     setEditImageUrl(product.image);
+    setEditImageUrls(imageList(product.image, product.images ?? []));
     setEditForm({
       name: product.name,
       priceDisplay: product.priceDisplay,
@@ -287,7 +312,11 @@ export default function AdminPage() {
     setSavingEdit(true);
     setError("");
     const isStatic = typeof product.id === "number";
-    const payload = { ...editForm, image: editImageUrl || product.image };
+    const payload = {
+      ...editForm,
+      image: editImageUrl || product.image,
+      images: imageList(editImageUrl || product.image, editImageUrls),
+    };
 
     try {
       const r = isStatic
@@ -661,22 +690,55 @@ export default function AdminPage() {
                                 <textarea rows={4} value={editForm.description ?? ""} onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))} />
                               </div>
                               <div className="admin-field admin-field-full">
-                                <label><ImagePlus size={13} /> Image</label>
+                                <label><ImagePlus size={13} /> Product Images</label>
                                 <input
                                   type="file"
                                   accept="image/*"
+                                  multiple
                                   onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (!file) return;
                                     setUploadingEdit(true);
-                                    const url = await doUpload(file);
+                                    await uploadMany(e.target.files, (urls) => {
+                                      setEditImageUrl((current) => current || urls[0]);
+                                      setEditImageUrls((current) => imageList(editImageUrl || urls[0], [...current, ...urls]));
+                                    });
                                     setUploadingEdit(false);
-                                    if (url) { setEditImageUrl(url); setStatus("Image uploaded to Cloudinary."); }
                                   }}
                                 />
-                                <input value={editImageUrl} onChange={(e) => setEditImageUrl(e.target.value)} placeholder="Cloudinary URL or path" />
-                                {editImageUrl && <img src={editImageUrl} alt="Preview" className="admin-image-preview" />}
-                                {uploadingEdit && <p className="admin-hint"><Loader2 size={12} className="admin-spin" style={{ display: "inline" }} /> Uploading to Cloudinary…</p>}
+                                <input
+                                  value={editImageUrl}
+                                  onChange={(e) => {
+                                    setEditImageUrl(e.target.value);
+                                    setEditImageUrls((current) => imageList(e.target.value, current));
+                                  }}
+                                  placeholder="Main image URL or path"
+                                />
+                                <textarea
+                                  rows={3}
+                                  value={editImageUrls.join("\n")}
+                                  onChange={(e) => setEditImageUrls(e.target.value.split(/\r?\n/).map((image) => image.trim()).filter(Boolean))}
+                                  placeholder="Extra image URLs, one per line"
+                                />
+                                {editImageUrls.length > 0 && (
+                                  <div className="admin-gallery-preview">
+                                    {editImageUrls.map((url) => (
+                                      <div key={url} className="admin-gallery-thumb">
+                                        <img src={url} alt="" />
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const remaining = editImageUrls.filter((image) => image !== url);
+                                            setEditImageUrls(remaining);
+                                            if (editImageUrl === url) setEditImageUrl(remaining[0] || "");
+                                          }}
+                                          aria-label="Remove image"
+                                        >
+                                          <X size={13} />
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                {uploadingEdit && <p className="admin-hint"><Loader2 size={12} className="admin-spin" style={{ display: "inline" }} /> Uploading to Cloudinary...</p>}
                               </div>
                               <div className="admin-checks admin-field-full">
                                 <label>
@@ -748,23 +810,58 @@ export default function AdminPage() {
               {!canUseEditor && <p className="admin-hint">TinyMCE key missing — plain textarea shown.</p>}
             </div>
             <div className="admin-field admin-field-full">
-              <label><ImagePlus size={14} /> Product Image</label>
+              <label><ImagePlus size={14} /> Product Images</label>
               <input
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
                   setUploading(true);
-                  doUpload(file).then((url) => {
+                  uploadMany(e.target.files, (urls) => {
+                    setImageUrl((current) => current || urls[0]);
+                    setImageUrls((current) => imageList(imageUrl || urls[0], [...current, ...urls]));
+                  }).then(() => {
                     setUploading(false);
-                    if (url) { setImageUrl(url); setStatus("Image uploaded to Cloudinary."); }
                   }).catch(() => setUploading(false));
                 }}
               />
-              <input name="image" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="Cloudinary URL or existing image path" required />
-              {imageUrl && <img src={imageUrl} alt="Preview" className="admin-image-preview" />}
-              {uploading && <p className="admin-hint"><Loader2 size={12} className="admin-spin" style={{ display: "inline" }} /> Uploading to Cloudinary…</p>}
+              <input
+                name="image"
+                value={imageUrl}
+                onChange={(e) => {
+                  setImageUrl(e.target.value);
+                  setImageUrls((current) => imageList(e.target.value, current));
+                }}
+                placeholder="Main image URL or existing image path"
+                required
+              />
+              <textarea
+                rows={3}
+                value={imageUrls.join("\n")}
+                onChange={(e) => setImageUrls(e.target.value.split(/\r?\n/).map((image) => image.trim()).filter(Boolean))}
+                placeholder="Extra image URLs, one per line"
+              />
+              {imageUrls.length > 0 && (
+                <div className="admin-gallery-preview">
+                  {imageUrls.map((url) => (
+                    <div key={url} className="admin-gallery-thumb">
+                      <img src={url} alt="" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const remaining = imageUrls.filter((image) => image !== url);
+                          setImageUrls(remaining);
+                          if (imageUrl === url) setImageUrl(remaining[0] || "");
+                        }}
+                        aria-label="Remove image"
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {uploading && <p className="admin-hint"><Loader2 size={12} className="admin-spin" style={{ display: "inline" }} /> Uploading to Cloudinary...</p>}
             </div>
             <div className="admin-checks admin-field-full">
               <label><input name="inStock" type="checkbox" defaultChecked /> In Stock</label>

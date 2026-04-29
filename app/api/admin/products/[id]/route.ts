@@ -40,6 +40,11 @@ export async function PUT(
   if (body.category)     update.category     = String(body.category).trim();
   if (body.description)  update.description  = String(body.description).trim();
   if (body.image)        update.image        = String(body.image).trim();
+  if (Array.isArray(body.images)) {
+    update.images = Array.from(
+      new Set(body.images.map((image) => String(image).trim()).filter(Boolean))
+    );
+  }
   if (body.slug)         update.slug         = String(body.slug).trim();
   if ("price" in body)   update.price        = body.price === null ? null : Number(body.price);
   if ("inStock"  in body) update.inStock     = Boolean(body.inStock);

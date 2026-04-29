@@ -10,9 +10,6 @@ import { getDb } from "@/lib/mongodb";
 export const dynamic = "force-dynamic";
 
 async function getProduct(slug: string): Promise<Product | undefined> {
-  const staticProduct = getProductBySlug(slug);
-  if (staticProduct) return staticProduct;
-
   try {
     const db = await getDb();
     const doc = await db.collection("products").findOne({ slug });
@@ -22,7 +19,7 @@ async function getProduct(slug: string): Promise<Product | undefined> {
     }
   } catch {}
 
-  return undefined;
+  return getProductBySlug(slug);
 }
 
 async function getMergedProducts(): Promise<Product[]> {
@@ -77,6 +74,7 @@ export default async function ProductDetailPage({
   );
 
   const catStyle = categoryColors[product.category] ?? { bg: "#f3f4f6", text: "#374151" };
+  const galleryImages = Array.from(new Set([product.image, ...(product.images ?? [])].filter(Boolean)));
 
   return (
     <div style={{ background: "#f8fafc", minHeight: "60vh" }}>
@@ -195,6 +193,28 @@ export default async function ProductDetailPage({
             </div>
           </div>
         </FadeIn>
+
+        {galleryImages.length > 1 && (
+          <section className="product-gallery-section">
+            <FadeIn>
+              <div className="section-label" style={{ display: "inline-flex" }}>Product photos</div>
+              <div className="product-gallery-grid">
+                {galleryImages.map((image, index) => (
+                  <div key={image} className="product-gallery-tile">
+                    <Image
+                      src={image}
+                      alt={`${product.name} photo ${index + 1}`}
+                      fill
+                      unoptimized
+                      style={{ objectFit: "cover" }}
+                      sizes="(max-width: 768px) 50vw, 220px"
+                    />
+                  </div>
+                ))}
+              </div>
+            </FadeIn>
+          </section>
+        )}
 
         {/* ── Related ── */}
         {related.length > 0 && (

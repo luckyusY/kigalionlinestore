@@ -12,6 +12,7 @@ type ProductPayload = {
   priceDisplay?: string;
   category?: string;
   image?: string;
+  images?: string[];
   inStock?: boolean;
   featured?: boolean;
 };
@@ -51,7 +52,10 @@ export async function POST(request: NextRequest) {
   const description = body.description?.trim();
   const category = body.category?.trim();
   const priceDisplay = body.priceDisplay?.trim();
-  const image = body.image?.trim();
+  const images = Array.isArray(body.images)
+    ? Array.from(new Set(body.images.map((image) => image.trim()).filter(Boolean)))
+    : [];
+  const image = body.image?.trim() || images[0];
 
   if (!name || !description || !category || !priceDisplay || !image) {
     return NextResponse.json(
@@ -72,6 +76,7 @@ export async function POST(request: NextRequest) {
     price: typeof body.price === "number" ? body.price : null,
     priceDisplay,
     image,
+    images: Array.from(new Set([image, ...images])),
     inStock: body.inStock !== false,
     featured: Boolean(body.featured),
     updatedAt: now,
