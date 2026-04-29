@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { MessageCircle, ShoppingCart, Star } from "lucide-react";
+import { MessageCircle, Star } from "lucide-react";
 import { Product } from "@/lib/products";
 
 function productStats(product: Product) {
@@ -18,7 +18,9 @@ function productStats(product: Product) {
 }
 
 export default function ProductCard({ product }: { product: Product }) {
-  const waMsg = encodeURIComponent(`Hi! I'd like to order: ${product.name} (${product.priceDisplay})`);
+  const waMsg = encodeURIComponent(
+    `Hi! I'd like to order: ${product.name}\nPrice: ${product.priceDisplay}\nDescription: ${product.description}\nPlease confirm availability and delivery.`
+  );
   const stats = productStats(product);
 
   return (
@@ -58,20 +60,20 @@ export default function ProductCard({ product }: { product: Product }) {
 
         <div className="temu-sold-row">
           <span>{stats.sold} sold</span>
-          <a
-            href={`https://wa.me/250784734956?text=${waMsg}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Order ${product.name} on WhatsApp`}
-          >
-            <MessageCircle size={13} />
-          </a>
-          <Link href={`/products/${product.slug}`} aria-label={`View ${product.name}`}>
-            <ShoppingCart size={14} />
-          </Link>
         </div>
 
         <div className="temu-delivery">Fastest delivery: 1 business day</div>
+
+        <a
+          href={`https://wa.me/250784734956?text=${waMsg}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="temu-order-button"
+          aria-label={`Order ${product.name} on WhatsApp`}
+        >
+          <MessageCircle size={15} />
+          Order on WhatsApp
+        </a>
       </div>
     </article>
   );

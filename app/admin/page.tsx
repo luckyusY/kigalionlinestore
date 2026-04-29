@@ -34,6 +34,18 @@ type AdminProduct = {
   createdAt?: string;
 };
 
+type SiteSettings = {
+  storeName: string;
+  phone: string;
+  whatsapp: string;
+  deliveryText: string;
+  announcement: string;
+  supportText: string;
+  tiktok: string;
+  instagram: string;
+  facebook: string;
+};
+
 declare global {
   interface Window {
     tinymce?: TinyMCE;
@@ -41,6 +53,18 @@ declare global {
 }
 
 const adminCategories = categories.filter((category) => category !== "All");
+
+const defaultSettings: SiteSettings = {
+  storeName: "Kigali Online Store",
+  phone: "0784 734 956",
+  whatsapp: "250784734956",
+  deliveryText: "Fast Kigali delivery",
+  announcement: "Free shipping on selected products",
+  supportText: "WhatsApp Orders",
+  tiktok: "https://www.tiktok.com/@kigalionlinestore",
+  instagram: "https://www.instagram.com/kigali_online_store/",
+  facebook: "https://web.facebook.com/kigalionlinestore/",
+};
 
 function slugify(value: string) {
   return value
@@ -61,6 +85,8 @@ export default function AdminPage() {
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const [recentProducts, setRecentProducts] = useState<AdminProduct[]>([]);
+  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
+  const [savingSettings, setSavingSettings] = useState(false);
 
   const tinymceApiKey = process.env.NEXT_PUBLIC_TINYMCE_API_KEY || "no-api-key";
   const canUseEditor = tinymceApiKey !== "no-api-key";
@@ -110,6 +136,60 @@ export default function AdminPage() {
 
     setRecentProducts(data.products || []);
   }, [adminSecret, authHeaders]);
+
+  const loadSettings = useCallback(async () => {
+    if (!adminSecret) return;
+
+    setError("");
+    const response = await fetch("/api/admin/settings", {
+      headers: authHeaders,
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError(data.error || "Could not load site settings.");
+      return;
+    }
+
+    setSettings({ ...defaultSettings, ...data.settings });
+    setStatus("Loaded site settings from MongoDB.");
+  }, [adminSecret, authHeaders]);
+
+  async function saveSettings(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!adminSecret) {
+      setError("Enter the admin secret before saving settings.");
+      return;
+    }
+
+    window.localStorage.setItem("kigali-admin-secret", adminSecret);
+    setSavingSettings(true);
+    setError("");
+    setStatus("");
+
+    const formData = new FormData(event.currentTarget);
+    const payload = Object.fromEntries(formData.entries());
+
+    const response = await fetch("/api/admin/settings", {
+      method: "PUT",
+      headers: {
+        ...authHeaders,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    setSavingSettings(false);
+
+    if (!response.ok) {
+      setError(data.error || "Could not save site settings.");
+      return;
+    }
+
+    setSettings({ ...defaultSettings, ...data.settings });
+    setStatus("Saved site settings to MongoDB.");
+  }
 
   async function uploadImage(file: File) {
     if (!adminSecret) {
@@ -219,16 +299,25 @@ export default function AdminPage() {
               Product Admin Panel
             </h1>
             <p style={{ color: "#64748b", fontSize: 14, marginTop: 6 }}>
-              Add store products, upload product images, and save listings to MongoDB.
+              Add products, upload product images, and manage core site settings.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={loadRecentProducts}
-            style={{ background: "#111827", color: "#fff", border: "none", borderRadius: 12, padding: "12px 18px", fontWeight: 800, cursor: "pointer" }}
-          >
-            Load Recent Products
-          </button>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={loadSettings}
+              style={{ background: "#0f766e", color: "#fff", border: "none", borderRadius: 12, padding: "12px 18px", fontWeight: 800, cursor: "pointer" }}
+            >
+              Load Site Settings
+            </button>
+            <button
+              type="button"
+              onClick={loadRecentProducts}
+              style={{ background: "#111827", color: "#fff", border: "none", borderRadius: 12, padding: "12px 18px", fontWeight: 800, cursor: "pointer" }}
+            >
+              Load Recent Products
+            </button>
+          </div>
         </div>
 
         <div className="admin-grid">
@@ -337,6 +426,90 @@ export default function AdminPage() {
             </button>
           </form>
 
+          <div className="admin-side-stack">
+            <form onSubmit={saveSettings} className="admin-panel-card admin-settings">
+              <h2>Site Settings</h2>
+              <p>Save storefront text, contact info, and social links to MongoDB.</p>
+
+              <div className="admin-field admin-field-full">
+                <label>Store Name</label>
+                <input
+                  name="storeName"
+                  value={settings.storeName}
+                  onChange={(event) => setSettings((current) => ({ ...current, storeName: event.target.value }))}
+                />
+              </div>
+              <div className="admin-field">
+                <label>Phone</label>
+                <input
+                  name="phone"
+                  value={settings.phone}
+                  onChange={(event) => setSettings((current) => ({ ...current, phone: event.target.value }))}
+                />
+              </div>
+              <div className="admin-field">
+                <label>WhatsApp Number</label>
+                <input
+                  name="whatsapp"
+                  value={settings.whatsapp}
+                  onChange={(event) => setSettings((current) => ({ ...current, whatsapp: event.target.value }))}
+                />
+              </div>
+              <div className="admin-field admin-field-full">
+                <label>Announcement</label>
+                <input
+                  name="announcement"
+                  value={settings.announcement}
+                  onChange={(event) => setSettings((current) => ({ ...current, announcement: event.target.value }))}
+                />
+              </div>
+              <div className="admin-field admin-field-full">
+                <label>Delivery Text</label>
+                <input
+                  name="deliveryText"
+                  value={settings.deliveryText}
+                  onChange={(event) => setSettings((current) => ({ ...current, deliveryText: event.target.value }))}
+                />
+              </div>
+              <div className="admin-field admin-field-full">
+                <label>Support Text</label>
+                <input
+                  name="supportText"
+                  value={settings.supportText}
+                  onChange={(event) => setSettings((current) => ({ ...current, supportText: event.target.value }))}
+                />
+              </div>
+              <div className="admin-field admin-field-full">
+                <label>TikTok</label>
+                <input
+                  name="tiktok"
+                  value={settings.tiktok}
+                  onChange={(event) => setSettings((current) => ({ ...current, tiktok: event.target.value }))}
+                />
+              </div>
+              <div className="admin-field admin-field-full">
+                <label>Instagram</label>
+                <input
+                  name="instagram"
+                  value={settings.instagram}
+                  onChange={(event) => setSettings((current) => ({ ...current, instagram: event.target.value }))}
+                />
+              </div>
+              <div className="admin-field admin-field-full">
+                <label>Facebook</label>
+                <input
+                  name="facebook"
+                  value={settings.facebook}
+                  onChange={(event) => setSettings((current) => ({ ...current, facebook: event.target.value }))}
+                />
+              </div>
+
+              <button type="submit" className="admin-submit" disabled={savingSettings}>
+                {savingSettings ? <Loader2 size={17} className="admin-spin" /> : <ShieldCheck size={17} />}
+                {savingSettings ? "Saving Settings..." : "Save Site Settings"}
+              </button>
+            </form>
+
           <aside className="admin-panel-card admin-recent">
             <h2>Recent MongoDB Products</h2>
             <p>Products created through this panel will appear here after loading.</p>
@@ -357,6 +530,7 @@ export default function AdminPage() {
               )}
             </div>
           </aside>
+          </div>
         </div>
       </div>
     </div>

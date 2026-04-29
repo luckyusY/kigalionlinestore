@@ -16,7 +16,6 @@ import {
   PackageCheck,
   Search,
   ShieldCheck,
-  ShoppingCart,
   Star,
   ThumbsUp,
   Truck,
@@ -137,9 +136,6 @@ export default function Header() {
           <Link href="/contact">
             <Globe2 size={24} />
             <span>English</span>
-          </Link>
-          <Link href="/products" aria-label="Cart">
-            <ShoppingCart size={31} />
           </Link>
         </div>
 
