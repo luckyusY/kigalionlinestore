@@ -4,37 +4,37 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
-  Baby,
   ChevronLeft,
   ChevronRight,
-  Gamepad2,
+  Dumbbell,
   HeartPulse,
   Home,
   Laptop,
   MessageCircle,
-  PackageCheck,
-  Shirt,
   ShoppingBasket,
-  Smartphone,
+  Sprout,
   Store,
-  Tv,
+  Utensils,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { Product } from "@/lib/products";
+import { categories, type Product } from "@/lib/products";
 
-const heroCategories = [
-  { label: "Official stores", Icon: Store, href: "/products" },
-  { label: "Phones & Tablets", Icon: Smartphone, href: "/products?category=Accessories" },
-  { label: "Electronics", Icon: Tv, href: "/products?category=Office" },
-  { label: "Appliances", Icon: PackageCheck, href: "/products?category=Home" },
-  { label: "Home", Icon: Home, href: "/products?category=Home" },
-  { label: "Fashion", Icon: Shirt, href: "/products?category=Clothing" },
-  { label: "Computing", Icon: Laptop, href: "/products?category=Office" },
-  { label: "Health & Beauty", Icon: HeartPulse, href: "/products?category=Bathroom" },
-  { label: "Supermarket", Icon: ShoppingBasket, href: "/products?category=Kitchen" },
-  { label: "Gaming", Icon: Gamepad2, href: "/products?category=Accessories" },
-  { label: "Baby Products", Icon: Baby, href: "/products" },
-];
+const categoryMeta = {
+  Kitchen: { label: "Kitchen", Icon: Utensils },
+  Bathroom: { label: "Bathroom", Icon: HeartPulse },
+  Home: { label: "Home", Icon: Home },
+  Fitness: { label: "Fitness", Icon: Dumbbell },
+  Office: { label: "Office", Icon: Laptop },
+  Garden: { label: "Garden", Icon: Sprout },
+  Accessories: { label: "Accessories", Icon: ShoppingBasket },
+} as const;
+
+const heroCategories = categories
+  .filter((category) => category !== "All" && category !== "Clothing")
+  .map((category) => ({
+    category,
+    ...(categoryMeta[category as keyof typeof categoryMeta] || { label: category, Icon: Store }),
+  }));
 
 const copyModes = [
   { kicker: "Pay", mark: "WEEK", title: "Deals!", accent: "Limited time offer" },
@@ -59,6 +59,8 @@ export default function PayweekHero({ products }: { products: Product[] }) {
   if (!heroProducts.length) return null;
 
   const product = heroProducts[current];
+  const secondaryProduct = heroProducts[(current + 1) % heroProducts.length] || product;
+  const tertiaryProduct = heroProducts[(current + 2) % heroProducts.length] || product;
   const copy = copyModes[current % copyModes.length];
   const numericPrice = product.priceDisplay.match(/\d[\d,]*/)?.[0] ?? product.priceDisplay;
   const oldPrice = product.price ? `${Math.round(product.price * 1.42).toLocaleString()} RWF` : "Ask for quote";
@@ -73,8 +75,8 @@ export default function PayweekHero({ products }: { products: Product[] }) {
   return (
     <section className="payweek-hero" aria-label="Pay week deals">
       <aside className="payweek-categories" aria-label="Featured categories">
-        {heroCategories.map(({ label, Icon, href }) => (
-          <Link key={label} href={href}>
+        {heroCategories.map(({ category, label, Icon }) => (
+          <Link key={category} href={`/products?category=${encodeURIComponent(category)}`}>
             <Icon size={18} />
             <span>{label}</span>
           </Link>
@@ -87,44 +89,61 @@ export default function PayweekHero({ products }: { products: Product[] }) {
         </button>
 
         <div className="payweek-copy">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`copy-${current}`}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.32, ease: "easeOut" }}
-            >
-              <h1>
-                {copy.kicker} <mark>{copy.mark}</mark>
-                <span>{copy.title}</span>
-              </h1>
-              <h2>{product.name}</h2>
-              <div className="payweek-price-pill">
-                <span>UGX</span>
-                <del>{oldPrice}</del>
-                <strong>{numericPrice}</strong>
-              </div>
-              <p>{copy.accent}</p>
-              <small>T&Cs Apply</small>
-            </motion.div>
-          </AnimatePresence>
+          <h1>
+            {copy.kicker} <mark>{copy.mark}</mark>
+            <span>{copy.title}</span>
+          </h1>
+          <h2>{product.name}</h2>
+          <div className="payweek-price-pill">
+            <span>UGX</span>
+            <del>{oldPrice}</del>
+            <strong>{numericPrice}</strong>
+          </div>
+          <p>{copy.accent}</p>
+          <small>T&Cs Apply</small>
         </div>
 
         <div className="payweek-product-zone">
           <div className="payweek-rays" />
           <div className="payweek-pedestal" />
-          <AnimatePresence mode="popLayout" custom={direction}>
+          <AnimatePresence mode="popLayout" custom={direction} initial={false}>
             <motion.div
               key={product.id}
-              className="payweek-product"
+              className="payweek-product-graphic"
               custom={direction}
-              initial={{ opacity: 0, x: direction * 90, scale: 0.92, rotate: direction * 2 }}
-              animate={{ opacity: 1, x: 0, scale: 1, rotate: 0 }}
-              exit={{ opacity: 0, x: direction * -80, scale: 0.94, rotate: direction * -2 }}
+              initial={{ opacity: 0, x: direction * 105, scale: 0.94 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: direction * -90, scale: 0.95 }}
               transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1] }}
             >
-              <Image src={product.image} alt={product.name} fill sizes="(max-width: 900px) 45vw, 360px" unoptimized />
+              <div className="payweek-product-card payweek-product-main">
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  fill
+                  sizes="(max-width: 900px) 72vw, 330px"
+                  priority
+                  unoptimized
+                />
+              </div>
+              <div className="payweek-product-card payweek-product-secondary">
+                <Image
+                  src={secondaryProduct.image}
+                  alt={secondaryProduct.name}
+                  fill
+                  sizes="140px"
+                  unoptimized
+                />
+              </div>
+              <div className="payweek-product-card payweek-product-tertiary">
+                <Image
+                  src={tertiaryProduct.image}
+                  alt={tertiaryProduct.name}
+                  fill
+                  sizes="120px"
+                  unoptimized
+                />
+              </div>
             </motion.div>
           </AnimatePresence>
         </div>
