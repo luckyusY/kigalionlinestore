@@ -85,7 +85,6 @@ export default function PayweekHero({ slides }: { slides: HeroSlide[] }) {
           </h1>
           <h2>{slide.title}</h2>
           <div className="payweek-price-pill">
-            <span>RWF</span>
             <del>{slide.oldPrice}</del>
             <strong>{slide.price}</strong>
           </div>

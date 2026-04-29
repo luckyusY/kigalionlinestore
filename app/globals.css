@@ -854,10 +854,11 @@ html.lenis, html.lenis body { height: auto; }
 }
 .payweek-price-pill {
   min-height: 50px;
-  width: min(296px, 100%);
+  width: fit-content;
+  max-width: 100%;
   display: flex;
   align-items: center;
-  gap: 13px;
+  gap: 10px;
   padding: 6px 22px;
   border-radius: 999px;
   background: #ff9900;
