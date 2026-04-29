@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
   const now = new Date();
   const slug = slugify(body.slug || name);
 
-  const product = {
+  const fields = {
     name,
     slug,
     description,
@@ -82,16 +82,22 @@ export async function POST(request: NextRequest) {
     image,
     inStock: body.inStock !== false,
     featured: Boolean(body.featured),
-    createdAt: now,
     updatedAt: now,
   };
 
-  const result = await db.collection("products").insertOne(product);
+  // Upsert by slug so editing a static product creates an override without duplicates
+  const result = await db.collection("products").findOneAndUpdate(
+    { slug },
+    { $set: fields, $setOnInsert: { createdAt: now } },
+    { upsert: true, returnDocument: "after" }
+  );
+
+  const saved = result ?? fields;
 
   return NextResponse.json({
     product: {
-      ...product,
-      id: result.insertedId.toString(),
+      ...saved,
+      id: "_id" in saved ? (saved._id as { toString(): string }).toString() : slug,
     },
   });
 }
