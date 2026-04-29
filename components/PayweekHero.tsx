@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { categories, type Product } from "@/lib/products";
+import { heroSlides, slideCopy } from "@/lib/hero-slides";
 
 const categoryMeta = {
   Kitchen: { label: "Kitchen", Icon: Utensils },
@@ -36,39 +37,30 @@ const heroCategories = categories
     ...(categoryMeta[category as keyof typeof categoryMeta] || { label: category, Icon: Store }),
   }));
 
-const copyModes = [
-  { kicker: "Pay", mark: "WEEK", title: "Deals!", accent: "Limited time offer" },
-  { kicker: "TOP", mark: "RATED", title: "Best Prices. Best Brands.", accent: "Customer favorites" },
-  { kicker: "BUY 2", mark: "SAVE", title: "Enjoy checkout deals", accent: "Limited time offer" },
-];
-
-export default function PayweekHero({ products }: { products: Product[] }) {
-  const heroProducts = useMemo(() => products.filter((product) => product.image).slice(0, 8), [products]);
+export default function PayweekHero({ products: _products }: { products: Product[] }) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
 
   useEffect(() => {
-    if (heroProducts.length < 2) return;
+    if (heroSlides.length < 2) return;
     const timer = window.setInterval(() => {
       setDirection(1);
-      setCurrent((index) => (index + 1) % heroProducts.length);
+      setCurrent((index) => (index + 1) % heroSlides.length);
     }, 4800);
     return () => window.clearInterval(timer);
-  }, [heroProducts.length]);
+  }, []);
 
-  if (!heroProducts.length) return null;
+  if (!heroSlides.length) return null;
 
-  const product = heroProducts[current];
-  const copy = copyModes[current % copyModes.length];
-  const numericPrice = product.priceDisplay.match(/\d[\d,]*/)?.[0] ?? product.priceDisplay;
-  const oldPrice = product.price ? `${Math.round(product.price * 1.42).toLocaleString()} RWF` : "Ask for quote";
+  const slide = heroSlides[current];
+  const copy = slideCopy(current);
 
   const goTo = (nextIndex: number) => {
     setDirection(nextIndex > current ? 1 : -1);
     setCurrent(nextIndex);
   };
 
-  const prev = () => goTo((current - 1 + heroProducts.length) % heroProducts.length);
+  const prev = () => goTo((current - 1 + heroSlides.length) % heroSlides.length);
 
   return (
     <section className="payweek-hero" aria-label="Pay week deals">
@@ -91,13 +83,13 @@ export default function PayweekHero({ products }: { products: Product[] }) {
             {copy.kicker} <mark>{copy.mark}</mark>
             <span>{copy.title}</span>
           </h1>
-          <h2>{product.name}</h2>
+          <h2>{slide.title}</h2>
           <div className="payweek-price-pill">
-            <span>UGX</span>
-            <del>{oldPrice}</del>
-            <strong>{numericPrice}</strong>
+            <span>RWF</span>
+            <del>{slide.oldPrice}</del>
+            <strong>{slide.price}</strong>
           </div>
-          <p>{copy.accent}</p>
+          <p>{slide.accent}</p>
           <small>T&Cs Apply</small>
         </div>
 
@@ -105,7 +97,7 @@ export default function PayweekHero({ products }: { products: Product[] }) {
           <div className="payweek-rays" />
           <div className="payweek-pedestal" />
           <motion.div
-            key={product.id}
+            key={current}
             className="payweek-product-graphic"
             custom={direction}
             initial={{ opacity: 0, x: direction * 90, scale: 0.96 }}
@@ -114,8 +106,8 @@ export default function PayweekHero({ products }: { products: Product[] }) {
           >
             <div className="payweek-product-card payweek-product-main">
               <Image
-                src={product.image}
-                alt={product.name}
+                src={slide.image}
+                alt={slide.title}
                 fill
                 sizes="(max-width: 900px) 72vw, 330px"
                 priority
@@ -125,8 +117,8 @@ export default function PayweekHero({ products }: { products: Product[] }) {
             <div className="payweek-product-support">
               <div className="payweek-product-card">
                 <Image
-                  src={product.image}
-                  alt={product.name}
+                  src={slide.thumbs[0]}
+                  alt={slide.title}
                   fill
                   sizes="92px"
                   unoptimized
@@ -134,8 +126,8 @@ export default function PayweekHero({ products }: { products: Product[] }) {
               </div>
               <div className="payweek-product-card">
                 <Image
-                  src={product.image}
-                  alt={product.name}
+                  src={slide.thumbs[1]}
+                  alt={slide.title}
                   fill
                   sizes="92px"
                   unoptimized
@@ -146,17 +138,17 @@ export default function PayweekHero({ products }: { products: Product[] }) {
         </div>
 
         <div className="payweek-dots" aria-label="Deal slides">
-          {heroProducts.map((item, index) => (
+          {heroSlides.map((_, index) => (
             <button
-              key={item.id}
+              key={index}
               className={index === current ? "active" : ""}
               onClick={() => goTo(index)}
-              aria-label={`Show ${item.name}`}
+              aria-label={`Show slide ${index + 1}`}
             />
           ))}
         </div>
 
-        <Link href={`/products/${product.slug}`} className="payweek-shop">
+        <Link href={slide.link} className="payweek-shop">
           SHOP NOW <ChevronRight size={13} />
         </Link>
       </div>
