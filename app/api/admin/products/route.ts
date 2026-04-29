@@ -17,6 +17,12 @@ type ProductPayload = {
   featured?: boolean;
 };
 
+function formatRwfPrice(price: number | null) {
+  return typeof price === "number" && Number.isFinite(price)
+    ? `${price.toLocaleString("en-US")} RWF`
+    : "Contact for price";
+}
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -51,7 +57,8 @@ export async function POST(request: NextRequest) {
   const name = body.name?.trim();
   const description = body.description?.trim();
   const category = body.category?.trim();
-  const priceDisplay = body.priceDisplay?.trim();
+  const price = typeof body.price === "number" && Number.isFinite(body.price) ? body.price : null;
+  const priceDisplay = body.priceDisplay?.trim() || formatRwfPrice(price);
   const images = Array.isArray(body.images)
     ? Array.from(new Set(body.images.map((image) => image.trim()).filter(Boolean)))
     : [];
@@ -73,7 +80,7 @@ export async function POST(request: NextRequest) {
     slug,
     description,
     category,
-    price: typeof body.price === "number" ? body.price : null,
+    price,
     priceDisplay,
     image,
     images: Array.from(new Set([image, ...images])),

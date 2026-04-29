@@ -5,6 +5,12 @@ import { adminUnauthorized, verifyAdminSession } from "@/lib/admin-auth";
 
 export const runtime = "nodejs";
 
+function formatRwfPrice(price: number | null) {
+  return typeof price === "number" && Number.isFinite(price)
+    ? `${price.toLocaleString("en-US")} RWF`
+    : "Contact for price";
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -46,7 +52,11 @@ export async function PUT(
     );
   }
   if (body.slug)         update.slug         = String(body.slug).trim();
-  if ("price" in body)   update.price        = body.price === null ? null : Number(body.price);
+  if ("price" in body) {
+    const price = body.price === null ? null : Number(body.price);
+    update.price = Number.isFinite(price) ? price : null;
+    if (!body.priceDisplay) update.priceDisplay = formatRwfPrice(update.price as number | null);
+  }
   if ("inStock"  in body) update.inStock     = Boolean(body.inStock);
   if ("featured" in body) update.featured    = Boolean(body.featured);
 

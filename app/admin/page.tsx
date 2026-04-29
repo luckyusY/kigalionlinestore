@@ -86,6 +86,12 @@ function imageList(primary: string, images: string[]) {
   return Array.from(new Set([primary, ...images].map((image) => image.trim()).filter(Boolean)));
 }
 
+function formatRwfPrice(price: number | null | undefined) {
+  return typeof price === "number" && Number.isFinite(price)
+    ? `${price.toLocaleString("en-US")} RWF`
+    : "Contact for price";
+}
+
 type AdminTab = "manage" | "add" | "settings";
 
 export default function AdminPage() {
@@ -150,6 +156,7 @@ export default function AdminPage() {
   // Manage products
   const [allProducts, setAllProducts] = useState<FullProduct[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
+  const [importingStatic, setImportingStatic] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<FullProduct>>({});
   const [editImageUrl, setEditImageUrl] = useState("");
@@ -182,6 +189,22 @@ export default function AdminPage() {
     });
     return () => { window.tinymce?.get("admin-description")?.remove(); };
   }, [editorLoaded]);
+
+  useEffect(() => {
+    if (!editorLoaded || !editingId || !window.tinymce?.init || window.tinymce.get("admin-edit-description")) return;
+
+    void window.tinymce.init({
+      selector: "#admin-edit-description",
+      height: 240,
+      menubar: false,
+      branding: false,
+      plugins: "lists link table code wordcount",
+      toolbar: "undo redo | blocks | bold italic underline | bullist numlist | link table | removeformat code",
+      content_style: "body { font-family: Inter, Arial, sans-serif; font-size: 14px; color: #111827; }",
+    });
+
+    return () => { window.tinymce?.get("admin-edit-description")?.remove(); };
+  }, [editorLoaded, editingId]);
 
   const loadAllProducts = useCallback(async () => {
     setProductsLoading(true);
@@ -257,6 +280,7 @@ export default function AdminPage() {
       window.tinymce?.get("admin-description")?.getContent({ format: "html" }) ||
       String(fd.get("description") ?? "");
     const priceVal = String(fd.get("price") ?? "").trim();
+    const numericPrice = priceVal ? Number(priceVal) : null;
 
     try {
       const r = await fetch("/api/admin/products", {
@@ -266,8 +290,8 @@ export default function AdminPage() {
           name,
           slug: String(fd.get("slug") ?? "") || slugify(name),
           description,
-          price: priceVal ? Number(priceVal) : null,
-          priceDisplay: String(fd.get("priceDisplay") ?? ""),
+          price: numericPrice,
+          priceDisplay: formatRwfPrice(numericPrice),
           category: String(fd.get("category") ?? ""),
           image: imageUrl || String(fd.get("image") ?? ""),
           images: imageList(imageUrl || String(fd.get("image") ?? ""), imageUrls),
@@ -312,8 +336,13 @@ export default function AdminPage() {
     setSavingEdit(true);
     setError("");
     const isStatic = typeof product.id === "number";
+    const editorDescription = window.tinymce
+      ?.get("admin-edit-description")
+      ?.getContent({ format: "html" });
     const payload = {
       ...editForm,
+      description: editorDescription || editForm.description,
+      priceDisplay: formatRwfPrice(editForm.price),
       image: editImageUrl || product.image,
       images: imageList(editImageUrl || product.image, editImageUrls),
     };
@@ -355,6 +384,39 @@ export default function AdminPage() {
       if (editingId === id) setEditingId(null);
     } catch {
       setError("Delete failed — check your connection.");
+    }
+  }
+
+  async function importStaticProducts() {
+    const confirmed = window.confirm(
+      "Upload every static product image to Cloudinary and save all static products to MongoDB?"
+    );
+    if (!confirmed) return;
+
+    setImportingStatic(true);
+    setError("");
+    setStatus("");
+
+    try {
+      const response = await fetch("/api/admin/products/import-static", { method: "POST" });
+      const data = await response.json() as { imported?: number; failed?: Array<{ slug: string; error: string }>; error?: string };
+
+      if (!response.ok) {
+        setError(data.error || "Could not import static products.");
+        return;
+      }
+
+      const failedCount = data.failed?.length || 0;
+      setStatus(
+        failedCount > 0
+          ? `Imported ${data.imported || 0} products. ${failedCount} failed.`
+          : `Imported ${data.imported || 0} static products to MongoDB and Cloudinary.`
+      );
+      await loadAllProducts();
+    } catch {
+      setError("Import failed. Check Cloudinary and MongoDB settings.");
+    } finally {
+      setImportingStatic(false);
     }
   }
 
@@ -579,11 +641,20 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={() => void loadAllProducts()}
-                disabled={productsLoading}
+                disabled={productsLoading || importingStatic}
                 style={{ background: "#111827", color: "#fff", border: "none", borderRadius: 10, padding: "9px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
               >
                 <RefreshCw size={13} className={productsLoading ? "admin-spin" : ""} />
                 {productsLoading ? "Loading…" : "Refresh"}
+              </button>
+              <button
+                type="button"
+                onClick={() => void importStaticProducts()}
+                disabled={productsLoading || importingStatic}
+                style={{ background: "#0f766e", color: "#fff", border: "none", borderRadius: 10, padding: "9px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+              >
+                {importingStatic ? <Loader2 size={13} className="admin-spin" /> : <CloudUpload size={13} />}
+                {importingStatic ? "Importing..." : "Save Static to MongoDB"}
               </button>
             </div>
 
@@ -678,16 +749,23 @@ export default function AdminPage() {
                                 </select>
                               </div>
                               <div className="admin-field">
-                                <label>Numeric Price</label>
+                                <label>Price (RWF)</label>
                                 <input type="number" value={editForm.price ?? ""} onChange={(e) => setEditForm((f) => ({ ...f, price: e.target.value ? Number(e.target.value) : null }))} />
                               </div>
                               <div className="admin-field">
-                                <label>Displayed Price</label>
-                                <input value={editForm.priceDisplay ?? ""} onChange={(e) => setEditForm((f) => ({ ...f, priceDisplay: e.target.value }))} />
+                                <label>Customer Price Label</label>
+                                <input value={formatRwfPrice(editForm.price)} readOnly />
+                                <p className="admin-hint">Generated automatically from Price (RWF).</p>
                               </div>
                               <div className="admin-field admin-field-full">
                                 <label>Description</label>
-                                <textarea rows={4} value={editForm.description ?? ""} onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))} />
+                                <textarea
+                                  id="admin-edit-description"
+                                  rows={6}
+                                  value={editForm.description ?? ""}
+                                  onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                                />
+                                {!canUseEditor && <p className="admin-hint">TinyMCE key missing - plain textarea shown.</p>}
                               </div>
                               <div className="admin-field admin-field-full">
                                 <label><ImagePlus size={13} /> Product Images</label>
@@ -797,12 +875,9 @@ export default function AdminPage() {
               </select>
             </div>
             <div className="admin-field">
-              <label>Numeric Price</label>
+              <label>Price (RWF)</label>
               <input name="price" type="number" min="0" placeholder="90000" />
-            </div>
-            <div className="admin-field">
-              <label>Displayed Price</label>
-              <input name="priceDisplay" placeholder="90,000 RWF" required />
+              <p className="admin-hint">Leave empty to show Contact for price. RWF is added automatically.</p>
             </div>
             <div className="admin-field admin-field-full">
               <label>Description</label>
