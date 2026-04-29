@@ -106,7 +106,7 @@ export default function PayweekHero({ products: _products }: { products: Product
           >
             <div className="payweek-product-card payweek-product-main">
               <Image
-                src={slide.image}
+                src={slide.mainImage}
                 alt={slide.title}
                 fill
                 sizes="(max-width: 900px) 72vw, 330px"
@@ -117,7 +117,7 @@ export default function PayweekHero({ products: _products }: { products: Product
             <div className="payweek-product-support">
               <div className="payweek-product-card">
                 <Image
-                  src={slide.thumbs[0]}
+                  src={slide.thumb1}
                   alt={slide.title}
                   fill
                   sizes="92px"
@@ -126,7 +126,7 @@ export default function PayweekHero({ products: _products }: { products: Product
               </div>
               <div className="payweek-product-card">
                 <Image
-                  src={slide.thumbs[1]}
+                  src={slide.thumb2}
                   alt={slide.title}
                   fill
                   sizes="92px"
