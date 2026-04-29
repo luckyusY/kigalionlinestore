@@ -919,7 +919,7 @@ html.lenis, html.lenis body { height: auto; }
   gap: 34px;
 }
 .temu-footer-shell {
-  grid-template-columns: repeat(4, minmax(140px, 1fr)) minmax(260px, 1.25fr);
+  grid-template-columns: minmax(260px, 1.4fr) repeat(4, minmax(130px, 0.8fr)) minmax(230px, 1.1fr);
   align-items: start;
 }
 .footer-brand-panel {
@@ -928,6 +928,11 @@ html.lenis, html.lenis body { height: auto; }
   background: linear-gradient(135deg, #ff6a00, #ff8a00);
   border: 1px solid rgba(255,255,255,0.16);
   color: #fff;
+}
+.footer-brand-panel h3 {
+  font-size: 20px;
+  font-weight: 950;
+  margin-bottom: 10px;
 }
 .footer-brand {
   display: inline-flex;
@@ -945,6 +950,19 @@ html.lenis, html.lenis body { height: auto; }
   color: rgba(255,255,255,0.88);
   max-width: 420px;
   margin-bottom: 18px;
+}
+.footer-brand-panel a {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: #111;
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 950;
 }
 .footer-socials { display: flex; gap: 8px; }
 .footer-socials a {
