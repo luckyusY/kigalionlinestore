@@ -10,6 +10,8 @@ import {
   CloudUpload,
   Database,
   Edit3,
+  Eye,
+  EyeOff,
   ImagePlus,
   Loader2,
   LogOut,
@@ -87,6 +89,7 @@ export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginUsername, setLoginUsername] = useState("admin");
   const [loginPassword, setLoginPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
 
@@ -401,20 +404,36 @@ export default function AdminPage() {
             <label style={{ display: "block", fontWeight: 700, fontSize: 13, color: "#374151", marginBottom: 7 }}>
               Password
             </label>
-            <input
-              type="password"
-              value={loginPassword}
-              onChange={(e) => setLoginPassword(e.target.value)}
-              placeholder="Enter your admin password"
-              required
-              autoComplete="current-password"
-              style={{
-                width: "100%", boxSizing: "border-box",
-                border: "1.5px solid #e5e7eb", borderRadius: 10,
-                padding: "12px 14px", fontSize: 14, marginBottom: 14,
-                outline: "none", fontFamily: "inherit",
-              }}
-            />
+            <div style={{ position: "relative", marginBottom: 14 }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                placeholder="Enter your admin password"
+                required
+                autoComplete="current-password"
+                style={{
+                  width: "100%", boxSizing: "border-box",
+                  border: "1.5px solid #e5e7eb", borderRadius: 10,
+                  padding: "12px 44px 12px 14px", fontSize: 14,
+                  outline: "none", fontFamily: "inherit",
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                title={showPassword ? "Hide password" : "Show password"}
+                style={{
+                  position: "absolute", top: "50%", right: 8, transform: "translateY(-50%)",
+                  width: 34, height: 34, border: "none", borderRadius: 8,
+                  background: "transparent", color: "#64748b", cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                }}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
             {loginError && (
               <div style={{ color: "#b91c1c", fontSize: 13, marginBottom: 14, padding: "9px 12px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8 }}>
                 {loginError}
