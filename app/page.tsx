@@ -34,36 +34,48 @@ async function getMergedProducts(): Promise<Product[]> {
 export default async function HomePage() {
   const allProducts = await getMergedProducts();
   const featured = allProducts.filter((p) => p.featured);
-  const lightningDeals = allProducts.slice(0, 6);
-  const clearanceDeals = allProducts.slice(6, 12);
+  const flashDeals = allProducts.slice(0, 6);
 
   return (
     <div className="temu-page">
       <PayweekHero products={[...featured, ...allProducts.filter((product) => !product.featured)]} />
 
+      <section className="jumia-flash-section">
+        <div className="jumia-flash-header">
+          <span>Flash Sales</span>
+          <strong>Time Left: 09h : 32m : 39s</strong>
+          <Link href="/products?sort=best-selling">
+            See All <ChevronRight size={17} />
+          </Link>
+        </div>
+        <div className="jumia-flash-row">
+          {flashDeals.map((product) => (
+            <Link key={product.id} href={`/products/${product.slug}`} className="jumia-flash-card">
+              <span className="jumia-flash-image">
+                <Image src={product.image} alt={product.name} fill sizes="180px" unoptimized />
+              </span>
+              <span className="jumia-flash-name">{product.name}</span>
+              <span className="jumia-flash-price">{product.priceDisplay}</span>
+              {product.price ? (
+                <span className="jumia-flash-old">{Math.round(product.price * 1.25).toLocaleString()} RWF</span>
+              ) : null}
+              <span className="jumia-flash-stock">
+                <span />
+                <small>20 items left</small>
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       <section className="temu-deal-rails">
         <div className="temu-deal-panel">
           <Link href="/products?sort=best-selling" className="temu-deal-title">
-            <span>LIGHTNING DEALS</span>
+            <span>Top selling items</span>
             <ChevronRight size={18} />
           </Link>
           <div className="temu-mini-rail">
-            {lightningDeals.map((product) => (
-              <Link key={product.id} href={`/products/${product.slug}`} className="temu-mini-deal">
-                <Image src={product.image} alt={product.name} width={170} height={170} unoptimized />
-                <strong>{product.priceDisplay}</strong>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        <div className="temu-deal-panel">
-          <Link href="/products?sort=new" className="temu-deal-title clearance">
-            <span>CLEARANCE DEALS</span>
-            <ChevronRight size={18} />
-          </Link>
-          <div className="temu-mini-rail">
-            {clearanceDeals.map((product) => (
+            {allProducts.slice(6, 12).map((product) => (
               <Link key={product.id} href={`/products/${product.slug}`} className="temu-mini-deal">
                 <Image src={product.image} alt={product.name} width={170} height={170} unoptimized />
                 <strong>{product.priceDisplay}</strong>
