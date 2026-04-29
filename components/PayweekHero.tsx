@@ -59,8 +59,6 @@ export default function PayweekHero({ products }: { products: Product[] }) {
   if (!heroProducts.length) return null;
 
   const product = heroProducts[current];
-  const secondaryProduct = heroProducts[(current + 1) % heroProducts.length] || product;
-  const tertiaryProduct = heroProducts[(current + 2) % heroProducts.length] || product;
   const copy = copyModes[current % copyModes.length];
   const numericPrice = product.priceDisplay.match(/\d[\d,]*/)?.[0] ?? product.priceDisplay;
   const oldPrice = product.price ? `${Math.round(product.price * 1.42).toLocaleString()} RWF` : "Ask for quote";
@@ -127,8 +125,8 @@ export default function PayweekHero({ products }: { products: Product[] }) {
             <div className="payweek-product-support">
               <div className="payweek-product-card">
                 <Image
-                  src={secondaryProduct.image}
-                  alt={secondaryProduct.name}
+                  src={product.image}
+                  alt={product.name}
                   fill
                   sizes="92px"
                   unoptimized
@@ -136,8 +134,8 @@ export default function PayweekHero({ products }: { products: Product[] }) {
               </div>
               <div className="payweek-product-card">
                 <Image
-                  src={tertiaryProduct.image}
-                  alt={tertiaryProduct.name}
+                  src={product.image}
+                  alt={product.name}
                   fill
                   sizes="92px"
                   unoptimized
