@@ -1,12 +1,8 @@
 import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { adminUnauthorized, verifyAdminSession } from "@/lib/admin-auth";
 
 export const runtime = "nodejs";
-
-function isAuthorized(request: NextRequest) {
-  const adminSecret = process.env.ADMIN_SECRET;
-  return Boolean(adminSecret && request.headers.get("x-admin-secret") === adminSecret);
-}
 
 function signCloudinaryUpload(timestamp: number, apiSecret: string) {
   return crypto
@@ -16,9 +12,7 @@ function signCloudinaryUpload(timestamp: number, apiSecret: string) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!verifyAdminSession(request)) return adminUnauthorized();
 
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;

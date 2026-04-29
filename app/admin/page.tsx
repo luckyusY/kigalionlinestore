@@ -2,16 +2,17 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import Link from "next/link";
 import Script from "next/script";
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import {
   CheckCircle,
   CloudUpload,
   Database,
   Edit3,
   ImagePlus,
-  KeyRound,
   Loader2,
+  LogOut,
   PackagePlus,
   RefreshCw,
   Save,
@@ -26,7 +27,6 @@ type TinyEditor = {
   getContent: (options?: { format?: string }) => string;
   remove: () => void;
 };
-
 type TinyMCE = {
   init: (options: Record<string, unknown>) => Promise<TinyEditor[]>;
   get: (id: string) => TinyEditor | null;
@@ -58,9 +58,7 @@ type SiteSettings = {
 };
 
 declare global {
-  interface Window {
-    tinymce?: TinyMCE;
-  }
+  interface Window { tinymce?: TinyMCE; }
 }
 
 const adminCategories = categories.filter((c) => c !== "All");
@@ -84,9 +82,54 @@ function slugify(v: string) {
 type AdminTab = "manage" | "add" | "settings";
 
 export default function AdminPage() {
-  const [adminSecret, setAdminSecret] = useState(() =>
-    typeof window !== "undefined" ? localStorage.getItem("kigali-admin-secret") || "" : ""
-  );
+  // ── Auth ────────────────────────────────────────────────────────────
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginUsername, setLoginUsername] = useState("admin");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  // Restore server session on mount
+  useEffect(() => {
+    fetch("/api/admin/session")
+      .then((r) => r.json())
+      .then((data: { authenticated?: boolean }) => setIsLoggedIn(Boolean(data.authenticated)))
+      .catch(() => {})
+      .finally(() => setCheckingSession(false));
+  }, []);
+
+  async function login(e: FormEvent) {
+    e.preventDefault();
+    setLoginLoading(true);
+    setLoginError("");
+    try {
+      const r = await fetch("/api/admin/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: loginUsername, password: loginPassword }),
+      });
+      if (r.ok) {
+        setIsLoggedIn(true);
+        setLoginPassword("");
+      } else {
+        const data = await r.json() as { error?: string };
+        setLoginError(data.error || "Invalid username or password.");
+      }
+    } catch {
+      setLoginError("Could not connect. Try again.");
+    } finally {
+      setLoginLoading(false);
+    }
+  }
+
+  async function logout() {
+    await fetch("/api/admin/session", { method: "DELETE" }).catch(() => {});
+    setIsLoggedIn(false);
+    setLoginPassword("");
+  }
+
+  // ── Admin state ──────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<AdminTab>("manage");
 
   // Add product
@@ -130,9 +173,6 @@ export default function AdminPage() {
     return () => { window.tinymce?.get("admin-description")?.remove(); };
   }, [editorLoaded]);
 
-  const authHeaders = useMemo(() => ({ "x-admin-secret": adminSecret }), [adminSecret]);
-
-  // ── Load all products ────────────────────────────────────────────────
   const loadAllProducts = useCallback(async () => {
     setProductsLoading(true);
     setError("");
@@ -148,38 +188,40 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (activeTab === "manage") void loadAllProducts();
-  }, [activeTab, loadAllProducts]);
+    if (!isLoggedIn || activeTab !== "manage") return;
+    const timer = window.setTimeout(() => void loadAllProducts(), 0);
+    return () => window.clearTimeout(timer);
+  }, [isLoggedIn, activeTab, loadAllProducts]);
 
-  // ── Load settings ─────────────────────────────────────────────────────
   const loadSettings = useCallback(async () => {
-    if (!adminSecret) return;
-    const r = await fetch("/api/admin/settings", { headers: authHeaders });
+    const r = await fetch("/api/admin/settings");
     const data = await r.json() as { settings?: Partial<SiteSettings>; error?: string };
     if (!r.ok) { setError(data.error ?? "Could not load settings."); return; }
     setSettings({ ...defaultSettings, ...data.settings });
-  }, [adminSecret, authHeaders]);
+  }, []);
 
   useEffect(() => {
-    if (activeTab === "settings" && adminSecret) void loadSettings();
-  }, [activeTab, adminSecret, loadSettings]);
+    if (!isLoggedIn || activeTab !== "settings") return;
+    const timer = window.setTimeout(() => void loadSettings(), 0);
+    return () => window.clearTimeout(timer);
+  }, [isLoggedIn, activeTab, loadSettings]);
 
-  // ── Upload helper ─────────────────────────────────────────────────────
   async function doUpload(file: File): Promise<string | null> {
-    if (!adminSecret) { setError("Enter the admin secret before uploading."); return null; }
     const fd = new FormData();
     fd.set("file", file);
-    const r = await fetch("/api/admin/upload", { method: "POST", headers: authHeaders, body: fd });
-    const data = await r.json() as { url?: string; error?: string };
-    if (!r.ok) { setError(data.error ?? "Upload failed."); return null; }
-    return data.url ?? null;
+    try {
+      const r = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const data = await r.json() as { url?: string; error?: string };
+      if (!r.ok) { setError(data.error ?? "Upload failed."); return null; }
+      return data.url ?? null;
+    } catch {
+      setError("Upload failed — check Cloudinary config.");
+      return null;
+    }
   }
 
-  // ── Add product ────────────────────────────────────────────────────────
   async function saveProduct(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!adminSecret) { setError("Enter the admin secret before saving."); return; }
-    localStorage.setItem("kigali-admin-secret", adminSecret);
     setSaving(true);
     setError("");
     setStatus("");
@@ -191,33 +233,37 @@ export default function AdminPage() {
       String(fd.get("description") ?? "");
     const priceVal = String(fd.get("price") ?? "").trim();
 
-    const r = await fetch("/api/admin/products", {
-      method: "POST",
-      headers: { ...authHeaders, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name,
-        slug: String(fd.get("slug") ?? "") || slugify(name),
-        description,
-        price: priceVal ? Number(priceVal) : null,
-        priceDisplay: String(fd.get("priceDisplay") ?? ""),
-        category: String(fd.get("category") ?? ""),
-        image: imageUrl || String(fd.get("image") ?? ""),
-        inStock: fd.get("inStock") === "on",
-        featured: fd.get("featured") === "on",
-      }),
-    });
-    const data = await r.json() as { product?: { name: string }; error?: string };
-    setSaving(false);
-    if (!r.ok) { setError(data.error ?? "Could not save product."); return; }
-    setStatus(`Saved "${data.product?.name}". Switch to All Products to see it.`);
-    form.reset();
-    setImageUrl("");
-    window.tinymce?.get("admin-description")?.remove();
-    setEditorLoaded(false);
-    window.setTimeout(() => setEditorLoaded(Boolean(window.tinymce)), 0);
+    try {
+      const r = await fetch("/api/admin/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          slug: String(fd.get("slug") ?? "") || slugify(name),
+          description,
+          price: priceVal ? Number(priceVal) : null,
+          priceDisplay: String(fd.get("priceDisplay") ?? ""),
+          category: String(fd.get("category") ?? ""),
+          image: imageUrl || String(fd.get("image") ?? ""),
+          inStock: fd.get("inStock") === "on",
+          featured: fd.get("featured") === "on",
+        }),
+      });
+      const data = await r.json() as { product?: { name: string }; error?: string };
+      if (!r.ok) { setError(data.error ?? "Could not save product."); return; }
+      setStatus(`Saved "${data.product?.name}". Switch to All Products to see it.`);
+      form.reset();
+      setImageUrl("");
+      window.tinymce?.get("admin-description")?.remove();
+      setEditorLoaded(false);
+      window.setTimeout(() => setEditorLoaded(Boolean(window.tinymce)), 0);
+    } catch {
+      setError("Save failed — check your connection.");
+    } finally {
+      setSaving(false);
+    }
   }
 
-  // ── Edit product ───────────────────────────────────────────────────────
   function startEdit(product: FullProduct) {
     setEditingId(String(product.id));
     setEditImageUrl(product.image);
@@ -235,64 +281,72 @@ export default function AdminPage() {
   }
 
   async function saveEdit(product: FullProduct) {
-    if (!adminSecret) { setError("Enter the admin secret first."); return; }
-    localStorage.setItem("kigali-admin-secret", adminSecret);
     setSavingEdit(true);
     setError("");
     const isStatic = typeof product.id === "number";
-    const payload = { ...editForm, image: editImageUrl || editForm.image };
+    const payload = { ...editForm, image: editImageUrl || product.image };
 
-    const r = isStatic
-      ? await fetch("/api/admin/products", {
-          method: "POST",
-          headers: { ...authHeaders, "Content-Type": "application/json" },
-          body: JSON.stringify({ ...payload, slug: product.slug }),
-        })
-      : await fetch(`/api/admin/products/${product.id}`, {
-          method: "PUT",
-          headers: { ...authHeaders, "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+    try {
+      const r = isStatic
+        ? await fetch("/api/admin/products", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...payload, slug: product.slug }),
+          })
+        : await fetch(`/api/admin/products/${product.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
 
-    const data = await r.json() as { error?: string };
-    setSavingEdit(false);
-    if (!r.ok) { setError(data.error ?? "Could not save changes."); return; }
-    setStatus("Product updated.");
-    setEditingId(null);
-    await loadAllProducts();
+      const data = await r.json() as { error?: string };
+      if (!r.ok) { setError(data.error ?? "Could not save changes."); return; }
+      setStatus("Product saved successfully.");
+      setEditingId(null);
+      await loadAllProducts();
+    } catch {
+      setError("Save failed — check your connection.");
+    } finally {
+      setSavingEdit(false);
+    }
   }
 
   async function deleteProduct(id: string) {
-    if (!adminSecret) { setError("Enter the admin secret first."); return; }
     if (!window.confirm("Delete this product permanently?")) return;
     setError("");
-    const r = await fetch(`/api/admin/products/${id}`, { method: "DELETE", headers: authHeaders });
-    const data = await r.json() as { error?: string };
-    if (!r.ok) { setError(data.error ?? "Failed to delete."); return; }
-    setStatus("Product deleted.");
-    setAllProducts((prev) => prev.filter((p) => String(p.id) !== id));
-    if (editingId === id) setEditingId(null);
+    try {
+      const r = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
+      const data = await r.json() as { error?: string };
+      if (!r.ok) { setError(data.error ?? "Failed to delete."); return; }
+      setStatus("Product deleted.");
+      setAllProducts((prev) => prev.filter((p) => String(p.id) !== id));
+      if (editingId === id) setEditingId(null);
+    } catch {
+      setError("Delete failed — check your connection.");
+    }
   }
 
-  // ── Site settings ──────────────────────────────────────────────────────
   async function saveSettings(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!adminSecret) { setError("Enter the admin secret before saving settings."); return; }
-    localStorage.setItem("kigali-admin-secret", adminSecret);
     setSavingSettings(true);
     setError("");
     setStatus("");
     const fd = new FormData(event.currentTarget);
-    const r = await fetch("/api/admin/settings", {
-      method: "PUT",
-      headers: { ...authHeaders, "Content-Type": "application/json" },
-      body: JSON.stringify(Object.fromEntries(fd.entries())),
-    });
-    const data = await r.json() as { settings?: Partial<SiteSettings>; error?: string };
-    setSavingSettings(false);
-    if (!r.ok) { setError(data.error ?? "Could not save settings."); return; }
-    setSettings({ ...defaultSettings, ...data.settings });
-    setStatus("Site settings saved.");
+    try {
+      const r = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(fd.entries())),
+      });
+      const data = await r.json() as { settings?: Partial<SiteSettings>; error?: string };
+      if (!r.ok) { setError(data.error ?? "Could not save settings."); return; }
+      setSettings({ ...defaultSettings, ...data.settings });
+      setStatus("Site settings saved.");
+    } catch {
+      setError("Save failed — check your connection.");
+    } finally {
+      setSavingSettings(false);
+    }
   }
 
   const filtered = allProducts.filter((p) => {
@@ -301,6 +355,97 @@ export default function AdminPage() {
     return p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q);
   });
 
+  // ── Loading session check ───────────────────────────────────────────
+  if (checkingSession) {
+    return (
+      <div style={{ display: "flex", minHeight: "70vh", alignItems: "center", justifyContent: "center" }}>
+        <Loader2 size={28} className="admin-spin" color="#f97316" />
+      </div>
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // LOGIN FORM
+  // ══════════════════════════════════════════════════════════════════════
+  if (!isLoggedIn) {
+    return (
+      <div style={{ display: "flex", minHeight: "80vh", alignItems: "center", justifyContent: "center", background: "#f8fafc", padding: 24 }}>
+        <div style={{ background: "#fff", border: "1.5px solid #e5e7eb", borderRadius: 20, padding: "40px 36px", width: "100%", maxWidth: 400 }}>
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
+            <div style={{ width: 56, height: 56, background: "#fff7ed", borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+              <ShieldCheck size={28} color="#f97316" strokeWidth={2} />
+            </div>
+            <h1 style={{ fontSize: 22, fontWeight: 900, color: "#111827", margin: "0 0 6px" }}>Admin Login</h1>
+            <p style={{ color: "#64748b", fontSize: 14, margin: 0 }}>Kigali Online Store</p>
+          </div>
+
+          <form onSubmit={login}>
+            <label style={{ display: "block", fontWeight: 700, fontSize: 13, color: "#374151", marginBottom: 7 }}>
+              Username
+            </label>
+            <input
+              type="text"
+              value={loginUsername}
+              onChange={(e) => setLoginUsername(e.target.value)}
+              placeholder="admin"
+              required
+              autoFocus
+              autoComplete="username"
+              style={{
+                width: "100%", boxSizing: "border-box",
+                border: "1.5px solid #e5e7eb", borderRadius: 10,
+                padding: "12px 14px", fontSize: 14, marginBottom: 14,
+                outline: "none", fontFamily: "inherit",
+              }}
+            />
+            <label style={{ display: "block", fontWeight: 700, fontSize: 13, color: "#374151", marginBottom: 7 }}>
+              Password
+            </label>
+            <input
+              type="password"
+              value={loginPassword}
+              onChange={(e) => setLoginPassword(e.target.value)}
+              placeholder="Enter your admin password"
+              required
+              autoComplete="current-password"
+              style={{
+                width: "100%", boxSizing: "border-box",
+                border: "1.5px solid #e5e7eb", borderRadius: 10,
+                padding: "12px 14px", fontSize: 14, marginBottom: 14,
+                outline: "none", fontFamily: "inherit",
+              }}
+            />
+            {loginError && (
+              <div style={{ color: "#b91c1c", fontSize: 13, marginBottom: 14, padding: "9px 12px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8 }}>
+                {loginError}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={loginLoading}
+              style={{
+                width: "100%", background: loginLoading ? "#fb923c" : "#f97316", color: "#fff",
+                border: "none", borderRadius: 10, padding: "13px",
+                fontWeight: 800, fontSize: 15, cursor: loginLoading ? "not-allowed" : "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              }}
+            >
+              {loginLoading ? <Loader2 size={17} className="admin-spin" /> : <ShieldCheck size={17} />}
+              {loginLoading ? "Signing in…" : "Sign In"}
+            </button>
+          </form>
+
+          <Link href="/" style={{ display: "block", textAlign: "center", marginTop: 22, color: "#94a3b8", fontSize: 13, textDecoration: "none" }}>
+            ← Back to store
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // ADMIN PANEL
+  // ══════════════════════════════════════════════════════════════════════
   return (
     <div style={{ background: "#f8fafc", minHeight: "80vh", padding: "28px 20px 64px" }}>
       {canUseEditor && (
@@ -314,33 +459,25 @@ export default function AdminPage() {
       <div style={{ maxWidth: 1240, margin: "0 auto" }}>
 
         {/* ── Header ── */}
-        <div style={{ marginBottom: 20 }}>
-          <div className="section-label" style={{ display: "inline-flex" }}>
-            <ShieldCheck size={12} strokeWidth={2.5} /> Admin
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20, gap: 12 }}>
+          <div>
+            <div className="section-label" style={{ display: "inline-flex" }}>
+              <ShieldCheck size={12} strokeWidth={2.5} /> Admin
+            </div>
+            <h1 style={{ fontSize: 28, fontWeight: 900, color: "#111827", letterSpacing: "-0.03em", margin: "4px 0 2px" }}>
+              Store Admin
+            </h1>
+            <p style={{ color: "#64748b", fontSize: 13, margin: 0 }}>
+              Manage products and site settings for Kigali Online Store.
+            </p>
           </div>
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: "#111827", letterSpacing: "-0.03em", margin: "4px 0 2px" }}>
-            Store Admin
-          </h1>
-          <p style={{ color: "#64748b", fontSize: 13 }}>
-            Manage products, images, and site settings for Kigali Online Store.
-          </p>
-        </div>
-
-        {/* ── Secret key ── */}
-        <div style={{ background: "#fff", border: "1.5px solid #e5e7eb", borderRadius: 12, padding: "12px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
-          <KeyRound size={15} color="#f97316" strokeWidth={2.5} style={{ flexShrink: 0 }} />
-          <input
-            type="password"
-            value={adminSecret}
-            onChange={(e) => {
-              setAdminSecret(e.target.value);
-              localStorage.setItem("kigali-admin-secret", e.target.value);
-            }}
-            placeholder="Enter ADMIN_SECRET to unlock all actions"
-            autoComplete="current-password"
-            style={{ flex: 1, border: "none", outline: "none", fontSize: 14, color: "#111827", background: "transparent", fontFamily: "inherit" }}
-          />
-          {adminSecret && <CheckCircle size={15} color="#16a34a" style={{ flexShrink: 0 }} />}
+          <button
+            type="button"
+            onClick={logout}
+            style={{ display: "flex", alignItems: "center", gap: 6, background: "#fff", border: "1.5px solid #e5e7eb", borderRadius: 10, padding: "9px 14px", fontWeight: 700, fontSize: 13, color: "#374151", cursor: "pointer", flexShrink: 0 }}
+          >
+            <LogOut size={14} /> Sign out
+          </button>
         </div>
 
         {/* ── Feedback ── */}
@@ -352,6 +489,7 @@ export default function AdminPage() {
         )}
         {status && !error && (
           <div className="admin-alert admin-alert-success" style={{ marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+            <CheckCircle size={14} />
             <span style={{ flex: 1 }}>{status}</span>
             <button type="button" onClick={() => setStatus("")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: "inherit" }}><X size={14} /></button>
           </div>
@@ -360,8 +498,11 @@ export default function AdminPage() {
         {/* ── Tabs ── */}
         <div className="admin-tab-bar">
           {(["manage", "add", "settings"] as AdminTab[]).map((tab) => {
-            const icons = { manage: <Database size={14} />, add: <PackagePlus size={14} />, settings: <Settings2 size={14} /> };
-            const labels = { manage: "All Products", add: "Add Product", settings: "Site Settings" };
+            const meta = {
+              manage:   { icon: <Database size={14} />,   label: "All Products" },
+              add:      { icon: <PackagePlus size={14} />, label: "Add Product" },
+              settings: { icon: <Settings2 size={14} />,  label: "Site Settings" },
+            };
             return (
               <button
                 key={tab}
@@ -369,7 +510,7 @@ export default function AdminPage() {
                 className={`admin-tab-btn${activeTab === tab ? " active" : ""}`}
                 onClick={() => { setActiveTab(tab); setError(""); setStatus(""); }}
               >
-                {icons[tab]} {labels[tab]}
+                {meta[tab].icon} {meta[tab].label}
               </button>
             );
           })}
@@ -414,21 +555,19 @@ export default function AdminPage() {
 
                     return (
                       <div key={product.id}>
-                        {/* ── Row ── */}
+                        {/* Product row */}
                         <div style={{
                           background: "#fff",
                           border: `1.5px solid ${isEditing ? "#f97316" : "#e5e7eb"}`,
                           borderRadius: isEditing ? "12px 12px 0 0" : 12,
                           padding: "11px 14px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 12,
+                          display: "flex", alignItems: "center", gap: 12,
                         }}>
                           <img
                             src={product.image}
                             alt=""
                             style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 8, flexShrink: 0, background: "#f1f5f9" }}
-                            onError={(e) => { (e.target as HTMLImageElement).src = ""; }}
+                            onError={(e) => { (e.currentTarget).style.background = "#f1f5f9"; (e.currentTarget).src = ""; }}
                           />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontWeight: 700, fontSize: 14, color: "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -438,9 +577,7 @@ export default function AdminPage() {
                               {product.category} · {product.priceDisplay}
                             </div>
                           </div>
-
-                          {/* Badges */}
-                          <div style={{ display: "flex", gap: 5, flexShrink: 0, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                          <div style={{ display: "flex", gap: 5, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end", alignItems: "center" }}>
                             <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 7px", borderRadius: 999, background: isStatic ? "#f1f5f9" : "#dbeafe", color: isStatic ? "#475569" : "#1e40af" }}>
                               {isStatic ? "Static" : "MongoDB"}
                             </span>
@@ -448,25 +585,14 @@ export default function AdminPage() {
                               {product.inStock ? "In Stock" : "Out of Stock"}
                             </span>
                             {product.featured && (
-                              <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 7px", borderRadius: 999, background: "#fef3c7", color: "#92400e" }}>
-                                Featured
-                              </span>
+                              <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 7px", borderRadius: 999, background: "#fef3c7", color: "#92400e" }}>Featured</span>
                             )}
                           </div>
-
-                          {/* Actions */}
                           <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
                             <button
                               type="button"
                               onClick={() => (isEditing ? setEditingId(null) : startEdit(product))}
-                              style={{
-                                background: isEditing ? "#f97316" : "#f8fafc",
-                                color: isEditing ? "#fff" : "#374151",
-                                border: "1.5px solid #e5e7eb",
-                                borderRadius: 8, padding: "6px 11px",
-                                cursor: "pointer", display: "flex", alignItems: "center", gap: 4,
-                                fontSize: 12, fontWeight: 700,
-                              }}
+                              style={{ background: isEditing ? "#f97316" : "#f8fafc", color: isEditing ? "#fff" : "#374151", border: "1.5px solid #e5e7eb", borderRadius: 8, padding: "6px 11px", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700 }}
                             >
                               {isEditing ? <X size={12} /> : <Edit3 size={12} />}
                               {isEditing ? "Close" : "Edit"}
@@ -476,7 +602,7 @@ export default function AdminPage() {
                                 type="button"
                                 onClick={() => void deleteProduct(String(product.id))}
                                 style={{ background: "#fef2f2", color: "#ef4444", border: "1.5px solid #fecaca", borderRadius: 8, padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "center" }}
-                                title="Delete product"
+                                title="Delete"
                               >
                                 <Trash2 size={12} />
                               </button>
@@ -484,15 +610,14 @@ export default function AdminPage() {
                           </div>
                         </div>
 
-                        {/* ── Inline Edit Panel ── */}
+                        {/* Inline edit panel */}
                         {isEditing && (
                           <div style={{ background: "#fff", border: "1.5px solid #f97316", borderTop: "1px solid #fed7aa", borderRadius: "0 0 12px 12px", padding: "20px 18px" }}>
                             {isStatic && (
                               <div style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#c2410c", marginBottom: 16, lineHeight: 1.5 }}>
-                                This is a static product. Saving will create a MongoDB override that replaces it on the storefront.
+                                This is a static product. Saving creates a MongoDB override that replaces it on the storefront.
                               </div>
                             )}
-
                             <div className="admin-panel-card" style={{ padding: 0, border: "none", boxShadow: "none" }}>
                               <div className="admin-field">
                                 <label>Product Name</label>
@@ -506,11 +631,7 @@ export default function AdminPage() {
                               </div>
                               <div className="admin-field">
                                 <label>Numeric Price</label>
-                                <input
-                                  type="number"
-                                  value={editForm.price ?? ""}
-                                  onChange={(e) => setEditForm((f) => ({ ...f, price: e.target.value ? Number(e.target.value) : null }))}
-                                />
+                                <input type="number" value={editForm.price ?? ""} onChange={(e) => setEditForm((f) => ({ ...f, price: e.target.value ? Number(e.target.value) : null }))} />
                               </div>
                               <div className="admin-field">
                                 <label>Displayed Price</label>
@@ -518,11 +639,7 @@ export default function AdminPage() {
                               </div>
                               <div className="admin-field admin-field-full">
                                 <label>Description</label>
-                                <textarea
-                                  rows={4}
-                                  value={editForm.description ?? ""}
-                                  onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
-                                />
+                                <textarea rows={4} value={editForm.description ?? ""} onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))} />
                               </div>
                               <div className="admin-field admin-field-full">
                                 <label><ImagePlus size={13} /> Image</label>
@@ -535,16 +652,12 @@ export default function AdminPage() {
                                     setUploadingEdit(true);
                                     const url = await doUpload(file);
                                     setUploadingEdit(false);
-                                    if (url) { setEditImageUrl(url); setStatus("Image uploaded."); }
+                                    if (url) { setEditImageUrl(url); setStatus("Image uploaded to Cloudinary."); }
                                   }}
                                 />
-                                <input
-                                  value={editImageUrl}
-                                  onChange={(e) => setEditImageUrl(e.target.value)}
-                                  placeholder="Cloudinary URL or path"
-                                />
+                                <input value={editImageUrl} onChange={(e) => setEditImageUrl(e.target.value)} placeholder="Cloudinary URL or path" />
                                 {editImageUrl && <img src={editImageUrl} alt="Preview" className="admin-image-preview" />}
-                                {uploadingEdit && <p className="admin-hint"><Loader2 size={12} className="admin-spin" style={{ display: "inline" }} /> Uploading image…</p>}
+                                {uploadingEdit && <p className="admin-hint"><Loader2 size={12} className="admin-spin" style={{ display: "inline" }} /> Uploading to Cloudinary…</p>}
                               </div>
                               <div className="admin-checks admin-field-full">
                                 <label>
@@ -557,7 +670,6 @@ export default function AdminPage() {
                                 </label>
                               </div>
                             </div>
-
                             <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
                               <button
                                 type="button"
@@ -569,11 +681,7 @@ export default function AdminPage() {
                                 {savingEdit ? <Loader2 size={15} className="admin-spin" /> : uploadingEdit ? <CloudUpload size={15} /> : <Save size={15} />}
                                 {uploadingEdit ? "Uploading…" : savingEdit ? "Saving…" : "Save Changes"}
                               </button>
-                              <button
-                                type="button"
-                                onClick={() => setEditingId(null)}
-                                style={{ padding: "10px 18px", borderRadius: 10, border: "1.5px solid #e5e7eb", background: "#fff", color: "#374151", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
-                              >
+                              <button type="button" onClick={() => setEditingId(null)} style={{ padding: "10px 18px", borderRadius: 10, border: "1.5px solid #e5e7eb", background: "#fff", color: "#374151", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                                 Cancel
                               </button>
                             </div>
@@ -604,9 +712,7 @@ export default function AdminPage() {
             <div className="admin-field">
               <label>Category</label>
               <select name="category" defaultValue="Kitchen" required>
-                {adminCategories.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
+                {adminCategories.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div className="admin-field">
@@ -629,24 +735,17 @@ export default function AdminPage() {
                 accept="image/*"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (file) {
-                    setUploading(true);
-                    doUpload(file).then((url) => {
-                      setUploading(false);
-                      if (url) { setImageUrl(url); setStatus("Image uploaded to Cloudinary."); }
-                    }).catch(() => setUploading(false));
-                  }
+                  if (!file) return;
+                  setUploading(true);
+                  doUpload(file).then((url) => {
+                    setUploading(false);
+                    if (url) { setImageUrl(url); setStatus("Image uploaded to Cloudinary."); }
+                  }).catch(() => setUploading(false));
                 }}
               />
-              <input
-                name="image"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="Cloudinary URL or existing image path"
-                required
-              />
+              <input name="image" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="Cloudinary URL or existing image path" required />
               {imageUrl && <img src={imageUrl} alt="Preview" className="admin-image-preview" />}
-              {uploading && <p className="admin-hint"><Loader2 size={12} className="admin-spin" style={{ display: "inline" }} /> Uploading…</p>}
+              {uploading && <p className="admin-hint"><Loader2 size={12} className="admin-spin" style={{ display: "inline" }} /> Uploading to Cloudinary…</p>}
             </div>
             <div className="admin-checks admin-field-full">
               <label><input name="inStock" type="checkbox" defaultChecked /> In Stock</label>
@@ -666,7 +765,7 @@ export default function AdminPage() {
         ══════════════════════════════════════════════════ */}
         {activeTab === "settings" && (
           <form onSubmit={saveSettings} className="admin-panel-card admin-settings">
-            <div className="admin-field admin-field-full" style={{ gridColumn: "1 / -1" }}>
+            <div className="admin-field admin-field-full">
               <p style={{ color: "#64748b", fontSize: 13, margin: 0 }}>Changes are saved to MongoDB and take effect on the next storefront load.</p>
             </div>
             <div className="admin-field admin-field-full">

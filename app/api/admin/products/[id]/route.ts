@@ -1,21 +1,15 @@
 import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
+import { adminUnauthorized, verifyAdminSession } from "@/lib/admin-auth";
 
 export const runtime = "nodejs";
-
-function isAuthorized(request: NextRequest) {
-  const adminSecret = process.env.ADMIN_SECRET;
-  return Boolean(adminSecret && request.headers.get("x-admin-secret") === adminSecret);
-}
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!verifyAdminSession(request)) return adminUnauthorized();
 
   const { id } = await params;
 
@@ -35,9 +29,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!verifyAdminSession(request)) return adminUnauthorized();
 
   const { id } = await params;
   const body = await request.json() as Record<string, unknown>;

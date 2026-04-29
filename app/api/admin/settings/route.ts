@@ -1,17 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
+import { adminUnauthorized, verifyAdminSession } from "@/lib/admin-auth";
 
 export const runtime = "nodejs";
 
-function isAuthorized(request: NextRequest) {
-  const adminSecret = process.env.ADMIN_SECRET;
-  return Boolean(adminSecret && request.headers.get("x-admin-secret") === adminSecret);
-}
-
 export async function GET(request: NextRequest) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!verifyAdminSession(request)) return adminUnauthorized();
 
   const db = await getDb();
   const settings = await db.collection("settings").findOne({ key: "site" });
@@ -20,9 +14,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!verifyAdminSession(request)) return adminUnauthorized();
 
   const body = await request.json();
   const now = new Date();
