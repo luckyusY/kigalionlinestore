@@ -32,7 +32,7 @@ export async function PUT(request: NextRequest) {
     phone: String(body.phone || "0784 734 956"),
     whatsapp: String(body.whatsapp || "250784734956"),
     deliveryText: String(body.deliveryText || "Fast Kigali delivery"),
-    announcement: String(body.announcement || "Free shipping on selected products"),
+    announcement: String(body.announcement || "WhatsApp ordering available"),
     supportText: String(body.supportText || "WhatsApp Orders"),
     tiktok: String(body.tiktok || ""),
     instagram: String(body.instagram || ""),

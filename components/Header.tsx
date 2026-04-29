@@ -62,7 +62,7 @@ export default function Header() {
       <div className="temu-top-strip">
         <Link href="/products" className="temu-top-item">
           <Truck size={22} fill="#79ff87" />
-          <span><strong>Free shipping</strong><small>Incredible</small></span>
+          <span><strong>Easy ordering</strong><small>Via WhatsApp</small></span>
           <ChevronRight size={15} />
         </Link>
         <Link href="/contact" className="temu-top-item">
@@ -154,7 +154,7 @@ export default function Header() {
           <span><ShieldCheck size={18} fill="currentColor" /> Why choose Kigali Store?</span>
           <span><ShieldCheck size={18} /> Secure privacy</span>
           <span><CreditCard size={18} /> Safe payments</span>
-          <span><PackageCheck size={18} /> Delivery guarantee</span>
+          <span><PackageCheck size={18} /> Delivery support</span>
           <ChevronRight size={20} />
         </div>
         <div className="temu-trust-alert">

@@ -62,7 +62,7 @@ export default function ProductCard({ product }: { product: Product }) {
           <span>{stats.sold} sold</span>
         </div>
 
-        <div className="temu-delivery">Fastest delivery: 1 business day</div>
+        <div className="temu-delivery">Confirm delivery on WhatsApp</div>
 
         <a
           href={`https://wa.me/250784734956?text=${waMsg}`}

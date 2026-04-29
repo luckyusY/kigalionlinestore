@@ -59,7 +59,7 @@ const defaultSettings: SiteSettings = {
   phone: "0784 734 956",
   whatsapp: "250784734956",
   deliveryText: "Fast Kigali delivery",
-  announcement: "Free shipping on selected products",
+  announcement: "WhatsApp ordering available",
   supportText: "WhatsApp Orders",
   tiktok: "https://www.tiktok.com/@kigalionlinestore",
   instagram: "https://www.instagram.com/kigali_online_store/",
