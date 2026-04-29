@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import PayweekHero from "@/components/PayweekHero";
 import { categories, products as staticProducts, Product } from "@/lib/products";
+import { heroSlides as defaultHeroSlides, HeroSlide } from "@/lib/hero-slides";
 import { getDb } from "@/lib/mongodb";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,16 @@ const categoryLabels: Record<string, string> = {
   Accessories: "Tech Accessories",
 };
 
+async function getHeroSlides(): Promise<HeroSlide[]> {
+  try {
+    const db = await getDb();
+    const doc = await db.collection("hero_slides").findOne({});
+    return (doc?.slides as HeroSlide[]) ?? defaultHeroSlides;
+  } catch {
+    return defaultHeroSlides;
+  }
+}
+
 async function getMergedProducts(): Promise<Product[]> {
   try {
     const db = await getDb();
@@ -32,13 +43,13 @@ async function getMergedProducts(): Promise<Product[]> {
 }
 
 export default async function HomePage() {
-  const allProducts = await getMergedProducts();
+  const [allProducts, slides] = await Promise.all([getMergedProducts(), getHeroSlides()]);
   const featured = allProducts.filter((p) => p.featured);
   const flashDeals = allProducts.slice(0, 6);
 
   return (
     <div className="temu-page">
-      <PayweekHero products={[...featured, ...allProducts.filter((product) => !product.featured)]} />
+      <PayweekHero slides={slides} />
 
       <section className="jumia-flash-section">
         <div className="jumia-flash-header">

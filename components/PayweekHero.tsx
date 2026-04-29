@@ -17,8 +17,8 @@ import {
   Utensils,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { categories, type Product } from "@/lib/products";
-import { heroSlides, slideCopy } from "@/lib/hero-slides";
+import { categories } from "@/lib/products";
+import { type HeroSlide, slideCopy } from "@/lib/hero-slides";
 
 const categoryMeta = {
   Kitchen: { label: "Kitchen", Icon: Utensils },
@@ -37,22 +37,22 @@ const heroCategories = categories
     ...(categoryMeta[category as keyof typeof categoryMeta] || { label: category, Icon: Store }),
   }));
 
-export default function PayweekHero({ products: _products }: { products: Product[] }) {
+export default function PayweekHero({ slides }: { slides: HeroSlide[] }) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
 
   useEffect(() => {
-    if (heroSlides.length < 2) return;
+    if (slides.length < 2) return;
     const timer = window.setInterval(() => {
       setDirection(1);
-      setCurrent((index) => (index + 1) % heroSlides.length);
+      setCurrent((index) => (index + 1) % slides.length);
     }, 4800);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
-  if (!heroSlides.length) return null;
+  if (!slides.length) return null;
 
-  const slide = heroSlides[current];
+  const slide = slides[current];
   const copy = slideCopy(current);
 
   const goTo = (nextIndex: number) => {
@@ -60,7 +60,7 @@ export default function PayweekHero({ products: _products }: { products: Product
     setCurrent(nextIndex);
   };
 
-  const prev = () => goTo((current - 1 + heroSlides.length) % heroSlides.length);
+  const prev = () => goTo((current - 1 + slides.length) % slides.length);
 
   return (
     <section className="payweek-hero" aria-label="Pay week deals">
@@ -138,7 +138,7 @@ export default function PayweekHero({ products: _products }: { products: Product
         </div>
 
         <div className="payweek-dots" aria-label="Deal slides">
-          {heroSlides.map((_, index) => (
+          {slides.map((_, index) => (
             <button
               key={index}
               className={index === current ? "active" : ""}

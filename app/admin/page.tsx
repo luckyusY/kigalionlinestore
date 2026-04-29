@@ -13,9 +13,11 @@ import {
   Eye,
   EyeOff,
   ImagePlus,
+  Images,
   Loader2,
   LogOut,
   PackagePlus,
+  Plus,
   RefreshCw,
   Save,
   Settings2,
@@ -24,6 +26,7 @@ import {
   X,
 } from "lucide-react";
 import { categories } from "@/lib/products";
+import { type HeroSlide, heroSlides as defaultHeroSlides } from "@/lib/hero-slides";
 
 type TinyEditor = {
   getContent: (options?: { format?: string }) => string;
@@ -92,7 +95,7 @@ function formatRwfPrice(price: number | null | undefined) {
     : "Contact for price";
 }
 
-type AdminTab = "manage" | "add" | "settings";
+type AdminTab = "manage" | "add" | "settings" | "hero";
 
 export default function AdminPage() {
   // ── Auth ────────────────────────────────────────────────────────────
@@ -170,6 +173,12 @@ export default function AdminPage() {
   const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
   const [savingSettings, setSavingSettings] = useState(false);
 
+  // Hero slides
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(defaultHeroSlides);
+  const [heroLoading, setHeroLoading] = useState(false);
+  const [savingHero, setSavingHero] = useState(false);
+  const [heroUploadingField, setHeroUploadingField] = useState<string | null>(null);
+
   // Feedback
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
@@ -239,6 +248,74 @@ export default function AdminPage() {
     const timer = window.setTimeout(() => void loadSettings(), 0);
     return () => window.clearTimeout(timer);
   }, [isLoggedIn, activeTab, loadSettings]);
+
+  const loadHeroSlides = useCallback(async () => {
+    setHeroLoading(true);
+    try {
+      const r = await fetch("/api/admin/hero-slides");
+      const data = await r.json() as { slides?: HeroSlide[] };
+      setHeroSlides(data.slides ?? defaultHeroSlides);
+    } catch {
+      setError("Could not load hero slides.");
+    } finally {
+      setHeroLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn || activeTab !== "hero") return;
+    const timer = window.setTimeout(() => void loadHeroSlides(), 0);
+    return () => window.clearTimeout(timer);
+  }, [isLoggedIn, activeTab, loadHeroSlides]);
+
+  async function saveHeroSlides() {
+    setSavingHero(true);
+    setError("");
+    setStatus("");
+    try {
+      const r = await fetch("/api/admin/hero-slides", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slides: heroSlides }),
+      });
+      const data = await r.json() as { error?: string };
+      if (!r.ok) { setError(data.error ?? "Could not save hero slides."); return; }
+      setStatus("Hero slides saved. They will appear on the storefront immediately.");
+    } catch {
+      setError("Save failed — check your connection.");
+    } finally {
+      setSavingHero(false);
+    }
+  }
+
+  async function uploadHeroImage(file: File, slideIndex: number, field: keyof HeroSlide) {
+    const fieldKey = `${slideIndex}-${String(field)}`;
+    setHeroUploadingField(fieldKey);
+    const url = await doUpload(file);
+    if (url) {
+      setHeroSlides((prev) => prev.map((slide, i) =>
+        i === slideIndex ? { ...slide, [field]: url } : slide
+      ));
+    }
+    setHeroUploadingField(null);
+  }
+
+  function updateHeroSlide(index: number, field: keyof HeroSlide, value: string) {
+    setHeroSlides((prev) => prev.map((slide, i) =>
+      i === index ? { ...slide, [field]: value } : slide
+    ));
+  }
+
+  function addHeroSlide() {
+    setHeroSlides((prev) => [
+      ...prev,
+      { mainImage: "", thumb1: "", thumb2: "", title: "New Slide", price: "0 RWF", oldPrice: "0 RWF", link: "/products", accent: "Limited time offer" },
+    ]);
+  }
+
+  function removeHeroSlide(index: number) {
+    setHeroSlides((prev) => prev.filter((_, i) => i !== index));
+  }
 
   async function doUpload(file: File): Promise<string | null> {
     const fd = new FormData();
@@ -609,10 +686,11 @@ export default function AdminPage() {
 
         {/* ── Tabs ── */}
         <div className="admin-tab-bar">
-          {(["manage", "add", "settings"] as AdminTab[]).map((tab) => {
+          {(["manage", "add", "hero", "settings"] as AdminTab[]).map((tab) => {
             const meta = {
               manage:   { icon: <Database size={14} />,   label: "All Products" },
               add:      { icon: <PackagePlus size={14} />, label: "Add Product" },
+              hero:     { icon: <Images size={14} />,      label: "Hero Slides" },
               settings: { icon: <Settings2 size={14} />,  label: "Site Settings" },
             };
             return (
@@ -976,6 +1054,127 @@ export default function AdminPage() {
               </button>
             </div>
           </form>
+        )}
+
+        {/* ══════════════════════════════════════════════════
+            Tab: Hero Slides
+        ══════════════════════════════════════════════════ */}
+        {activeTab === "hero" && (
+          <div>
+            <p style={{ color: "#64748b", fontSize: 13, marginBottom: 20 }}>
+              Manage the carousel images on the homepage hero section. Upload your designed promotional posts for each slide.
+            </p>
+
+            {heroLoading ? (
+              <div className="admin-empty"><Loader2 size={20} className="admin-spin" style={{ display: "inline" }} /> Loading slides…</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {heroSlides.map((slide, index) => {
+                  const isUploading = (field: string) => heroUploadingField === `${index}-${field}`;
+
+                  return (
+                    <div key={index} style={{ background: "#fff", border: "1.5px solid #e5e7eb", borderRadius: 14, padding: "20px 18px" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                        <span style={{ fontWeight: 800, fontSize: 15, color: "#111827" }}>Slide {index + 1}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeHeroSlide(index)}
+                          style={{ background: "#fef2f2", color: "#ef4444", border: "1.5px solid #fecaca", borderRadius: 8, padding: "5px 10px", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700 }}
+                        >
+                          <Trash2 size={12} /> Remove
+                        </button>
+                      </div>
+
+                      {/* Image slots */}
+                      {(["mainImage", "thumb1", "thumb2"] as const).map((field) => {
+                        const labels = { mainImage: "Main Image (large centre)", thumb1: "Thumbnail 1 (small left)", thumb2: "Thumbnail 2 (small right)" };
+                        return (
+                          <div key={field} style={{ marginBottom: 14 }}>
+                            <label style={{ display: "block", fontWeight: 700, fontSize: 12, color: "#374151", marginBottom: 6 }}>
+                              <ImagePlus size={11} style={{ display: "inline", marginRight: 4 }} />
+                              {labels[field]}
+                            </label>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              {slide[field] && (
+                                <img
+                                  src={slide[field]}
+                                  alt=""
+                                  style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 8, border: "1.5px solid #e5e7eb", flexShrink: 0 }}
+                                />
+                              )}
+                              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
+                                <label style={{ display: "flex", alignItems: "center", gap: 6, background: "#f8fafc", border: "1.5px dashed #cbd5e1", borderRadius: 8, padding: "7px 10px", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#475569" }}>
+                                  {isUploading(field) ? <Loader2 size={12} className="admin-spin" /> : <CloudUpload size={12} />}
+                                  {isUploading(field) ? "Uploading…" : "Upload image"}
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    style={{ display: "none" }}
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) void uploadHeroImage(file, index, field);
+                                    }}
+                                  />
+                                </label>
+                                <input
+                                  value={slide[field]}
+                                  onChange={(e) => updateHeroSlide(index, field, e.target.value)}
+                                  placeholder="Or paste image URL"
+                                  style={{ border: "1.5px solid #e5e7eb", borderRadius: 8, padding: "7px 10px", fontSize: 12, outline: "none", width: "100%", boxSizing: "border-box" }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {/* Text fields */}
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 6 }}>
+                        <div className="admin-field" style={{ margin: 0 }}>
+                          <label>Title</label>
+                          <input value={slide.title} onChange={(e) => updateHeroSlide(index, "title", e.target.value)} placeholder="Product name" />
+                        </div>
+                        <div className="admin-field" style={{ margin: 0 }}>
+                          <label>Accent line</label>
+                          <input value={slide.accent} onChange={(e) => updateHeroSlide(index, "accent", e.target.value)} placeholder="Limited time offer" />
+                        </div>
+                        <div className="admin-field" style={{ margin: 0 }}>
+                          <label>Price</label>
+                          <input value={slide.price} onChange={(e) => updateHeroSlide(index, "price", e.target.value)} placeholder="65,000 RWF" />
+                        </div>
+                        <div className="admin-field" style={{ margin: 0 }}>
+                          <label>Old Price (crossed out)</label>
+                          <input value={slide.oldPrice} onChange={(e) => updateHeroSlide(index, "oldPrice", e.target.value)} placeholder="92,000 RWF" />
+                        </div>
+                        <div className="admin-field" style={{ margin: 0, gridColumn: "1 / -1" }}>
+                          <label>Shop Now link</label>
+                          <input value={slide.link} onChange={(e) => updateHeroSlide(index, "link", e.target.value)} placeholder="/products/product-slug" />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <button
+                  type="button"
+                  onClick={addHeroSlide}
+                  style={{ background: "#f8fafc", border: "2px dashed #cbd5e1", borderRadius: 14, padding: "14px", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "#64748b", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
+                >
+                  <Plus size={16} /> Add Slide
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => void saveHeroSlides()}
+                  disabled={savingHero || heroUploadingField !== null}
+                  className="admin-submit"
+                >
+                  {savingHero ? <Loader2 size={17} className="admin-spin" /> : <Save size={17} />}
+                  {savingHero ? "Saving…" : "Save All Slides"}
+                </button>
+              </div>
+            )}
+          </div>
         )}
 
         {/* ══════════════════════════════════════════════════
