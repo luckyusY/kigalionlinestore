@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
+import PayweekHero from "@/components/PayweekHero";
 import { categories, products as staticProducts, Product } from "@/lib/products";
 import { getDb } from "@/lib/mongodb";
 
@@ -38,6 +39,8 @@ export default async function HomePage() {
 
   return (
     <div className="temu-page">
+      <PayweekHero products={[...featured, ...allProducts.filter((product) => !product.featured)]} />
+
       <section className="temu-deal-rails">
         <div className="temu-deal-panel">
           <Link href="/products?sort=best-selling" className="temu-deal-title">
