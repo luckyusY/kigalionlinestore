@@ -16,7 +16,7 @@ import {
   Store,
   Utensils,
 } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { categories, type Product } from "@/lib/products";
 
 const categoryMeta = {
@@ -106,46 +106,45 @@ export default function PayweekHero({ products }: { products: Product[] }) {
         <div className="payweek-product-zone">
           <div className="payweek-rays" />
           <div className="payweek-pedestal" />
-          <AnimatePresence mode="popLayout" custom={direction} initial={false}>
-            <motion.div
-              key={product.id}
-              className="payweek-product-graphic"
-              custom={direction}
-              initial={{ opacity: 0, x: direction * 105, scale: 0.94 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: direction * -90, scale: 0.95 }}
-              transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <div className="payweek-product-card payweek-product-main">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  sizes="(max-width: 900px) 72vw, 330px"
-                  priority
-                  unoptimized
-                />
-              </div>
-              <div className="payweek-product-card payweek-product-secondary">
+          <motion.div
+            key={product.id}
+            className="payweek-product-graphic"
+            custom={direction}
+            initial={{ opacity: 0, x: direction * 90, scale: 0.96 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="payweek-product-card payweek-product-main">
+              <Image
+                src={product.image}
+                alt={product.name}
+                fill
+                sizes="(max-width: 900px) 72vw, 330px"
+                priority
+                unoptimized
+              />
+            </div>
+            <div className="payweek-product-support">
+              <div className="payweek-product-card">
                 <Image
                   src={secondaryProduct.image}
                   alt={secondaryProduct.name}
                   fill
-                  sizes="140px"
+                  sizes="92px"
                   unoptimized
                 />
               </div>
-              <div className="payweek-product-card payweek-product-tertiary">
+              <div className="payweek-product-card">
                 <Image
                   src={tertiaryProduct.image}
                   alt={tertiaryProduct.name}
                   fill
-                  sizes="120px"
+                  sizes="92px"
                   unoptimized
                 />
               </div>
-            </motion.div>
-          </AnimatePresence>
+            </div>
+          </motion.div>
         </div>
 
         <div className="payweek-dots" aria-label="Deal slides">
