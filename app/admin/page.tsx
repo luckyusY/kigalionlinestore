@@ -163,6 +163,7 @@ export default function AdminPage() {
   const [editImageUrls, setEditImageUrls] = useState<string[]>([]);
   const [savingEdit, setSavingEdit] = useState(false);
   const [uploadingEdit, setUploadingEdit] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [productSearch, setProductSearch] = useState("");
 
   // Settings
@@ -317,6 +318,7 @@ export default function AdminPage() {
 
   function startEdit(product: FullProduct) {
     setEditingId(String(product.id));
+    setPendingDeleteId(null);
     setEditImageUrl(product.image);
     setEditImageUrls(imageList(product.image, product.images ?? []));
     setEditForm({
@@ -373,7 +375,6 @@ export default function AdminPage() {
   }
 
   async function deleteProduct(id: string) {
-    if (!window.confirm("Delete this product permanently?")) return;
     setError("");
     try {
       const r = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
@@ -382,6 +383,7 @@ export default function AdminPage() {
       setStatus("Product deleted.");
       setAllProducts((prev) => prev.filter((p) => String(p.id) !== id));
       if (editingId === id) setEditingId(null);
+      setPendingDeleteId(null);
     } catch {
       setError("Delete failed — check your connection.");
     }
@@ -671,6 +673,8 @@ export default function AdminPage() {
                   {filtered.map((product) => {
                     const isStatic = typeof product.id === "number";
                     const isEditing = editingId === String(product.id);
+                    const productId = String(product.id);
+                    const isConfirmingDelete = pendingDeleteId === productId;
 
                     return (
                       <div key={product.id}>
@@ -717,14 +721,37 @@ export default function AdminPage() {
                               {isEditing ? "Close" : "Edit"}
                             </button>
                             {!isStatic && (
-                              <button
-                                type="button"
-                                onClick={() => void deleteProduct(String(product.id))}
-                                style={{ background: "#fef2f2", color: "#ef4444", border: "1.5px solid #fecaca", borderRadius: 8, padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "center" }}
-                                title="Delete"
-                              >
-                                <Trash2 size={12} />
-                              </button>
+                              isConfirmingDelete ? (
+                                <div className="admin-delete-confirm">
+                                  <span>Delete?</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => void deleteProduct(productId)}
+                                    className="danger"
+                                  >
+                                    Confirm
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setPendingDeleteId(null)}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setPendingDeleteId(productId);
+                                    setEditingId(null);
+                                  }}
+                                  style={{ background: "#fef2f2", color: "#ef4444", border: "1.5px solid #fecaca", borderRadius: 8, padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 800 }}
+                                  title="Delete"
+                                >
+                                  <Trash2 size={12} />
+                                  Delete
+                                </button>
+                              )
                             )}
                           </div>
                         </div>
