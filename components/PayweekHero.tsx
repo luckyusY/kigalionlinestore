@@ -37,6 +37,19 @@ const heroCategories = categories
     ...(categoryMeta[category as keyof typeof categoryMeta] || { label: category, Icon: Store }),
   }));
 
+function displayPrice(value: string) {
+  const trimmed = value.trim();
+  const withoutCurrency = trimmed.replace(/\bRWF\b/gi, "").trim();
+  const compact = withoutCurrency.replace(/[,\s]/g, "");
+  const digits = compact.replace(/[^\d]/g, "");
+
+  if (digits.length >= 4 && digits.length === compact.length) {
+    return `${Number(digits).toLocaleString("en-US")} RWF`;
+  }
+
+  return /\bRWF\b/i.test(trimmed) ? `${withoutCurrency} RWF` : trimmed;
+}
+
 export default function PayweekHero({ slides }: { slides: HeroSlide[] }) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -85,8 +98,8 @@ export default function PayweekHero({ slides }: { slides: HeroSlide[] }) {
           </h1>
           <h2>{slide.title}</h2>
           <div className="payweek-price-pill">
-            <del>{slide.oldPrice}</del>
-            <strong>{slide.price}</strong>
+            <del>{displayPrice(slide.oldPrice)}</del>
+            <strong>{displayPrice(slide.price)}</strong>
           </div>
           <p>{slide.accent}</p>
           <small>T&Cs Apply</small>
@@ -145,8 +158,15 @@ export default function PayweekHero({ slides }: { slides: HeroSlide[] }) {
           <Store size={28} />
           <span><strong>SELL ON KIGALI</strong>Millions Of Visitors</span>
         </Link>
-        <Link href="/products" className="payweek-live-card">
-          <strong>LIVE<br />NOW</strong>
+        <Link href={slide.link} className="payweek-live-card product-ad">
+          <strong>{copy.kicker}<br />{copy.title}</strong>
+          <Image
+            src={slide.image}
+            alt={`${slide.title} deal`}
+            fill
+            sizes="218px"
+            unoptimized
+          />
           <span>SHOP NOW</span>
         </Link>
       </aside>
