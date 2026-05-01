@@ -10,6 +10,8 @@ export type Product = {
   images?: string[];
   inStock: boolean;
   featured?: boolean;
+  averageRating?: number;
+  reviewCount?: number;
 };
 
 export const products: Product[] = [

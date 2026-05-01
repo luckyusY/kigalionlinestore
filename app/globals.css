@@ -596,6 +596,7 @@ html.lenis, html.lenis body { height: auto; }
   gap: 1px;
   color: #111;
   font-size: 10px;
+  text-decoration: none;
 }
 .temu-rating-row span {
   color: #555;
@@ -620,12 +621,17 @@ html.lenis, html.lenis body { height: auto; }
   color: #111;
   background: #fff;
 }
-.temu-order-button {
+.temu-card-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  margin-top: 4px;
+}
+.temu-order-button,
+.temu-call-button {
   margin-top: 4px;
   min-height: 34px;
   border-radius: 999px;
-  background: #ff6a00;
-  color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -633,9 +639,23 @@ html.lenis, html.lenis body { height: auto; }
   text-decoration: none;
   font-size: 12px;
   font-weight: 950;
+}
+.temu-order-button {
+  background: #ff6a00;
+  color: #fff;
   box-shadow: 0 6px 14px rgba(255,106,0,0.24);
 }
 .temu-order-button:hover { background: #e85f00; }
+.temu-call-button {
+  min-width: 68px;
+  padding: 0 10px;
+  color: #111827;
+  background: #fff;
+  border: 1.5px solid #d1d5db;
+}
+.temu-call-button:hover {
+  border-color: #111827;
+}
 .temu-delivery {
   color: #00a000;
   font-size: 10px;

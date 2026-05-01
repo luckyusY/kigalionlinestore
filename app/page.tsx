@@ -6,6 +6,7 @@ import PayweekHero from "@/components/PayweekHero";
 import { categories, products as staticProducts, Product } from "@/lib/products";
 import { heroSlides as defaultHeroSlides, HeroSlide } from "@/lib/hero-slides";
 import { getDb } from "@/lib/mongodb";
+import { getReviewSummaries } from "@/lib/reviews";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,12 @@ async function getMergedProducts(): Promise<Product[]> {
     const docs = await db.collection("products").find({}).sort({ createdAt: -1 }).toArray();
     const dbProducts = docs.map(({ _id, ...p }) => ({ ...p, id: _id.toString() })) as Product[];
     const dbSlugs = new Set(dbProducts.map((p) => p.slug));
-    return [...dbProducts, ...staticProducts.filter((p) => !dbSlugs.has(p.slug))];
+    const merged = [...dbProducts, ...staticProducts.filter((p) => !dbSlugs.has(p.slug))];
+    const reviewSummaries = await getReviewSummaries(merged.map((product) => product.slug));
+    return merged.map((product) => ({
+      ...product,
+      ...(reviewSummaries[product.slug] ?? { averageRating: 0, reviewCount: 0 }),
+    }));
   } catch {
     return staticProducts;
   }

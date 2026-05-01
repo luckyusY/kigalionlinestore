@@ -15,6 +15,11 @@ export type ReviewSummary = {
   reviewCount: number;
 };
 
+export type CompactReviewSummary = {
+  averageRating: number;
+  reviewCount: number;
+};
+
 function cleanText(value: unknown, maxLength: number) {
   return String(value ?? "").replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
@@ -69,5 +74,37 @@ export async function getReviewSummary(productSlug: string): Promise<ReviewSumma
     return { reviews, averageRating, reviewCount };
   } catch {
     return { reviews: [], averageRating: 0, reviewCount: 0 };
+  }
+}
+
+export async function getReviewSummaries(productSlugs: string[]): Promise<Record<string, CompactReviewSummary>> {
+  const slugs = Array.from(new Set(productSlugs.filter(Boolean)));
+  if (!slugs.length) return {};
+
+  try {
+    const db = await getDb();
+    const rows = await db
+      .collection("reviews")
+      .aggregate<{ _id: string; averageRating: number; reviewCount: number }>([
+        { $match: { productSlug: { $in: slugs }, approved: { $ne: false } } },
+        {
+          $group: {
+            _id: "$productSlug",
+            averageRating: { $avg: "$rating" },
+            reviewCount: { $sum: 1 },
+          },
+        },
+      ])
+      .toArray();
+
+    return rows.reduce<Record<string, CompactReviewSummary>>((summaries, row) => {
+      summaries[row._id] = {
+        averageRating: Math.round(row.averageRating * 10) / 10,
+        reviewCount: row.reviewCount,
+      };
+      return summaries;
+    }, {});
+  } catch {
+    return {};
   }
 }
