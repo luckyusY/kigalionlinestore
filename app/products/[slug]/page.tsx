@@ -14,7 +14,9 @@ import {
 } from "lucide-react";
 import { getDb } from "@/lib/mongodb";
 import { getProductBySlug, numericId, Product, products as staticProducts } from "@/lib/products";
+import { getReviewSummary } from "@/lib/reviews";
 import ProductCard from "@/components/ProductCard";
+import ProductReviews from "@/components/ProductReviews";
 import { FadeIn, StaggerGrid, StaggerItem } from "@/components/FadeIn";
 
 export const dynamic = "force-dynamic";
@@ -72,14 +74,16 @@ const categoryColors: Record<string, { bg: string; text: string }> = {
 function productStats(product: Product) {
   const id = numericId(product.id);
   const sold = 39 + ((id * 137) % 8300);
-  const reviews = 12 + ((id * 41) % 420);
   const oldPrice = product.price ? Math.round(product.price * 1.42) : null;
 
   return {
     sold: sold > 999 ? `${(sold / 1000).toFixed(1)}K` : String(sold),
-    reviews,
     oldPrice,
   };
+}
+
+function starFill(index: number, averageRating: number) {
+  return index < Math.round(averageRating) ? "#111827" : "transparent";
 }
 
 export default async function ProductDetailPage({
@@ -99,6 +103,7 @@ export default async function ProductDetailPage({
   const galleryImages = Array.from(new Set([product.image, ...(product.images ?? [])].filter(Boolean)));
   const catStyle = categoryColors[product.category] ?? { bg: "#f3f4f6", text: "#374151" };
   const stats = productStats(product);
+  const reviewSummary = await getReviewSummary(product.slug);
   const waMsg = encodeURIComponent(
     `Hi! I'd like to order: ${product.name}\nPrice: ${product.priceDisplay}\nPlease confirm availability and delivery details.`
   );
@@ -171,9 +176,13 @@ export default async function ProductDetailPage({
 
               <div className="product-rating-row">
                 {Array.from({ length: 5 }, (_, index) => (
-                  <Star key={index} size={13} fill="#111827" strokeWidth={0} />
+                  <Star key={index} size={13} fill={starFill(index, reviewSummary.averageRating)} strokeWidth={1.8} />
                 ))}
-                <span>{stats.reviews} reviews</span>
+                <a href="#reviews">
+                  {reviewSummary.reviewCount
+                    ? `${reviewSummary.averageRating.toFixed(1)} (${reviewSummary.reviewCount} reviews)`
+                    : "No reviews yet"}
+                </a>
                 <span>{stats.sold} sold</span>
               </div>
 
@@ -243,6 +252,8 @@ export default async function ProductDetailPage({
             </FadeIn>
           </section>
         )}
+
+        <ProductReviews productSlug={product.slug} initialSummary={reviewSummary} />
 
         {related.length > 0 && (
           <section className="product-related-section">
