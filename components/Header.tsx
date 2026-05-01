@@ -65,14 +65,21 @@ export default function Header() {
           <BadgeCheck size={13} fill="currentColor" />
           Sell on Kigali Store
         </Link>
-        <span>KIGALI STORE</span>
+        <span>KOS STORE</span>
         <span>K-PAY</span>
         <span>FAST DELIVERY</span>
       </div>
 
       <div className="jumia-main-nav">
-        <Link href="/" className="jumia-logo" onClick={() => setMenuOpen(false)} aria-label="Kigali Online Store">
-          KIGALI<span>★</span>
+        <Link href="/" className="jumia-logo" onClick={() => setMenuOpen(false)} aria-label="KOS - Save Time Buy online">
+          <span className="kos-mark" aria-hidden="true">
+            <ShoppingCart size={24} strokeWidth={2.8} />
+            <i />
+          </span>
+          <span className="kos-word">
+            <strong>K<span>O</span>S</strong>
+            <small>Save Time Buy online</small>
+          </span>
         </Link>
 
         <form className="jumia-search" onSubmit={(event) => { event.preventDefault(); doSearch(desktopQ); }}>

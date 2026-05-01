@@ -140,30 +140,103 @@ html.lenis, html.lenis body { height: auto; }
   box-shadow: 0 1px 0 rgba(15,23,42,0.08);
 }
 .jumia-logo {
-  color: #2d2f36;
+  color: #111;
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  gap: 8px;
   text-decoration: none;
-  font-size: clamp(1.55rem, 2.5vw, 2.25rem);
-  font-weight: 950;
-  letter-spacing: 0;
   line-height: 1;
   white-space: nowrap;
 }
-.jumia-logo span {
-  width: 21px;
-  height: 21px;
-  margin-left: 3px;
-  border-radius: 999px;
-  background: #f68b1e;
-  color: #fff;
+.kos-mark {
+  position: relative;
+  width: 48px;
+  height: 34px;
+  flex: 0 0 48px;
+  border: 3px solid #84c900;
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  transform: skewX(-13deg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+}
+.kos-mark svg {
+  color: #84c900;
+  transform: skewX(13deg);
+}
+.kos-mark::before,
+.kos-mark::after {
+  content: "";
+  position: absolute;
+  bottom: -13px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #84c900;
+}
+.kos-mark::before { left: 7px; }
+.kos-mark::after { right: 7px; }
+.kos-mark i {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 3px solid #fff;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, transparent 45%, #fff 45% 55%, transparent 55%),
+    linear-gradient(0deg, transparent 45%, #fff 45% 55%, transparent 55%),
+    #111;
+  box-shadow: 0 0 0 2px #111;
+  transform: skewX(13deg);
+}
+.kos-word {
+  display: grid;
+  gap: 2px;
+}
+.kos-word strong {
+  display: block;
+  color: #111;
+  font-size: clamp(1.7rem, 2.6vw, 2.55rem);
+  font-weight: 950;
+  letter-spacing: 0;
+  line-height: 0.82;
+}
+.kos-word strong span {
+  color: #84c900;
+}
+.kos-word small {
+  color: #4b5563;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0;
   line-height: 1;
+}
+.jumia-logo:hover .kos-word strong,
+.jumia-logo:hover {
+  color: #111;
+}
+.jumia-logo:hover .kos-word strong span {
+  color: #6fb000;
+}
+.jumia-logo:hover .kos-mark {
+  border-color: #6fb000;
+}
+.jumia-logo:hover .kos-mark svg {
+  color: #6fb000;
+}
+.jumia-logo:hover .kos-mark::before,
+.jumia-logo:hover .kos-mark::after {
+  background-color: #6fb000;
+}
+/* keep the globe background black while allowing wheel dots to change */
+.jumia-logo:hover .kos-mark i {
+  background:
+    linear-gradient(90deg, transparent 45%, #fff 45% 55%, transparent 55%),
+    linear-gradient(0deg, transparent 45%, #fff 45% 55%, transparent 55%),
+    #111;
 }
 .jumia-search {
   height: 48px;
@@ -414,12 +487,35 @@ html.lenis, html.lenis body { height: auto; }
     overflow: hidden;
   }
   .jumia-logo {
-    font-size: 1.08rem;
+    gap: 6px;
   }
-  .jumia-logo span {
-    width: 15px;
-    height: 15px;
-    font-size: 10px;
+  .kos-mark {
+    width: 34px;
+    height: 24px;
+    flex-basis: 34px;
+    border-width: 2px;
+    border-radius: 0 0 8px 8px;
+  }
+  .kos-mark svg {
+    width: 17px;
+    height: 17px;
+  }
+  .kos-mark i {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+  }
+  .kos-mark::before,
+  .kos-mark::after {
+    bottom: -10px;
+    width: 7px;
+    height: 7px;
+  }
+  .kos-word strong {
+    font-size: 1.45rem;
+  }
+  .kos-word small {
+    display: none;
   }
   .jumia-search {
     display: flex;
