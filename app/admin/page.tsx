@@ -22,7 +22,9 @@ import {
   Save,
   Settings2,
   ShieldCheck,
+  Star,
   Trash2,
+  TrendingUp,
   X,
 } from "lucide-react";
 import { categories } from "@/lib/products";
@@ -61,6 +63,24 @@ type SiteSettings = {
   tiktok: string;
   instagram: string;
   facebook: string;
+  flashTitle: string;
+  flashEnabled: boolean;
+  flashEndsAt: string;
+  flashLink: string;
+  flashProductSlugs: string;
+};
+
+type AdminReview = {
+  id: string;
+  productSlug: string;
+  name: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+};
+
+type PopularProduct = FullProduct & {
+  viewCount?: number;
 };
 
 declare global {
@@ -79,6 +99,11 @@ const defaultSettings: SiteSettings = {
   tiktok: "https://www.tiktok.com/@kigalionlinestore",
   instagram: "https://www.instagram.com/kigali_online_store/",
   facebook: "https://web.facebook.com/kigalionlinestore/",
+  flashTitle: "Flash Sales",
+  flashEnabled: true,
+  flashEndsAt: "",
+  flashLink: "/products?sort=best-selling",
+  flashProductSlugs: "",
 };
 
 function slugify(v: string) {
@@ -95,7 +120,7 @@ function formatRwfPrice(price: number | null | undefined) {
     : "Contact for price";
 }
 
-type AdminTab = "manage" | "add" | "settings" | "hero";
+type AdminTab = "manage" | "add" | "hero" | "settings" | "reviews" | "popular";
 
 export default function AdminPage() {
   // ── Auth ────────────────────────────────────────────────────────────
@@ -166,12 +191,22 @@ export default function AdminPage() {
   const [editImageUrls, setEditImageUrls] = useState<string[]>([]);
   const [savingEdit, setSavingEdit] = useState(false);
   const [uploadingEdit, setUploadingEdit] = useState(false);
+  const [stockUpdatingId, setStockUpdatingId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [productSearch, setProductSearch] = useState("");
 
   // Settings
   const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
   const [savingSettings, setSavingSettings] = useState(false);
+
+  // Reviews
+  const [reviews, setReviews] = useState<AdminReview[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
+
+  // Popular products
+  const [popularProducts, setPopularProducts] = useState<PopularProduct[]>([]);
+  const [popularLoading, setPopularLoading] = useState(false);
 
   // Hero slides
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(defaultHeroSlides);
@@ -220,7 +255,7 @@ export default function AdminPage() {
     setProductsLoading(true);
     setError("");
     try {
-      const r = await fetch("/api/products");
+      const r = await fetch("/api/admin/products");
       const data = await r.json() as { products?: FullProduct[] };
       setAllProducts(data.products ?? []);
     } catch {
@@ -248,6 +283,48 @@ export default function AdminPage() {
     const timer = window.setTimeout(() => void loadSettings(), 0);
     return () => window.clearTimeout(timer);
   }, [isLoggedIn, activeTab, loadSettings]);
+
+  const loadReviews = useCallback(async () => {
+    setReviewsLoading(true);
+    setError("");
+    try {
+      const r = await fetch("/api/admin/reviews");
+      const data = await r.json() as { reviews?: AdminReview[]; error?: string };
+      if (!r.ok) { setError(data.error ?? "Could not load reviews."); return; }
+      setReviews(data.reviews ?? []);
+    } catch {
+      setError("Could not load reviews.");
+    } finally {
+      setReviewsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn || activeTab !== "reviews") return;
+    const timer = window.setTimeout(() => void loadReviews(), 0);
+    return () => window.clearTimeout(timer);
+  }, [isLoggedIn, activeTab, loadReviews]);
+
+  const loadPopularProducts = useCallback(async () => {
+    setPopularLoading(true);
+    setError("");
+    try {
+      const r = await fetch("/api/admin/views");
+      const data = await r.json() as { products?: PopularProduct[]; error?: string };
+      if (!r.ok) { setError(data.error ?? "Could not load popular products."); return; }
+      setPopularProducts(data.products ?? []);
+    } catch {
+      setError("Could not load popular products.");
+    } finally {
+      setPopularLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn || activeTab !== "popular") return;
+    const timer = window.setTimeout(() => void loadPopularProducts(), 0);
+    return () => window.clearTimeout(timer);
+  }, [isLoggedIn, activeTab, loadPopularProducts]);
 
   const loadHeroSlides = useCallback(async () => {
     setHeroLoading(true);
@@ -451,6 +528,54 @@ export default function AdminPage() {
     }
   }
 
+  async function toggleStock(product: FullProduct) {
+    const productId = String(product.id);
+    const nextInStock = !product.inStock;
+    setStockUpdatingId(productId);
+    setError("");
+    setStatus("");
+
+    try {
+      const isStatic = typeof product.id === "number";
+      const payload = {
+        name: product.name,
+        slug: product.slug,
+        description: product.description,
+        price: product.price,
+        priceDisplay: product.priceDisplay,
+        category: product.category,
+        image: product.image,
+        images: imageList(product.image, product.images ?? []),
+        inStock: nextInStock,
+        featured: Boolean(product.featured),
+      };
+      const r = isStatic
+        ? await fetch("/api/admin/products", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+        : await fetch(`/api/admin/products/${product.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ inStock: nextInStock }),
+          });
+
+      const data = await r.json() as { error?: string };
+      if (!r.ok) { setError(data.error ?? "Could not update stock status."); return; }
+      setStatus(nextInStock ? "Product is visible on the website again." : "Product hidden from the website until marked in stock.");
+      setAllProducts((prev) => prev.map((item) =>
+        String(item.id) === productId ? { ...item, inStock: nextInStock } : item
+      ));
+      if (editingId === productId) setEditForm((form) => ({ ...form, inStock: nextInStock }));
+      await loadAllProducts();
+    } catch {
+      setError("Stock update failed — check your connection.");
+    } finally {
+      setStockUpdatingId(null);
+    }
+  }
+
   async function deleteProduct(id: string) {
     setError("");
     try {
@@ -520,6 +645,27 @@ export default function AdminPage() {
     } finally {
       setSavingSettings(false);
     }
+  }
+
+  async function deleteReview(id: string) {
+    setDeletingReviewId(id);
+    setError("");
+    setStatus("");
+    try {
+      const r = await fetch(`/api/admin/reviews?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      const data = await r.json() as { error?: string };
+      if (!r.ok) { setError(data.error ?? "Could not delete review."); return; }
+      setReviews((prev) => prev.filter((review) => review.id !== id));
+      setStatus("Review deleted.");
+    } catch {
+      setError("Could not delete review.");
+    } finally {
+      setDeletingReviewId(null);
+    }
+  }
+
+  function reviewDate(value: string) {
+    return new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(value));
   }
 
   const filtered = allProducts.filter((p) => {
@@ -686,12 +832,14 @@ export default function AdminPage() {
 
         {/* ── Tabs ── */}
         <div className="admin-tab-bar">
-          {(["manage", "add", "hero", "settings"] as AdminTab[]).map((tab) => {
+          {(["manage", "add", "hero", "settings", "reviews", "popular"] as AdminTab[]).map((tab) => {
             const meta = {
               manage:   { icon: <Database size={14} />,   label: "All Products" },
               add:      { icon: <PackagePlus size={14} />, label: "Add Product" },
               hero:     { icon: <Images size={14} />,      label: "Hero Slides" },
               settings: { icon: <Settings2 size={14} />,  label: "Site Settings" },
+              reviews:  { icon: <Star size={14} />,       label: "Reviews" },
+              popular:  { icon: <TrendingUp size={14} />,  label: "Popular" },
             };
             return (
               <button
@@ -790,6 +938,34 @@ export default function AdminPage() {
                             )}
                           </div>
                           <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
+                            <button
+                              type="button"
+                              onClick={() => void toggleStock(product)}
+                              disabled={stockUpdatingId === productId}
+                              style={{
+                                background: product.inStock ? "#fff7ed" : "#ecfdf5",
+                                color: product.inStock ? "#c2410c" : "#047857",
+                                border: `1.5px solid ${product.inStock ? "#fed7aa" : "#a7f3d0"}`,
+                                borderRadius: 8,
+                                padding: "6px 11px",
+                                cursor: stockUpdatingId === productId ? "wait" : "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 4,
+                                fontSize: 12,
+                                fontWeight: 800,
+                              }}
+                              title={product.inStock ? "Hide from website" : "Show on website"}
+                            >
+                              {stockUpdatingId === productId ? (
+                                <Loader2 size={12} className="admin-spin" />
+                              ) : product.inStock ? (
+                                <EyeOff size={12} />
+                              ) : (
+                                <Eye size={12} />
+                              )}
+                              {product.inStock ? "Mark Out" : "Mark In"}
+                            </button>
                             <button
                               type="button"
                               onClick={() => (isEditing ? setEditingId(null) : startEdit(product))}
@@ -1173,6 +1349,97 @@ export default function AdminPage() {
         )}
 
         {/* ══════════════════════════════════════════════════
+            Tab: Popular Products
+        ══════════════════════════════════════════════════ */}
+        {activeTab === "popular" && (
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
+              <p style={{ color: "#64748b", fontSize: 13, margin: 0 }}>Products ranked by real customer views.</p>
+              <button
+                type="button"
+                onClick={() => void loadPopularProducts()}
+                disabled={popularLoading}
+                style={{ background: "#111827", color: "#fff", border: "none", borderRadius: 10, padding: "9px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+              >
+                <RefreshCw size={13} className={popularLoading ? "admin-spin" : ""} />
+                {popularLoading ? "Loading..." : "Refresh"}
+              </button>
+            </div>
+
+            {popularLoading && popularProducts.length === 0 ? (
+              <div className="admin-empty"><Loader2 size={20} className="admin-spin" style={{ display: "inline" }} /> Loading popular products...</div>
+            ) : popularProducts.length === 0 ? (
+              <div className="admin-empty">No product views recorded yet.</div>
+            ) : (
+              <div className="admin-popular-list">
+                {popularProducts.map((product, index) => (
+                  <article key={product.slug} className="admin-popular-row">
+                    <span>#{index + 1}</span>
+                    <img src={product.image} alt="" />
+                    <div>
+                      <strong>{product.name}</strong>
+                      <small>{product.category} · {product.slug}</small>
+                    </div>
+                    <b>{(product.viewCount ?? 0).toLocaleString("en-US")} views</b>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════
+            Tab: Reviews
+        ══════════════════════════════════════════════════ */}
+        {activeTab === "reviews" && (
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
+              <p style={{ color: "#64748b", fontSize: 13, margin: 0 }}>Manage customer reviews shown on product pages.</p>
+              <button
+                type="button"
+                onClick={() => void loadReviews()}
+                disabled={reviewsLoading}
+                style={{ background: "#111827", color: "#fff", border: "none", borderRadius: 10, padding: "9px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+              >
+                <RefreshCw size={13} className={reviewsLoading ? "admin-spin" : ""} />
+                {reviewsLoading ? "Loading..." : "Refresh"}
+              </button>
+            </div>
+
+            {reviewsLoading && reviews.length === 0 ? (
+              <div className="admin-empty"><Loader2 size={20} className="admin-spin" style={{ display: "inline" }} /> Loading reviews...</div>
+            ) : reviews.length === 0 ? (
+              <div className="admin-empty">No customer reviews yet.</div>
+            ) : (
+              <div className="admin-review-list">
+                {reviews.map((review) => (
+                  <article key={review.id} className="admin-review-card">
+                    <div>
+                      <strong>{review.name}</strong>
+                      <span>{reviewDate(review.createdAt)} · {review.productSlug}</span>
+                    </div>
+                    <div className="admin-review-stars" aria-label={`${review.rating} stars`}>
+                      {Array.from({ length: 5 }, (_, index) => (
+                        <Star key={index} size={14} fill={index < review.rating ? "#f59e0b" : "transparent"} />
+                      ))}
+                    </div>
+                    <p>{review.comment}</p>
+                    <button
+                      type="button"
+                      onClick={() => void deleteReview(review.id)}
+                      disabled={deletingReviewId === review.id}
+                    >
+                      {deletingReviewId === review.id ? <Loader2 size={13} className="admin-spin" /> : <Trash2 size={13} />}
+                      Delete Review
+                    </button>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════
             Tab: Site Settings
         ══════════════════════════════════════════════════ */}
         {activeTab === "settings" && (
@@ -1203,6 +1470,44 @@ export default function AdminPage() {
             <div className="admin-field admin-field-full">
               <label>Support Text</label>
               <input name="supportText" value={settings.supportText} onChange={(e) => setSettings((s) => ({ ...s, supportText: e.target.value }))} />
+            </div>
+            <div className="admin-field admin-field-full" style={{ borderTop: "1px solid #e5e7eb", paddingTop: 16 }}>
+              <label>Flash Sales Section</label>
+              <p style={{ color: "#64748b", fontSize: 12, margin: 0 }}>Control the homepage red flash-sales block, countdown, link, and which product slugs appear.</p>
+            </div>
+            <div className="admin-checks admin-field-full">
+              <label>
+                <input
+                  name="flashEnabled"
+                  type="checkbox"
+                  checked={settings.flashEnabled}
+                  onChange={(e) => setSettings((s) => ({ ...s, flashEnabled: e.target.checked }))}
+                />
+                Show Flash Sales on homepage
+              </label>
+            </div>
+            <div className="admin-field">
+              <label>Flash Title</label>
+              <input name="flashTitle" value={settings.flashTitle} onChange={(e) => setSettings((s) => ({ ...s, flashTitle: e.target.value }))} />
+            </div>
+            <div className="admin-field">
+              <label>Countdown Ends At</label>
+              <input name="flashEndsAt" type="datetime-local" value={settings.flashEndsAt} onChange={(e) => setSettings((s) => ({ ...s, flashEndsAt: e.target.value }))} />
+            </div>
+            <div className="admin-field admin-field-full">
+              <label>See All Link</label>
+              <input name="flashLink" value={settings.flashLink} onChange={(e) => setSettings((s) => ({ ...s, flashLink: e.target.value }))} />
+            </div>
+            <div className="admin-field admin-field-full">
+              <label>Flash Product Slugs</label>
+              <textarea
+                name="flashProductSlugs"
+                rows={4}
+                value={settings.flashProductSlugs}
+                onChange={(e) => setSettings((s) => ({ ...s, flashProductSlugs: e.target.value }))}
+                placeholder="mini-steppers&#10;air-fryer&#10;blender-8in1"
+              />
+              <p className="admin-hint">One slug per line, or separate with commas. Leave empty to use the first available products.</p>
             </div>
             <div className="admin-field admin-field-full">
               <label>TikTok URL</label>

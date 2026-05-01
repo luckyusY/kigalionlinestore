@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { adminUnauthorized, verifyAdminSession } from "@/lib/admin-auth";
+import { Product, products as staticProducts } from "@/lib/products";
 
 export const runtime = "nodejs";
 
@@ -39,14 +40,15 @@ export async function GET(request: NextRequest) {
     .collection("products")
     .find({})
     .sort({ createdAt: -1 })
-    .limit(20)
     .toArray();
+  const dbProducts = products.map(({ _id, ...product }) => ({
+    ...product,
+    id: _id.toString(),
+  })) as unknown as Product[];
+  const dbSlugs = new Set(dbProducts.map((product) => product.slug));
 
   return NextResponse.json({
-    products: products.map(({ _id, ...product }) => ({
-      ...product,
-      id: _id.toString(),
-    })),
+    products: [...dbProducts, ...staticProducts.filter((product) => !dbSlugs.has(product.slug))],
   });
 }
 

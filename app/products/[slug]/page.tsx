@@ -13,10 +13,13 @@ import {
   Truck,
 } from "lucide-react";
 import { getDb } from "@/lib/mongodb";
-import { getProductBySlug, numericId, Product, products as staticProducts } from "@/lib/products";
+import { getProductBySlug, Product, products as staticProducts } from "@/lib/products";
 import { getReviewSummary } from "@/lib/reviews";
+import { getViewCounts } from "@/lib/views";
 import ProductCard from "@/components/ProductCard";
 import ProductReviews from "@/components/ProductReviews";
+import ProductViewTracker from "@/components/ProductViewTracker";
+import AddToCartButton from "@/components/AddToCartButton";
 import { FadeIn, StaggerGrid, StaggerItem } from "@/components/FadeIn";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +30,8 @@ async function getProduct(slug: string): Promise<Product | undefined> {
     const doc = await db.collection("products").findOne({ slug });
     if (doc) {
       const { _id, ...rest } = doc;
-      return { ...rest, id: _id.toString() } as Product;
+      const product = { ...rest, id: _id.toString() } as Product;
+      return product.inStock === false ? undefined : product;
     }
   } catch {}
 
@@ -43,7 +47,10 @@ async function getMergedProducts(): Promise<Product[]> {
       id: _id.toString(),
     })) as Product[];
     const dbSlugs = new Set(dbProducts.map((product) => product.slug));
-    return [...dbProducts, ...staticProducts.filter((product) => !dbSlugs.has(product.slug))];
+    const merged = [...dbProducts, ...staticProducts.filter((product) => !dbSlugs.has(product.slug))]
+      .filter((product) => product.inStock !== false);
+    const viewCounts = await getViewCounts(merged.map((item) => item.slug));
+    return merged.map((item) => ({ ...item, ...(viewCounts[item.slug] ?? { viewCount: 0 }) }));
   } catch {
     return staticProducts;
   }
@@ -72,12 +79,9 @@ const categoryColors: Record<string, { bg: string; text: string }> = {
 };
 
 function productStats(product: Product) {
-  const id = numericId(product.id);
-  const sold = 39 + ((id * 137) % 8300);
   const oldPrice = product.price ? Math.round(product.price * 1.42) : null;
 
   return {
-    sold: sold > 999 ? `${(sold / 1000).toFixed(1)}K` : String(sold),
     oldPrice,
   };
 }
@@ -103,13 +107,15 @@ export default async function ProductDetailPage({
   const galleryImages = Array.from(new Set([product.image, ...(product.images ?? [])].filter(Boolean)));
   const catStyle = categoryColors[product.category] ?? { bg: "#f3f4f6", text: "#374151" };
   const stats = productStats(product);
-  const reviewSummary = await getReviewSummary(product.slug);
+  const [reviewSummary, viewCounts] = await Promise.all([getReviewSummary(product.slug), getViewCounts([product.slug])]);
+  const viewCount = viewCounts[product.slug]?.viewCount ?? 0;
   const waMsg = encodeURIComponent(
     `Hi! I'd like to order: ${product.name}\nPrice: ${product.priceDisplay}\nPlease confirm availability and delivery details.`
   );
 
   return (
     <div className="product-detail-page">
+      <ProductViewTracker slug={product.slug} />
       <div className="product-breadcrumb-wrap">
         <div className="product-breadcrumb">
           <Link href="/">Home</Link>
@@ -183,7 +189,7 @@ export default async function ProductDetailPage({
                     ? `${reviewSummary.averageRating.toFixed(1)} (${reviewSummary.reviewCount} reviews)`
                     : "No reviews yet"}
                 </a>
-                <span>{stats.sold} sold</span>
+                <span>{viewCount.toLocaleString("en-US")} views</span>
               </div>
 
               <div className="product-price-card">
@@ -200,6 +206,7 @@ export default async function ProductDetailPage({
               />
 
               <div className="product-cta-stack">
+                <AddToCartButton product={product} className="product-cart-button" />
                 <a
                   href={`https://wa.me/250784734956?text=${waMsg}`}
                   target="_blank"

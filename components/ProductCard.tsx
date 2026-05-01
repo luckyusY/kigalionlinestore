@@ -2,16 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { MessageCircle, Phone, Star } from "lucide-react";
-import { numericId, Product } from "@/lib/products";
+import { MessageCircle, Phone, ShoppingCart, Star } from "lucide-react";
+import { Product } from "@/lib/products";
+import { useCart } from "@/components/CartProvider";
 
 function productStats(product: Product) {
-  const n = numericId(product.id);
-  const sold = 39 + ((n * 137) % 8300);
   const oldPrice = product.price ? Math.round(product.price * 1.42) : null;
 
   return {
-    sold: sold > 999 ? `${(sold / 1000).toFixed(1)}K` : String(sold),
     oldPrice,
   };
 }
@@ -21,6 +19,7 @@ function starFill(index: number, averageRating: number) {
 }
 
 export default function ProductCard({ product }: { product: Product }) {
+  const { addItem } = useCart();
   const waMsg = encodeURIComponent(
     `Hi! I'd like to order: ${product.name}\nPrice: ${product.priceDisplay}\nDescription: ${product.description}\nPlease confirm availability and delivery.`
   );
@@ -67,13 +66,22 @@ export default function ProductCard({ product }: { product: Product }) {
           <span>{reviewCount ? reviewCount : "No reviews"}</span>
         </Link>
 
-        <div className="temu-sold-row">
-          <span>{stats.sold} sold</span>
+        <div className="temu-view-row">
+          {(product.viewCount ?? 0).toLocaleString("en-US")} views
         </div>
 
         <div className="temu-delivery">Confirm delivery by call or WhatsApp</div>
 
         <div className="temu-card-actions">
+          <button
+            type="button"
+            className="temu-cart-button"
+            onClick={() => addItem(product)}
+            aria-label={`Add ${product.name} to cart`}
+          >
+            <ShoppingCart size={14} />
+            Cart
+          </button>
           <a
             href={`https://wa.me/250784734956?text=${waMsg}`}
             target="_blank"

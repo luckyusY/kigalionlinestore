@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { categories } from "@/lib/products";
+import { useCart } from "@/components/CartProvider";
 
 const MOBILE_NAV = [
   { href: "/", label: "Home" },
@@ -31,6 +32,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [desktopQ, setDesktopQ] = useState("");
   const [mobileQ, setMobileQ] = useState("");
+  const { count } = useCart();
   const router = useRouter();
 
   const doSearch = useCallback(
@@ -96,9 +98,10 @@ export default function Header() {
             <span>Help</span>
             <ChevronDown size={16} />
           </a>
-          <Link href="/products" aria-label="Cart">
+          <Link href="/cart" aria-label="Cart" className="jumia-cart-link">
             <ShoppingCart size={25} />
             <span>Cart</span>
+            {count > 0 && <b>{count}</b>}
           </Link>
         </div>
 
@@ -167,6 +170,10 @@ export default function Header() {
             <Link href="/admin" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
               <Store size={16} />
               Sell on Kigali Store
+            </Link>
+            <Link href="/cart" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
+              <ShoppingCart size={16} />
+              Cart {count > 0 ? `(${count})` : ""}
             </Link>
           </motion.div>
         )}

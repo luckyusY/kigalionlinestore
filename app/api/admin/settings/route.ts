@@ -29,6 +29,11 @@ export async function PUT(request: NextRequest) {
     tiktok: String(body.tiktok || ""),
     instagram: String(body.instagram || ""),
     facebook: String(body.facebook || ""),
+    flashTitle: String(body.flashTitle || "Flash Sales"),
+    flashEnabled: body.flashEnabled === "on" || body.flashEnabled === true,
+    flashEndsAt: String(body.flashEndsAt || ""),
+    flashLink: String(body.flashLink || "/products?sort=best-selling"),
+    flashProductSlugs: String(body.flashProductSlugs || ""),
     updatedAt: now,
   };
 

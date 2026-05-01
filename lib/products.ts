@@ -12,6 +12,7 @@ export type Product = {
   featured?: boolean;
   averageRating?: number;
   reviewCount?: number;
+  viewCount?: number;
 };
 
 export const products: Product[] = [

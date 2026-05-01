@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import SmoothScroll from "@/components/SmoothScroll";
 import DiscountPopup from "@/components/DiscountPopup";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
+import { CartProvider } from "@/components/CartProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,15 +25,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={inter.variable}>
       <body style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <SmoothScroll>
-          <Header />
-          <main className="page-main" style={{ flex: 1 }}>
-            {children}
-          </main>
-          <Footer />
-          <DiscountPopup />
-          <FloatingWhatsApp />
-        </SmoothScroll>
+        <CartProvider>
+          <SmoothScroll>
+            <Header />
+            <main className="page-main" style={{ flex: 1 }}>
+              {children}
+            </main>
+            <Footer />
+            <DiscountPopup />
+            <FloatingWhatsApp />
+          </SmoothScroll>
+        </CartProvider>
       </body>
     </html>
   );

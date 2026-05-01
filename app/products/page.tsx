@@ -20,13 +20,15 @@ const categoryLabels: Record<string, string> = {
 function ProductsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [allProducts, setAllProducts] = useState<Product[]>(staticProducts);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/products")
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data.products)) setAllProducts(data.products); })
-      .catch(() => {});
+      .catch(() => setAllProducts(staticProducts))
+      .finally(() => setProductsLoading(false));
   }, []);
 
   const selectedCategory = searchParams.get("category") || "All";
@@ -114,7 +116,12 @@ function ProductsContent() {
         </div>
       )}
 
-      {filtered.length > 0 ? (
+      {productsLoading ? (
+        <section className="temu-empty">
+          <h2>Loading products</h2>
+          <p>Checking current stock availability.</p>
+        </section>
+      ) : filtered.length > 0 ? (
         <section className="temu-product-grid">
           {filtered.map((product) => (
             <ProductCard key={product.id} product={product} />
