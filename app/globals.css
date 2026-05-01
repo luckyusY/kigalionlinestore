@@ -557,10 +557,10 @@ html.lenis, html.lenis body { height: auto; }
   font-weight: 900;
 }
 .temu-product-body {
-  padding: 7px 7px 8px;
+  padding: 8px 8px 9px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   flex: 1;
 }
 .temu-card-flags {
@@ -647,36 +647,51 @@ html.lenis, html.lenis body { height: auto; }
 }
 .temu-card-actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+.temu-contact-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(74px, 0.72fr);
   gap: 6px;
-  margin-top: 4px;
 }
 .temu-order-button,
 .temu-call-button,
 .temu-cart-button {
-  margin-top: 4px;
-  min-height: 34px;
-  border-radius: 999px;
+  min-height: 38px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 6px;
   text-decoration: none;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 950;
+  line-height: 1;
+  transition: transform 0.14s, background 0.14s, border-color 0.14s, box-shadow 0.14s;
+}
+.temu-order-button:hover,
+.temu-call-button:hover,
+.temu-cart-button:hover {
+  transform: translateY(-1px);
 }
 .temu-cart-button {
   border: 0;
-  background: #111827;
-  color: #fff;
-  cursor: pointer;
-}
-.temu-order-button {
+  min-height: 42px;
   background: #ff6a00;
   color: #fff;
-  box-shadow: 0 6px 14px rgba(255,106,0,0.24);
+  cursor: pointer;
+  font-size: 12px;
+  box-shadow: 0 8px 16px rgba(255,106,0,0.24);
 }
-.temu-order-button:hover { background: #e85f00; }
+.temu-order-button {
+  background: #16a34a;
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(22,163,74,0.18);
+}
+.temu-cart-button:hover { background: #e85f00; }
+.temu-order-button:hover { background: #12833d; }
 .temu-call-button {
   padding: 0 10px;
   color: #111827;
@@ -685,12 +700,6 @@ html.lenis, html.lenis body { height: auto; }
 }
 .temu-call-button:hover {
   border-color: #111827;
-}
-.temu-delivery {
-  color: #00a000;
-  font-size: 10px;
-  line-height: 1.2;
-  font-weight: 700;
 }
 
 /* Temu-style content feed */
@@ -1260,6 +1269,11 @@ html.lenis, html.lenis body { height: auto; }
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 13px;
 }
+@media (max-width: 1280px) {
+  .temu-product-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
 .temu-see-more-wrap {
   display: flex;
   justify-content: center;
@@ -1331,6 +1345,24 @@ html.lenis, html.lenis body { height: auto; }
   margin-bottom: 18px;
 }
 @media (max-width: 1100px) {
+  .jumia-main-nav {
+    gap: 14px;
+    padding-inline: 16px;
+  }
+  .jumia-actions {
+    gap: 12px;
+  }
+  .jumia-actions a span,
+  .jumia-actions a svg + span + svg {
+    display: none;
+  }
+  .jumia-actions a {
+    width: 42px;
+    height: 42px;
+    justify-content: center;
+    border-radius: 999px;
+    background: #f8fafc;
+  }
   .payweek-hero {
     grid-template-columns: 180px minmax(0, 1fr);
   }
@@ -1352,6 +1384,21 @@ html.lenis, html.lenis body { height: auto; }
   }
   .temu-product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .temu-mini-rail { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) and (min-width: 761px) {
+  .temu-page {
+    padding-inline: 14px;
+  }
+  .temu-product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .temu-card-actions {
+    gap: 6px;
+  }
+  .temu-contact-actions {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 @media (max-width: 760px) {
   .temu-page { padding: 12px 10px 44px; }
@@ -1470,6 +1517,27 @@ html.lenis, html.lenis body { height: auto; }
   }
   .temu-delivery-banner span { font-size: 14px; }
   .temu-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .temu-product-card {
+    border-radius: 6px;
+  }
+  .temu-product-body {
+    padding: 7px;
+    gap: 4px;
+  }
+  .temu-card-actions {
+    gap: 6px;
+  }
+  .temu-cart-button {
+    min-height: 40px;
+  }
+  .temu-contact-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+  .temu-order-button,
+  .temu-call-button {
+    min-height: 36px;
+    font-size: 10.5px;
+  }
   .temu-feed-header {
     align-items: stretch;
     flex-direction: column;
@@ -1478,6 +1546,28 @@ html.lenis, html.lenis body { height: auto; }
   .temu-feed-header input { width: 100%; }
   .temu-feed-header button { padding: 11px 18px; }
   .temu-filter-summary { align-items: flex-start; flex-direction: column; }
+}
+@media (max-width: 390px) {
+  .temu-page {
+    padding-inline: 7px;
+  }
+  .temu-product-grid {
+    gap: 7px;
+  }
+  .temu-product-title {
+    font-size: 11.5px;
+  }
+  .temu-price-row strong {
+    font-size: 13px;
+  }
+  .temu-cart-button {
+    font-size: 11px;
+  }
+  .temu-order-button svg,
+  .temu-call-button svg,
+  .temu-cart-button svg {
+    display: none;
+  }
 }
 
 /* Marquee */
