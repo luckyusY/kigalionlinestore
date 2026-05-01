@@ -152,45 +152,58 @@ html.lenis, html.lenis body { height: auto; }
 }
 .kos-mark {
   position: relative;
-  width: 48px;
-  height: 34px;
-  flex: 0 0 48px;
-  border: 3px solid #84c900;
-  border-top: 0;
-  border-radius: 0 0 10px 10px;
-  transform: skewX(-13deg);
+  width: 50px;
+  height: 42px;
+  flex: 0 0 50px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  color: #111;
 }
 .kos-mark svg {
-  color: #84c900;
-  transform: skewX(13deg);
+  position: absolute;
+  inset: 7px 6px auto auto;
+  width: 35px;
+  height: 25px;
+  color: #111;
+  stroke-width: 2.8;
 }
-.kos-mark::before,
+.kos-mark::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 13px;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 3px solid #68b300;
+  background:
+    linear-gradient(90deg, transparent 28%, #68b300 28% 34%, transparent 34% 66%, #68b300 66% 72%, transparent 72%),
+    linear-gradient(0deg, transparent 28%, #68b300 28% 34%, transparent 34% 66%, #68b300 66% 72%, transparent 72%),
+    #fff;
+}
 .kos-mark::after {
   content: "";
   position: absolute;
-  bottom: -13px;
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: #84c900;
+  left: 12px;
+  right: 10px;
+  bottom: 1px;
+  height: 8px;
+  background:
+    radial-gradient(circle at 6px 5px, #111 0 4px, transparent 4.5px),
+    radial-gradient(circle at calc(100% - 6px) 5px, #111 0 4px, transparent 4.5px);
 }
-.kos-mark::before { left: 7px; }
-.kos-mark::after { right: 7px; }
 .kos-mark i {
   position: absolute;
-  width: 22px;
-  height: 22px;
-  border: 3px solid #fff;
-  border-radius: 999px;
-  background:
-    linear-gradient(90deg, transparent 45%, #fff 45% 55%, transparent 55%),
-    linear-gradient(0deg, transparent 45%, #fff 45% 55%, transparent 55%),
-    #111;
-  box-shadow: 0 0 0 2px #111;
-  transform: skewX(13deg);
+  left: 2px;
+  top: 5px;
+  width: 12px;
+  height: 32px;
+  border-top: 5px solid #111;
+  border-left: 5px solid #111;
+  border-radius: 7px 0 0 0;
+  transform: rotate(-3deg);
 }
 .kos-word {
   display: grid;
@@ -222,21 +235,17 @@ html.lenis, html.lenis body { height: auto; }
   color: #6fb000;
 }
 .jumia-logo:hover .kos-mark {
-  border-color: #6fb000;
+  color: #111;
 }
 .jumia-logo:hover .kos-mark svg {
-  color: #6fb000;
+  color: #111;
 }
-.jumia-logo:hover .kos-mark::before,
-.jumia-logo:hover .kos-mark::after {
-  background-color: #6fb000;
-}
-/* keep the globe background black while allowing wheel dots to change */
-.jumia-logo:hover .kos-mark i {
+.jumia-logo:hover .kos-mark::before {
+  border-color: #5b9d00;
   background:
-    linear-gradient(90deg, transparent 45%, #fff 45% 55%, transparent 55%),
-    linear-gradient(0deg, transparent 45%, #fff 45% 55%, transparent 55%),
-    #111;
+    linear-gradient(90deg, transparent 28%, #5b9d00 28% 34%, transparent 34% 66%, #5b9d00 66% 72%, transparent 72%),
+    linear-gradient(0deg, transparent 28%, #5b9d00 28% 34%, transparent 34% 66%, #5b9d00 66% 72%, transparent 72%),
+    #fff;
 }
 .jumia-search {
   height: 48px;
@@ -490,26 +499,38 @@ html.lenis, html.lenis body { height: auto; }
     gap: 6px;
   }
   .kos-mark {
-    width: 34px;
-    height: 24px;
-    flex-basis: 34px;
-    border-width: 2px;
-    border-radius: 0 0 8px 8px;
+    width: 35px;
+    height: 30px;
+    flex-basis: 35px;
   }
   .kos-mark svg {
-    width: 17px;
-    height: 17px;
+    inset: 6px 4px auto auto;
+    width: 26px;
+    height: 18px;
   }
   .kos-mark i {
-    width: 16px;
-    height: 16px;
+    left: 1px;
+    top: 4px;
+    width: 9px;
+    height: 23px;
+    border-top-width: 4px;
+    border-left-width: 4px;
+  }
+  .kos-mark::before {
+    top: 2px;
+    left: 9px;
+    width: 19px;
+    height: 19px;
     border-width: 2px;
   }
-  .kos-mark::before,
   .kos-mark::after {
-    bottom: -10px;
-    width: 7px;
-    height: 7px;
+    left: 8px;
+    right: 7px;
+    bottom: 0;
+    height: 6px;
+    background:
+      radial-gradient(circle at 5px 4px, #111 0 3px, transparent 3.5px),
+      radial-gradient(circle at calc(100% - 5px) 4px, #111 0 3px, transparent 3.5px);
   }
   .kos-word strong {
     font-size: 1.45rem;
