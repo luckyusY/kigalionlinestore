@@ -145,8 +145,8 @@ export default async function HomePage() {
       </section>
 
       <Link href="/products" className="temu-delivery-banner">
-        <strong>KIGALI x EVRI</strong>
-        <span>Together for faster delivery</span>
+        <strong>KOS FAST DELIVERY</strong>
+        <span>Kigali orders delivered quickly</span>
         <ChevronRight size={20} />
       </Link>
 

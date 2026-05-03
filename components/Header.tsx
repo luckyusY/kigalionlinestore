@@ -63,12 +63,12 @@ export default function Header() {
       </div>
 
       <div className="jumia-service-strip">
-        <Link href="/admin" className="jumia-sell-link">
+        <Link href="/products?sort=best-selling" className="jumia-sell-link">
           <BadgeCheck size={13} fill="currentColor" />
-          Sell on Kigali Store
+          Shop Kigali Deals
         </Link>
-        <span>KOS STORE</span>
-        <span>K-PAY</span>
+        <span>KOS OFFICIAL</span>
+        <span>SECURE PAY</span>
         <span>FAST DELIVERY</span>
       </div>
 
@@ -169,9 +169,9 @@ export default function Header() {
               <MessageCircle size={16} strokeWidth={2.5} />
               WhatsApp Order / 0784 734 956
             </a>
-            <Link href="/admin" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
+            <Link href="/products?sort=best-selling" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
               <Store size={16} />
-              Sell on Kigali Store
+              Shop Kigali Deals
             </Link>
             <Link href="/cart" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
               <ShoppingCart size={16} />

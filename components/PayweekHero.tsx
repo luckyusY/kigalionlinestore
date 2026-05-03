@@ -154,9 +154,9 @@ export default function PayweekHero({ slides }: { slides: HeroSlide[] }) {
           <ShoppingBasket size={28} />
           <span><strong>Mega Home Savings</strong>Bigger Comfort</span>
         </Link>
-        <Link href="/admin" className="payweek-side-card">
+        <Link href="/products?sort=best-selling" className="payweek-side-card">
           <Store size={28} />
-          <span><strong>SELL ON KIGALI</strong>Millions Of Visitors</span>
+          <span><strong>KOS STORE</strong>Fresh Deals Daily</span>
         </Link>
         <Link href={slide.link} className="payweek-live-card product-ad">
           <strong>{copy.kicker}<br />{copy.title}</strong>

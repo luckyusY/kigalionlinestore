@@ -1405,13 +1405,15 @@ html.lenis, html.lenis body { height: auto; }
   color: #fff;
   text-decoration: none;
   background:
-    linear-gradient(115deg, #84c900 0 25%, #050505 25.2% 100%);
+    radial-gradient(circle at 18% 50%, rgba(132,201,0,0.34), transparent 24%),
+    linear-gradient(104deg, #050505 0%, #0d1603 55%, #050505 100%);
   font-size: 22px;
   font-weight: 950;
   margin: 20px 0 28px;
   overflow: hidden;
   isolation: isolate;
-  box-shadow: inset 0 -3px 0 #84c900;
+  border: 1px solid rgba(132,201,0,0.24);
+  box-shadow: inset 0 -3px 0 #84c900, 0 10px 24px rgba(5,5,5,0.1);
 }
 .temu-delivery-banner::before {
   content: "";
@@ -1425,12 +1427,14 @@ html.lenis, html.lenis body { height: auto; }
   animation: kos-mini-banner-sweep 5.5s ease-in-out infinite;
 }
 .temu-delivery-banner strong {
-  color: #050505;
+  color: #84c900;
   text-shadow: none;
+  white-space: nowrap;
 }
 .temu-delivery-banner span {
   font-size: 19px;
   margin-right: auto;
+  color: #fff;
 }
 .temu-delivery-banner svg {
   color: #84c900;
