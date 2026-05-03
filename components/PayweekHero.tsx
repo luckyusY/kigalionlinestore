@@ -159,15 +159,19 @@ export default function PayweekHero({ slides }: { slides: HeroSlide[] }) {
           <span><strong>KOS STORE</strong>Fresh Deals Daily</span>
         </Link>
         <Link href={slide.link} className="payweek-live-card product-ad">
-          <strong>{copy.kicker}<br />{copy.title}</strong>
+          <div className="payweek-new-copy">
+            <strong>NEW ARRIVALS</strong>
+            <small>{slide.title}</small>
+            <b>{displayPrice(slide.price)}</b>
+          </div>
           <Image
             src={slide.image}
-            alt={`${slide.title} deal`}
+            alt={`${slide.title} new arrival`}
             fill
             sizes="218px"
             unoptimized
           />
-          <span>SHOP NOW</span>
+          <span>SHOP NEW</span>
         </Link>
       </aside>
     </section>
