@@ -29,11 +29,14 @@ html.lenis, html.lenis body { height: auto; }
 .jumia-promo-banner {
   height: 55px;
   background:
+    linear-gradient(90deg, transparent 0 22%, rgba(132,201,0,0.16) 22% 23%, transparent 23% 100%),
     radial-gradient(circle at 13% 50%, rgba(132,201,0,0.28), transparent 28%),
     linear-gradient(104deg, #050505 0%, #050505 68%, #84c900 68.2%, #84c900 72%, #111c04 72.2%, #050505 100%);
+  background-size: 190px 100%, auto, auto;
   color: #fff;
   overflow: hidden;
   border-bottom: 3px solid #84c900;
+  animation: kos-banner-scan 7s linear infinite;
 }
 .jumia-promo-inner {
   max-width: 1168px;
@@ -47,6 +50,18 @@ html.lenis, html.lenis body { height: auto; }
   text-decoration: none;
   padding: 0 24px;
   position: relative;
+}
+.jumia-promo-spark {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0 38%, rgba(255,255,255,0.34) 44%, transparent 50%),
+    radial-gradient(circle at 74% 48%, rgba(132,201,0,0.34), transparent 20%);
+  mix-blend-mode: screen;
+  opacity: 0.72;
+  transform: translateX(-72%);
+  animation: kos-banner-spark 4.8s ease-in-out infinite;
 }
 .jumia-promo-inner::before,
 .jumia-promo-inner::after {
@@ -92,6 +107,12 @@ html.lenis, html.lenis body { height: auto; }
   line-height: 1;
   font-weight: 950;
   white-space: nowrap;
+  color: #050505;
+  background: #84c900;
+  padding: 8px 22px 9px;
+  border-radius: 999px;
+  box-shadow: 0 0 22px rgba(132,201,0,0.38), inset 0 0 0 2px rgba(255,255,255,0.28);
+  animation: kos-buy-pulse 1.8s ease-in-out infinite;
 }
 .jumia-promo-call {
   justify-self: end;
@@ -153,6 +174,15 @@ html.lenis, html.lenis body { height: auto; }
   text-decoration: none;
   line-height: 1;
   white-space: nowrap;
+}
+.kos-logo-image {
+  width: clamp(150px, 16vw, 204px);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 5px 12px rgba(0,0,0,0.14));
+}
+.jumia-logo:hover .kos-logo-image {
+  filter: drop-shadow(0 5px 14px rgba(132,201,0,0.28));
 }
 .kos-mark {
   position: relative;
@@ -465,25 +495,37 @@ html.lenis, html.lenis body { height: auto; }
   .jumia-promo-banner {
     height: 44px;
     background:
+      linear-gradient(90deg, transparent 0 22%, rgba(132,201,0,0.16) 22% 23%, transparent 23% 100%),
       radial-gradient(circle at 20% 50%, rgba(132,201,0,0.24), transparent 42%),
       linear-gradient(100deg, #050505 0%, #050505 72%, #84c900 72.2%, #84c900 77%, #101807 77.2%, #050505 100%);
+    background-size: 150px 100%, auto, auto;
   }
   .jumia-promo-inner {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 0;
     padding: 0 12px;
   }
   .jumia-promo-inner::before,
   .jumia-promo-inner::after,
-  .jumia-promo-live,
+  .jumia-promo-spark,
   .jumia-promo-call {
     display: none;
   }
-  .jumia-promo-title {
-    font-size: clamp(1.32rem, 6vw, 1.7rem);
+  .jumia-promo-live {
+    display: inline-flex;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    align-items: center;
+    justify-content: center;
+    width: 116px;
+    padding: 6px 10px 7px;
+    font-size: 1.05rem;
+    transform: translate(-50%, -50%);
+    animation: none;
   }
-  .jumia-promo-title mark {
-    padding: 1px 6px 3px;
+  .jumia-promo-title {
+    display: none;
   }
   .jumia-service-strip {
     height: 26px;
@@ -506,6 +548,9 @@ html.lenis, html.lenis body { height: auto; }
   }
   .jumia-logo {
     gap: 6px;
+  }
+  .kos-logo-image {
+    width: 98px;
   }
   .kos-mark {
     width: 38px;
@@ -850,6 +895,20 @@ html.lenis, html.lenis body { height: auto; }
     radial-gradient(circle at 100% 88%, rgba(132,201,0,0.18), transparent 30%),
     linear-gradient(135deg, #050505 0%, #101807 52%, #050505 100%);
   overflow: hidden;
+}
+
+@keyframes kos-banner-scan {
+  from { background-position: 0 0, center, center; }
+  to { background-position: 190px 0, center, center; }
+}
+@keyframes kos-banner-spark {
+  0%, 42% { transform: translateX(-72%); opacity: 0; }
+  50% { opacity: 0.8; }
+  72%, 100% { transform: translateX(72%); opacity: 0; }
+}
+@keyframes kos-buy-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 18px rgba(132,201,0,0.32), inset 0 0 0 2px rgba(255,255,255,0.28); }
+  50% { transform: scale(1.045); box-shadow: 0 0 28px rgba(132,201,0,0.52), inset 0 0 0 2px rgba(255,255,255,0.4); }
 }
 .payweek-categories {
   background: #fff;
@@ -1337,6 +1396,7 @@ html.lenis, html.lenis body { height: auto; }
   white-space: nowrap;
 }
 .temu-delivery-banner {
+  position: relative;
   height: 60px;
   display: flex;
   align-items: center;
@@ -1344,14 +1404,41 @@ html.lenis, html.lenis body { height: auto; }
   padding: 0 20px;
   color: #fff;
   text-decoration: none;
-  background: linear-gradient(90deg, #ff6a00 0 27%, #0600a8 27% 100%);
+  background:
+    linear-gradient(115deg, #84c900 0 25%, #050505 25.2% 100%);
   font-size: 22px;
   font-weight: 950;
   margin: 20px 0 28px;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow: inset 0 -3px 0 #84c900;
+}
+.temu-delivery-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.1) 0 12px, transparent 12px 24px),
+    linear-gradient(110deg, transparent 0 42%, rgba(132,201,0,0.34) 48%, transparent 56%);
+  transform: translateX(-55%);
+  animation: kos-mini-banner-sweep 5.5s ease-in-out infinite;
+}
+.temu-delivery-banner strong {
+  color: #050505;
+  text-shadow: none;
 }
 .temu-delivery-banner span {
   font-size: 19px;
   margin-right: auto;
+}
+.temu-delivery-banner svg {
+  color: #84c900;
+}
+@keyframes kos-mini-banner-sweep {
+  0%, 35% { transform: translateX(-55%); opacity: 0.2; }
+  50% { opacity: 1; }
+  78%, 100% { transform: translateX(55%); opacity: 0.2; }
 }
 .temu-bank-picks { text-align: center; margin-bottom: 14px; }
 .temu-bank-label {

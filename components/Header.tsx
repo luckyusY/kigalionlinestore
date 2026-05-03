@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -49,10 +50,11 @@ export default function Header() {
     <header className="site-header">
       <div className="jumia-promo-banner">
         <Link href="/products?sort=best-selling" className="jumia-promo-inner">
+          <span className="jumia-promo-spark" aria-hidden="true" />
           <span className="jumia-promo-title">
             Pay <mark>WEEK</mark> Deals!
           </span>
-          <span className="jumia-promo-live">LIVE NOW</span>
+          <span className="jumia-promo-live">BUY NOW</span>
           <span className="jumia-promo-call">
             <small>Call For Deals</small>
             0784 734 956
@@ -72,14 +74,7 @@ export default function Header() {
 
       <div className="jumia-main-nav">
         <Link href="/" className="jumia-logo" onClick={() => setMenuOpen(false)} aria-label="KOS - Save Time Buy online">
-          <span className="kos-mark" aria-hidden="true">
-            <ShoppingCart size={24} strokeWidth={2.8} />
-            <i />
-          </span>
-          <span className="kos-word">
-            <strong>K<span>O</span>S</strong>
-            <small>Save Time Buy online</small>
-          </span>
+          <Image className="kos-logo-image" src="/kos-logo-full.svg" alt="KOS - Save Time Buy online" width={600} height={150} priority />
         </Link>
 
         <form className="jumia-search" onSubmit={(event) => { event.preventDefault(); doSearch(desktopQ); }}>
