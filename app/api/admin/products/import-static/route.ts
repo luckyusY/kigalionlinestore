@@ -72,10 +72,20 @@ export async function POST(request: NextRequest) {
 
   const db = await getDb();
   const collection = db.collection("products");
+  const deletedSlugs = new Set(
+    (await db.collection<{ slug: string }>("deleted_static_slugs").find({}).toArray()).map(
+      (entry) => entry.slug
+    )
+  );
   const imported: string[] = [];
+  const skipped: string[] = [];
   const failed: Array<{ slug: string; error: string }> = [];
 
   for (const product of products) {
+    if (deletedSlugs.has(product.slug)) {
+      skipped.push(product.slug);
+      continue;
+    }
     try {
       const existing = await collection.findOne<{ image?: string }>({ slug: product.slug });
       const cloudinaryImage = existing?.image?.includes("res.cloudinary.com")
@@ -108,6 +118,8 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     imported: imported.length,
+    skipped: skipped.length,
+    skippedSlugs: skipped,
     failed,
   });
 }

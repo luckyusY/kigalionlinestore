@@ -603,7 +603,7 @@ export default function AdminPage() {
 
     try {
       const response = await fetch("/api/admin/products/import-static", { method: "POST" });
-      const data = await response.json() as { imported?: number; failed?: Array<{ slug: string; error: string }>; error?: string };
+      const data = await response.json() as { imported?: number; skipped?: number; failed?: Array<{ slug: string; error: string }>; error?: string };
 
       if (!response.ok) {
         setError(data.error || "Could not import static products.");
@@ -611,11 +611,11 @@ export default function AdminPage() {
       }
 
       const failedCount = data.failed?.length || 0;
-      setStatus(
-        failedCount > 0
-          ? `Imported ${data.imported || 0} products. ${failedCount} failed.`
-          : `Imported ${data.imported || 0} static products to MongoDB and Cloudinary.`
-      );
+      const skippedCount = data.skipped || 0;
+      const parts: string[] = [`Imported ${data.imported || 0} static products`];
+      if (skippedCount > 0) parts.push(`${skippedCount} previously deleted skipped`);
+      if (failedCount > 0) parts.push(`${failedCount} failed`);
+      setStatus(`${parts.join(" · ")}.`);
       await loadAllProducts();
     } catch {
       setError("Import failed. Check Cloudinary and MongoDB settings.");
@@ -879,10 +879,17 @@ export default function AdminPage() {
                 type="button"
                 onClick={() => void importStaticProducts()}
                 disabled={productsLoading || importingStatic}
-                style={{ background: "#0f766e", color: "#fff", border: "none", borderRadius: 10, padding: "9px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+                aria-label="Save static products to MongoDB"
+                title="Save static products to MongoDB"
+                style={{ background: "transparent", border: "none", padding: 4, cursor: importingStatic ? "wait" : "pointer", display: "flex", alignItems: "center", opacity: importingStatic ? 0.5 : 0.55, transition: "opacity 120ms" }}
+                onMouseEnter={(e) => { e.currentTarget.style.opacity = "1"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = importingStatic ? "0.5" : "0.55"; }}
               >
-                {importingStatic ? <Loader2 size={13} className="admin-spin" /> : <CloudUpload size={13} />}
-                {importingStatic ? "Importing..." : "Save Static to MongoDB"}
+                {importingStatic ? (
+                  <Loader2 size={18} className="admin-spin" color="#0f766e" />
+                ) : (
+                  <img src="/kos-logo-full.svg" alt="" width={72} height={18} style={{ display: "block" }} />
+                )}
               </button>
             </div>
 

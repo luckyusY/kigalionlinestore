@@ -98,6 +98,9 @@ export async function POST(request: NextRequest) {
     { upsert: true, returnDocument: "after" }
   );
 
+  // If this slug had been soft-deleted from static imports, clear that flag
+  await db.collection("deleted_static_slugs").deleteOne({ slug });
+
   const saved = result ?? fields;
 
   return NextResponse.json({

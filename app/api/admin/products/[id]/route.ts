@@ -21,9 +21,18 @@ export async function DELETE(
 
   try {
     const db = await getDb();
-    const result = await db.collection("products").deleteOne({ _id: new ObjectId(id) });
+    const objectId = new ObjectId(id);
+    const existing = await db.collection<{ slug?: string }>("products").findOne({ _id: objectId });
+    const result = await db.collection("products").deleteOne({ _id: objectId });
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: "Product not found." }, { status: 404 });
+    }
+    if (existing?.slug) {
+      await db.collection("deleted_static_slugs").updateOne(
+        { slug: existing.slug },
+        { $set: { slug: existing.slug, deletedAt: new Date() } },
+        { upsert: true }
+      );
     }
     return NextResponse.json({ ok: true });
   } catch {
