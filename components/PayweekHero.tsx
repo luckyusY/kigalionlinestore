@@ -112,7 +112,7 @@ export default function PayweekHero({ slides }: { slides: HeroSlide[] }) {
             key={current}
             className="payweek-product-graphic"
             custom={direction}
-            initial={{ opacity: 0, x: direction * 90, scale: 0.96 }}
+            initial={false}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
           >

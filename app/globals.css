@@ -29,9 +29,11 @@ html.lenis, html.lenis body { height: auto; }
 .jumia-promo-banner {
   height: 55px;
   background:
-    linear-gradient(90deg, #65308f 0%, #65308f 68%, #ffa400 68%, #ffa400 100%);
+    radial-gradient(circle at 13% 50%, rgba(132,201,0,0.28), transparent 28%),
+    linear-gradient(104deg, #050505 0%, #050505 68%, #84c900 68.2%, #84c900 72%, #111c04 72.2%, #050505 100%);
   color: #fff;
   overflow: hidden;
+  border-bottom: 3px solid #84c900;
 }
 .jumia-promo-inner {
   max-width: 1168px;
@@ -54,9 +56,10 @@ html.lenis, html.lenis body { height: auto; }
   height: 92px;
   background:
     repeating-linear-gradient(20deg, rgba(255,255,255,0.18) 0 4px, transparent 4px 10px),
-    #f79009;
-  opacity: 0.7;
+    #84c900;
+  opacity: 0.55;
   transform: rotate(-13deg);
+  box-shadow: 0 0 28px rgba(132,201,0,0.28);
 }
 .jumia-promo-inner::before {
   left: -78px;
@@ -71,17 +74,17 @@ html.lenis, html.lenis body { height: auto; }
   font-weight: 950;
   line-height: 1;
   letter-spacing: 0;
-  text-shadow: 0 2px 0 rgba(0,0,0,0.18);
+  text-shadow: 0 2px 0 rgba(0,0,0,0.35);
   white-space: nowrap;
 }
 .jumia-promo-title mark {
   display: inline-block;
-  background: #ff9f00;
-  color: #65308f;
+  background: #84c900;
+  color: #050505;
   padding: 2px 9px 4px;
   margin: 0 4px;
   transform: rotate(-5deg);
-  box-shadow: 0 2px 0 rgba(0,0,0,0.16);
+  box-shadow: 0 2px 0 rgba(255,255,255,0.15), 0 0 22px rgba(132,201,0,0.32);
 }
 .jumia-promo-live {
   justify-self: center;
@@ -92,7 +95,7 @@ html.lenis, html.lenis body { height: auto; }
 }
 .jumia-promo-call {
   justify-self: end;
-  color: #030712;
+  color: #fff;
   font-size: clamp(1.2rem, 2.4vw, 1.55rem);
   font-weight: 950;
   line-height: 0.95;
@@ -101,6 +104,7 @@ html.lenis, html.lenis body { height: auto; }
 }
 .jumia-promo-call small {
   display: block;
+  color: #84c900;
   font-size: 15px;
   font-weight: 900;
   margin-bottom: 4px;
@@ -460,7 +464,9 @@ html.lenis, html.lenis body { height: auto; }
 @media (max-width: 767px) {
   .jumia-promo-banner {
     height: 44px;
-    background: linear-gradient(90deg, #65308f 0%, #65308f 72%, #ffa400 72%, #ffa400 100%);
+    background:
+      radial-gradient(circle at 20% 50%, rgba(132,201,0,0.24), transparent 42%),
+      linear-gradient(100deg, #050505 0%, #050505 72%, #84c900 72.2%, #84c900 77%, #101807 77.2%, #050505 100%);
   }
   .jumia-promo-inner {
     grid-template-columns: 1fr;
@@ -840,9 +846,9 @@ html.lenis, html.lenis body { height: auto; }
   margin: -18px -18px 24px;
   padding: 16px 18px;
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='386' viewBox='0 0 340 386'%3E%3Crect width='340' height='386' fill='%23f7a500'/%3E%3Cg opacity='.25' fill='%23fff'%3E%3Cpath d='M22 70h88v28H22z' transform='rotate(-9 66 84)'/%3E%3Cpath d='M248 248h62v118h-62z' transform='rotate(72 279 307)'/%3E%3Ccircle cx='42' cy='344' r='34'/%3E%3C/g%3E%3Ctext x='226' y='170' font-family='Arial,sans-serif' font-size='68' font-weight='900' fill='%23fff' opacity='.65'%3EP%3C/text%3E%3C/svg%3E") left center / auto 100% no-repeat,
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='386' viewBox='0 0 340 386'%3E%3Crect width='340' height='386' fill='%23f7a500'/%3E%3Cg opacity='.25' fill='%23fff'%3E%3Cpath d='M22 70h88v28H22z' transform='rotate(-9 66 84)'/%3E%3Cpath d='M248 248h62v118h-62z' transform='rotate(72 279 307)'/%3E%3Ccircle cx='42' cy='344' r='34'/%3E%3C/g%3E%3Ctext x='226' y='170' font-family='Arial,sans-serif' font-size='68' font-weight='900' fill='%23fff' opacity='.65'%3EP%3C/text%3E%3C/svg%3E") right center / auto 100% no-repeat,
-    #f7a500;
+    radial-gradient(circle at 0% 12%, rgba(132,201,0,0.22), transparent 27%),
+    radial-gradient(circle at 100% 88%, rgba(132,201,0,0.18), transparent 30%),
+    linear-gradient(135deg, #050505 0%, #101807 52%, #050505 100%);
   overflow: hidden;
 }
 .payweek-categories {
@@ -865,8 +871,8 @@ html.lenis, html.lenis body { height: auto; }
   padding: 0 12px;
 }
 .payweek-categories a:hover {
-  color: #f68b1e;
-  background: #fff7ed;
+  color: #4f7b00;
+  background: #f2ffd8;
 }
 .payweek-stage {
   position: relative;
@@ -874,11 +880,13 @@ html.lenis, html.lenis body { height: auto; }
   min-width: 0;
   overflow: hidden;
   background:
-    linear-gradient(105deg, #65308f 0 58%, transparent 58%),
-    #ffac00;
+    linear-gradient(105deg, #050505 0 58%, transparent 58.2%),
+    radial-gradient(circle at 78% 48%, rgba(132,201,0,0.5), transparent 32%),
+    linear-gradient(135deg, #143000 0%, #84c900 100%);
   border-radius: 4px;
   color: #fff;
   isolation: isolate;
+  box-shadow: inset 0 0 0 1px rgba(132,201,0,0.24);
 }
 .jumia-flash-section {
   margin: 0 0 16px;
@@ -987,7 +995,7 @@ html.lenis, html.lenis body { height: auto; }
   inset: 0 0 0 52%;
   background:
     repeating-conic-gradient(from 0deg at 68% 50%, rgba(255,255,255,0.16) 0 5deg, transparent 5deg 11deg),
-    radial-gradient(circle at 65% 50%, rgba(255,255,255,0.24), transparent 44%);
+    radial-gradient(circle at 65% 50%, rgba(255,255,255,0.28), transparent 44%);
   opacity: 0.7;
   z-index: -1;
 }
@@ -998,7 +1006,7 @@ html.lenis, html.lenis body { height: auto; }
   height: 190px;
   right: -70px;
   bottom: -82px;
-  background: radial-gradient(circle, rgba(101,48,143,0.45), transparent 68%);
+  background: radial-gradient(circle, rgba(5,5,5,0.48), transparent 68%);
   z-index: -1;
 }
 .payweek-copy {
@@ -1018,11 +1026,12 @@ html.lenis, html.lenis body { height: auto; }
 }
 .payweek-copy h1 mark {
   display: inline-block;
-  background: #ff9f00;
-  color: #65308f;
+  background: #84c900;
+  color: #050505;
   padding: 1px 8px 6px;
   margin-inline: 4px;
   transform: rotate(-5deg);
+  box-shadow: 0 0 24px rgba(132,201,0,0.32);
 }
 .payweek-copy h1 span {
   display: block;
@@ -1044,9 +1053,10 @@ html.lenis, html.lenis body { height: auto; }
   column-gap: 12px;
   padding: 6px 18px;
   border-radius: 999px;
-  background: #ff9900;
-  color: #fff;
+  background: linear-gradient(90deg, #84c900 0%, #5e9300 100%);
+  color: #050505;
   overflow: hidden;
+  box-shadow: 0 10px 24px rgba(132,201,0,0.25);
 }
 .payweek-price-pill span {
   font-size: 13px;
@@ -1094,7 +1104,7 @@ html.lenis, html.lenis body { height: auto; }
 .payweek-rays {
   position: absolute;
   inset: 16px 0 0 8%;
-  background: linear-gradient(100deg, transparent 0 15%, rgba(255,186,0,0.92) 15% 100%);
+  background: linear-gradient(100deg, transparent 0 15%, rgba(132,201,0,0.88) 15% 100%);
   clip-path: polygon(22% 0, 100% 0, 100% 100%, 0 100%);
   z-index: -1;
 }
@@ -1120,7 +1130,7 @@ html.lenis, html.lenis body { height: auto; }
   overflow: hidden;
   background: #fff;
   border-radius: 2px;
-  box-shadow: 0 16px 30px rgba(0,0,0,0.16);
+  box-shadow: 0 16px 30px rgba(0,0,0,0.22), 0 0 0 1px rgba(132,201,0,0.18);
 }
 .payweek-product-card img {
   object-fit: contain;
@@ -1145,9 +1155,10 @@ html.lenis, html.lenis body { height: auto; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(83,83,92,0.72);
-  color: #fff;
+  background: rgba(5,5,5,0.72);
+  color: #84c900;
   cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(132,201,0,0.34);
 }
 .payweek-arrow-left {
   left: 16px;
@@ -1171,7 +1182,7 @@ html.lenis, html.lenis body { height: auto; }
   cursor: pointer;
 }
 .payweek-dots button.active {
-  background: #ff9900;
+  background: #84c900;
 }
 .payweek-shop {
   position: absolute;
@@ -1184,8 +1195,8 @@ html.lenis, html.lenis body { height: auto; }
   align-items: center;
   justify-content: center;
   gap: 4px;
-  color: #fff;
-  background: #050505;
+  color: #050505;
+  background: #84c900;
   text-decoration: none;
   font-size: 10px;
   font-weight: 850;
@@ -1208,7 +1219,7 @@ html.lenis, html.lenis body { height: auto; }
   border-radius: 4px;
 }
 .payweek-side-card svg {
-  color: #f68b1e;
+  color: #84c900;
   flex: 0 0 auto;
 }
 .payweek-side-card:first-child svg {
@@ -1237,7 +1248,7 @@ html.lenis, html.lenis body { height: auto; }
   border-radius: 4px;
   background:
     repeating-conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0.13) 0 5deg, transparent 5deg 12deg),
-    #ffae00;
+    radial-gradient(circle at 50% 50%, rgba(132,201,0,0.92), #263d00 72%);
 }
 .payweek-live-card img {
   object-fit: contain;
@@ -1266,7 +1277,7 @@ html.lenis, html.lenis body { height: auto; }
   font-size: 1.05rem;
   line-height: 1;
   text-align: left;
-  text-shadow: 0 2px 8px rgba(101,48,143,0.35);
+  text-shadow: 0 2px 8px rgba(5,5,5,0.45);
 }
 .payweek-live-card span {
   position: relative;
@@ -1531,7 +1542,7 @@ html.lenis, html.lenis body { height: auto; }
     display: block;
     margin: -12px -10px 22px;
     padding: 0;
-    background: #65308f;
+    background: #050505;
   }
   .payweek-categories,
   .payweek-side {
@@ -1542,7 +1553,7 @@ html.lenis, html.lenis body { height: auto; }
     min-height: 650px;
     border-radius: 0;
     background:
-      linear-gradient(180deg, rgba(101,48,143,0.98) 0 56%, rgba(255,172,0,0.98) 56% 100%);
+      linear-gradient(180deg, rgba(5,5,5,0.98) 0 56%, rgba(132,201,0,0.96) 56% 100%);
   }
   .payweek-stage::before {
     inset: 44% 0 0 0;
