@@ -6,14 +6,12 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BadgeCheck,
-  ChevronDown,
-  HelpCircle,
   Menu,
   MessageCircle,
+  PhoneCall,
   Search,
   ShoppingCart,
   Store,
-  UserRound,
   X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -24,7 +22,6 @@ const MOBILE_NAV = [
   { href: "/", label: "Home" },
   { href: "/products", label: "Products" },
   { href: "/contact", label: "Contact" },
-  { href: "/admin", label: "Admin" },
 ];
 
 const HEADER_CATEGORIES = categories.filter((category) => category !== "All");
@@ -90,15 +87,17 @@ export default function Header() {
         </form>
 
         <div className="hidden md:flex jumia-actions">
-          <Link href="/contact" aria-label="Account">
-            <UserRound size={24} />
-            <span>Account</span>
-            <ChevronDown size={16} />
+          <Link href="/contact" aria-label="KOS Store contact">
+            <Store size={24} />
+            <span>KOS Store</span>
           </Link>
-          <a href="https://wa.me/250784734956" target="_blank" rel="noopener noreferrer" aria-label="Help">
-            <HelpCircle size={24} />
-            <span>Help</span>
-            <ChevronDown size={16} />
+          <a href="tel:+250784734956" aria-label="Call Kigali Online Store">
+            <PhoneCall size={24} />
+            <span>Call Us</span>
+          </a>
+          <a href="https://wa.me/250784734956" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
+            <MessageCircle size={24} />
+            <span>WhatsApp</span>
           </a>
           <Link href="/cart" aria-label="Cart" className="jumia-cart-link">
             <ShoppingCart size={25} />
