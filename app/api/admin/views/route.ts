@@ -14,7 +14,12 @@ export async function GET(request: NextRequest) {
     const docs = await db.collection("products").find({}).toArray();
     const dbProducts = docs.map(({ _id, ...product }) => ({ ...product, id: _id.toString() })) as unknown as Product[];
     const dbSlugs = new Set(dbProducts.map((product) => product.slug));
-    const merged = [...dbProducts, ...staticProducts.filter((product) => !dbSlugs.has(product.slug))];
+    const deletedStaticSlugs = new Set(
+      (await db.collection<{ slug: string }>("deleted_static_slugs").find({}).toArray()).map(
+        (entry) => entry.slug
+      )
+    );
+    const merged = [...dbProducts, ...staticProducts.filter((product) => !dbSlugs.has(product.slug) && !deletedStaticSlugs.has(product.slug))];
     const viewCounts = await getViewCounts(merged.map((product) => product.slug));
     const products = merged
       .map((product) => ({ ...product, ...(viewCounts[product.slug] ?? { viewCount: 0 }) }))

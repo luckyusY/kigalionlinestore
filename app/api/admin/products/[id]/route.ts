@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { adminUnauthorized, verifyAdminSession } from "@/lib/admin-auth";
+import { products as staticProducts } from "@/lib/products";
 
 export const runtime = "nodejs";
 
@@ -21,6 +22,22 @@ export async function DELETE(
 
   try {
     const db = await getDb();
+    if (!ObjectId.isValid(id)) {
+      const staticProduct = staticProducts.find((product) => String(product.id) === id || product.slug === id);
+      if (!staticProduct) {
+        return NextResponse.json({ error: "Product not found." }, { status: 404 });
+      }
+
+      await db.collection("deleted_static_slugs").updateOne(
+        { slug: staticProduct.slug },
+        { $set: { slug: staticProduct.slug, deletedAt: new Date() } },
+        { upsert: true }
+      );
+      await db.collection("products").deleteOne({ slug: staticProduct.slug });
+
+      return NextResponse.json({ ok: true });
+    }
+
     const objectId = new ObjectId(id);
     const existing = await db.collection<{ slug?: string }>("products").findOne({ _id: objectId });
     const result = await db.collection("products").deleteOne({ _id: objectId });

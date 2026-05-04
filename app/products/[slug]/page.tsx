@@ -33,6 +33,8 @@ async function getProduct(slug: string): Promise<Product | undefined> {
       const product = { ...rest, id: _id.toString() } as Product;
       return product.inStock === false ? undefined : product;
     }
+    const deletedStatic = await db.collection("deleted_static_slugs").findOne({ slug });
+    if (deletedStatic) return undefined;
   } catch {}
 
   return getProductBySlug(slug);
@@ -47,7 +49,12 @@ async function getMergedProducts(): Promise<Product[]> {
       id: _id.toString(),
     })) as Product[];
     const dbSlugs = new Set(dbProducts.map((product) => product.slug));
-    const merged = [...dbProducts, ...staticProducts.filter((product) => !dbSlugs.has(product.slug))]
+    const deletedStaticSlugs = new Set(
+      (await db.collection<{ slug: string }>("deleted_static_slugs").find({}).toArray()).map(
+        (entry) => entry.slug
+      )
+    );
+    const merged = [...dbProducts, ...staticProducts.filter((product) => !dbSlugs.has(product.slug) && !deletedStaticSlugs.has(product.slug))]
       .filter((product) => product.inStock !== false);
     const viewCounts = await getViewCounts(merged.map((item) => item.slug));
     return merged.map((item) => ({ ...item, ...(viewCounts[item.slug] ?? { viewCount: 0 }) }));

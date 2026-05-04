@@ -586,10 +586,12 @@ export default function AdminPage() {
   async function deleteProduct(id: string) {
     setError("");
     try {
+      const product = allProducts.find((item) => String(item.id) === id);
+      const isStatic = typeof product?.id === "number";
       const r = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
       const data = await r.json() as { error?: string };
       if (!r.ok) { setError(data.error ?? "Failed to delete."); return; }
-      setStatus("Product deleted.");
+      setStatus(isStatic ? "Static product hidden from the website." : "Product deleted.");
       setAllProducts((prev) => prev.filter((p) => String(p.id) !== id));
       if (editingId === id) setEditingId(null);
       setPendingDeleteId(null);
@@ -1032,38 +1034,36 @@ export default function AdminPage() {
                               {isEditing ? <X size={12} /> : <Edit3 size={12} />}
                               {isEditing ? "Close" : "Edit"}
                             </button>
-                            {!isStatic && (
-                              isConfirmingDelete ? (
-                                <div className="admin-delete-confirm">
-                                  <span>Delete?</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => void deleteProduct(productId)}
-                                    className="danger"
-                                  >
-                                    Confirm
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => setPendingDeleteId(null)}
-                                  >
-                                    Cancel
-                                  </button>
-                                </div>
-                              ) : (
+                            {isConfirmingDelete ? (
+                              <div className="admin-delete-confirm">
+                                <span>{isStatic ? "Hide static?" : "Delete?"}</span>
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    setPendingDeleteId(productId);
-                                    setEditingId(null);
-                                  }}
-                                  style={{ background: "#fef2f2", color: "#ef4444", border: "1.5px solid #fecaca", borderRadius: 8, padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 800 }}
-                                  title="Delete"
+                                  onClick={() => void deleteProduct(productId)}
+                                  className="danger"
                                 >
-                                  <Trash2 size={12} />
-                                  Delete
+                                  Confirm
                                 </button>
-                              )
+                                <button
+                                  type="button"
+                                  onClick={() => setPendingDeleteId(null)}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPendingDeleteId(productId);
+                                  setEditingId(null);
+                                }}
+                                style={{ background: "#fef2f2", color: "#ef4444", border: "1.5px solid #fecaca", borderRadius: 8, padding: "6px 10px", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 800 }}
+                                title={isStatic ? "Hide this static product permanently" : "Delete"}
+                              >
+                                <Trash2 size={12} />
+                                {isStatic ? "Hide" : "Delete"}
+                              </button>
                             )}
                           </div>
                         </div>

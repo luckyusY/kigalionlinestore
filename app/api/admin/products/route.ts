@@ -46,9 +46,17 @@ export async function GET(request: NextRequest) {
     id: _id.toString(),
   })) as unknown as Product[];
   const dbSlugs = new Set(dbProducts.map((product) => product.slug));
+  const deletedStaticSlugs = new Set(
+    (await db.collection<{ slug: string }>("deleted_static_slugs").find({}).toArray()).map(
+      (entry) => entry.slug
+    )
+  );
 
   return NextResponse.json({
-    products: [...dbProducts, ...staticProducts.filter((product) => !dbSlugs.has(product.slug))],
+    products: [
+      ...dbProducts,
+      ...staticProducts.filter((product) => !dbSlugs.has(product.slug) && !deletedStaticSlugs.has(product.slug)),
+    ],
   });
 }
 
