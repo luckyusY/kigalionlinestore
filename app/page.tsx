@@ -39,6 +39,12 @@ const defaultStorefrontSettings: StorefrontSettings = {
   flashProductSlugs: "",
 };
 
+function isFlashSaleLive(endsAt: string) {
+  if (!endsAt) return true;
+  const end = new Date(endsAt).getTime();
+  return Number.isFinite(end) && end > Date.now();
+}
+
 async function getHeroSlides(): Promise<HeroSlide[]> {
   try {
     const db = await getDb();
@@ -92,12 +98,13 @@ export default async function HomePage() {
         .filter((product): product is Product => Boolean(product))
         .slice(0, 6)
     : allProducts.slice(0, 6);
+  const showFlashSales = settings.flashEnabled && isFlashSaleLive(settings.flashEndsAt) && flashDeals.length > 0;
 
   return (
     <div className="temu-page">
       <PayweekHero slides={slides} recentProducts={allProducts.slice(0, 8)} />
 
-      {settings.flashEnabled && flashDeals.length > 0 && (
+      {showFlashSales && (
         <section className="jumia-flash-section">
           <div className="jumia-flash-header">
             <span>{settings.flashTitle}</span>
@@ -117,6 +124,7 @@ export default async function HomePage() {
                 {product.price ? (
                   <span className="jumia-flash-old">{Math.round(product.price * 1.25).toLocaleString()} RWF</span>
                 ) : null}
+                <span className="jumia-flash-badge">Flash deal</span>
                 <span className="jumia-flash-stock">
                   <span />
                   <small>Deal available now</small>

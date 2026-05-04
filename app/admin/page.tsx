@@ -198,6 +198,7 @@ export default function AdminPage() {
   // Settings
   const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [flashProductSearch, setFlashProductSearch] = useState("");
 
   // Reviews
   const [reviews, setReviews] = useState<AdminReview[]>([]);
@@ -283,6 +284,12 @@ export default function AdminPage() {
     const timer = window.setTimeout(() => void loadSettings(), 0);
     return () => window.clearTimeout(timer);
   }, [isLoggedIn, activeTab, loadSettings]);
+
+  useEffect(() => {
+    if (!isLoggedIn || activeTab !== "settings" || allProducts.length > 0) return;
+    const timer = window.setTimeout(() => void loadAllProducts(), 0);
+    return () => window.clearTimeout(timer);
+  }, [isLoggedIn, activeTab, allProducts.length, loadAllProducts]);
 
   const loadReviews = useCallback(async () => {
     setReviewsLoading(true);
@@ -645,6 +652,50 @@ export default function AdminPage() {
     } finally {
       setSavingSettings(false);
     }
+  }
+
+  const flashSlugs = settings.flashProductSlugs
+    .split(/[\n,]+/)
+    .map((slug) => slug.trim())
+    .filter(Boolean);
+  const flashSlugSet = new Set(flashSlugs);
+  const flashSearch = flashProductSearch.trim().toLowerCase();
+  const selectedFlashProducts = flashSlugs
+    .map((slug) => allProducts.find((product) => product.slug === slug))
+    .filter((product): product is FullProduct => Boolean(product));
+  const flashProductOptions = allProducts
+    .filter((product) => {
+      if (!flashSearch) return true;
+      return (
+        product.name.toLowerCase().includes(flashSearch) ||
+        product.slug.toLowerCase().includes(flashSearch) ||
+        product.category.toLowerCase().includes(flashSearch)
+      );
+    })
+    .slice(0, 18);
+
+  function updateFlashProducts(slugs: string[]) {
+    setSettings((current) => ({ ...current, flashProductSlugs: slugs.join("\n") }));
+  }
+
+  function toggleFlashProduct(slug: string) {
+    updateFlashProducts(
+      flashSlugSet.has(slug)
+        ? flashSlugs.filter((selectedSlug) => selectedSlug !== slug)
+        : [...flashSlugs, slug]
+    );
+  }
+
+  function formatDateTimeLocal(date: Date) {
+    const offsetMs = date.getTimezoneOffset() * 60 * 1000;
+    return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+  }
+
+  function setFlashEndsIn(hours: number) {
+    setSettings((current) => ({
+      ...current,
+      flashEndsAt: formatDateTimeLocal(new Date(Date.now() + hours * 60 * 60 * 1000)),
+    }));
   }
 
   async function deleteReview(id: string) {
@@ -1500,6 +1551,12 @@ export default function AdminPage() {
             <div className="admin-field">
               <label>Countdown Ends At</label>
               <input name="flashEndsAt" type="datetime-local" value={settings.flashEndsAt} onChange={(e) => setSettings((s) => ({ ...s, flashEndsAt: e.target.value }))} />
+              <div className="admin-flash-quick-actions">
+                <button type="button" onClick={() => setFlashEndsIn(12)}>12h</button>
+                <button type="button" onClick={() => setFlashEndsIn(24)}>24h</button>
+                <button type="button" onClick={() => setFlashEndsIn(72)}>3 days</button>
+                <button type="button" onClick={() => setSettings((s) => ({ ...s, flashEndsAt: "" }))}>No timer</button>
+              </div>
             </div>
             <div className="admin-field admin-field-full">
               <label>See All Link</label>
@@ -1515,6 +1572,52 @@ export default function AdminPage() {
                 placeholder="mini-steppers&#10;air-fryer&#10;blender-8in1"
               />
               <p className="admin-hint">One slug per line, or separate with commas. Leave empty to use the first available products.</p>
+            </div>
+            <div className="admin-field admin-field-full">
+              <label>Pick Flash Sale Products</label>
+              <input
+                type="search"
+                value={flashProductSearch}
+                onChange={(e) => setFlashProductSearch(e.target.value)}
+                placeholder="Search product name, slug, or category"
+              />
+              {selectedFlashProducts.length > 0 ? (
+                <div className="admin-flash-selected">
+                  {selectedFlashProducts.map((product) => (
+                    <button key={product.slug} type="button" onClick={() => toggleFlashProduct(product.slug)}>
+                      <img src={product.image} alt="" />
+                      <span>{product.name}</span>
+                      <X size={13} />
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="admin-hint">No flash products selected. The homepage will use the newest available products.</p>
+              )}
+              <div className="admin-flash-picker">
+                {productsLoading ? (
+                  <div className="admin-empty">Loading products...</div>
+                ) : flashProductOptions.length > 0 ? (
+                  flashProductOptions.map((product) => (
+                    <button
+                      key={product.slug}
+                      type="button"
+                      className={flashSlugSet.has(product.slug) ? "selected" : ""}
+                      onClick={() => toggleFlashProduct(product.slug)}
+                    >
+                      <img src={product.image} alt="" />
+                      <span>
+                        <strong>{product.name}</strong>
+                        <small>{product.priceDisplay} · {product.slug}</small>
+                      </span>
+                      {flashSlugSet.has(product.slug) ? <CheckCircle size={17} /> : <Plus size={17} />}
+                    </button>
+                  ))
+                ) : (
+                  <div className="admin-empty">No products match that search.</div>
+                )}
+              </div>
+              <p className="admin-hint">Selected products appear first on the homepage Flash Sales row, in the order shown above.</p>
             </div>
             <div className="admin-field admin-field-full">
               <label>TikTok URL</label>
