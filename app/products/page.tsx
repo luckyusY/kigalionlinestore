@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { categories, numericId, products as staticProducts, Product } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
+import ProductGridSkeleton from "@/components/ProductGridSkeleton";
 
 const categoryLabels: Record<string, string> = {
   All: "Recommended",
@@ -117,10 +118,7 @@ function ProductsContent() {
       )}
 
       {productsLoading ? (
-        <section className="temu-empty">
-          <h2>Loading products</h2>
-          <p>Checking current stock availability.</p>
-        </section>
+        <ProductGridSkeleton count={18} />
       ) : filtered.length > 0 ? (
         <section className="temu-product-grid">
           {filtered.map((product) => (
@@ -140,7 +138,7 @@ function ProductsContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<div className="temu-empty">Loading products...</div>}>
+    <Suspense fallback={<div className="temu-page"><ProductGridSkeleton count={18} /></div>}>
       <ProductsContent />
     </Suspense>
   );

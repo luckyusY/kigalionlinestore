@@ -84,6 +84,163 @@ body {
   border-color: rgba(17,24,39,0.16);
   border-top-color: #f68b1e;
 }
+.page-skeleton {
+  min-height: 70vh;
+}
+.skeleton-box,
+.skeleton-line,
+.skeleton-pill,
+.skeleton-hero-product,
+.skeleton-product-card {
+  position: relative;
+  overflow: hidden;
+  background: #eef2f7;
+}
+.skeleton-box::after,
+.skeleton-line::after,
+.skeleton-pill::after,
+.skeleton-hero-product::after,
+.skeleton-product-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.72), transparent);
+  animation: skeleton-shimmer 1.25s ease-in-out infinite;
+}
+.skeleton-line {
+  height: 12px;
+  width: 100%;
+  border-radius: 999px;
+}
+.skeleton-line-title {
+  height: 16px;
+}
+.skeleton-line-short {
+  width: 58%;
+}
+.skeleton-kicker {
+  width: 130px;
+  height: 18px;
+  background: rgba(132,201,0,0.28);
+}
+.skeleton-heading {
+  width: min(460px, 78%);
+  height: 34px;
+  background: #dbe4ee;
+}
+.skeleton-heading.small {
+  width: min(340px, 62%);
+  height: 24px;
+}
+.skeleton-pill {
+  width: 82px;
+  height: 34px;
+  border-radius: 999px;
+}
+.skeleton-pill.wide {
+  width: 150px;
+}
+.skeleton-hero {
+  min-height: 384px;
+  display: grid;
+  grid-template-columns: 206px minmax(0, 1fr) 218px;
+  gap: 16px;
+  margin: -18px -18px 24px;
+  padding: 18px;
+  background: #f8fafc;
+}
+.skeleton-side-menu,
+.skeleton-hero-main,
+.skeleton-hero-product,
+.skeleton-flash,
+.skeleton-product-card {
+  border-radius: 8px;
+}
+.skeleton-side-menu,
+.skeleton-hero-main {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 18px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+}
+.skeleton-side-menu .skeleton-line {
+  height: 18px;
+}
+.skeleton-hero-main {
+  align-content: center;
+  gap: 18px;
+  background:
+    radial-gradient(circle at 78% 52%, rgba(246,139,30,0.15), transparent 22%),
+    #fff;
+}
+.skeleton-hero-product {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(132,201,0,0.18), transparent 34%),
+    #fff;
+  border: 1px solid #e5e7eb;
+}
+.skeleton-flash {
+  margin: 0 0 16px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15,23,42,0.08);
+  overflow: hidden;
+}
+.skeleton-flash-header {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 16px;
+  background: #e61601;
+}
+.skeleton-flash-header .skeleton-line {
+  background: rgba(255,255,255,0.36);
+}
+.skeleton-flash-card {
+  display: grid;
+  gap: 9px;
+  padding: 4px;
+}
+.skeleton-flash-image,
+.skeleton-product-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+}
+.skeleton-section-heading {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0 14px;
+}
+.skeleton-product-card {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 8px;
+}
+.skeleton-product-card::after {
+  pointer-events: none;
+}
+.skeleton-product-body {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+}
+.skeleton-line-price {
+  width: 46%;
+  height: 17px;
+  background: #dbe4ee;
+}
+.skeleton-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 2px;
+}
 
 /* Lenis */
 html.lenis, html.lenis body { height: auto; }
@@ -984,6 +1141,10 @@ html.lenis, html.lenis body { height: auto; }
   to { transform: rotate(360deg); }
 }
 
+@keyframes skeleton-shimmer {
+  100% { transform: translateX(100%); }
+}
+
 @keyframes kos-banner-scan {
   from { background-position: 0 0, center, center; }
   to { background-position: 190px 0, center, center; }
@@ -1708,6 +1869,12 @@ html.lenis, html.lenis body { height: auto; }
   .payweek-hero {
     grid-template-columns: 180px minmax(0, 1fr);
   }
+  .skeleton-hero {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+  .skeleton-hero-product {
+    display: none;
+  }
   .payweek-side {
     display: none;
   }
@@ -1751,6 +1918,26 @@ html.lenis, html.lenis body { height: auto; }
     margin: -12px -10px 22px;
     padding: 0;
     background: #050505;
+  }
+  .skeleton-hero {
+    min-height: 360px;
+    display: block;
+    margin: -12px -10px 22px;
+    padding: 10px;
+  }
+  .skeleton-side-menu {
+    display: none;
+  }
+  .skeleton-hero-main {
+    min-height: 210px;
+  }
+  .skeleton-hero-product {
+    display: block;
+    min-height: 140px;
+    margin-top: 10px;
+  }
+  .skeleton-flash-card {
+    flex: 0 0 148px;
   }
   .payweek-categories,
   .payweek-side {
