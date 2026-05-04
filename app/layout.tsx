@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -7,6 +8,7 @@ import SmoothScroll from "@/components/SmoothScroll";
 import DiscountPopup from "@/components/DiscountPopup";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import { CartProvider } from "@/components/CartProvider";
+import NavigationFeedback from "@/components/NavigationFeedback";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -34,6 +36,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Footer />
             <DiscountPopup />
             <FloatingWhatsApp />
+            <Suspense fallback={null}>
+              <NavigationFeedback />
+            </Suspense>
           </SmoothScroll>
         </CartProvider>
       </body>

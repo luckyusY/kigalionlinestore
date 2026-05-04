@@ -11,6 +11,80 @@ body {
   overflow-x: hidden;
 }
 
+.route-loading {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+.route-loading.is-active {
+  opacity: 1;
+}
+.route-loading-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 4px;
+  width: 100%;
+  overflow: hidden;
+  background: rgba(246,139,30,0.2);
+}
+.route-loading-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 42%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #84c900, #f68b1e, #ffb347);
+  animation: route-loading-bar 0.92s ease-in-out infinite;
+}
+.route-loading-pill {
+  position: absolute;
+  top: 172px;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 38px;
+  padding: 0 15px;
+  border-radius: 999px;
+  background: #111827;
+  color: #fff;
+  box-shadow: 0 14px 32px rgba(15,23,42,0.22);
+  font-size: 14px;
+  font-weight: 850;
+  transform: translateX(-50%) translateY(-8px);
+  transition: transform 0.16s ease;
+}
+.route-loading.is-active .route-loading-pill {
+  transform: translateX(-50%) translateY(0);
+}
+.route-loading-pill span,
+.page-loading span {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 3px solid rgba(255,255,255,0.34);
+  border-top-color: #84c900;
+  animation: route-loading-spin 0.7s linear infinite;
+}
+.page-loading {
+  min-height: 52vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 850;
+}
+.page-loading span {
+  border-color: rgba(17,24,39,0.16);
+  border-top-color: #f68b1e;
+}
+
 /* Lenis */
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
@@ -492,6 +566,9 @@ html.lenis, html.lenis body { height: auto; }
 /* Offset */
 .page-main { padding-top: 159px; }
 @media (max-width: 767px) {
+  .route-loading-pill {
+    top: 140px;
+  }
   .jumia-promo-banner {
     height: 44px;
     background:
@@ -895,6 +972,16 @@ html.lenis, html.lenis body { height: auto; }
     radial-gradient(circle at 100% 88%, rgba(132,201,0,0.18), transparent 30%),
     linear-gradient(135deg, #050505 0%, #101807 52%, #050505 100%);
   overflow: hidden;
+}
+
+@keyframes route-loading-bar {
+  0% { transform: translateX(-110%); }
+  55% { transform: translateX(70%); }
+  100% { transform: translateX(250%); }
+}
+
+@keyframes route-loading-spin {
+  to { transform: rotate(360deg); }
 }
 
 @keyframes kos-banner-scan {
