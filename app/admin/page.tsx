@@ -12,6 +12,7 @@ import {
   Edit3,
   Eye,
   EyeOff,
+  Flame,
   ImagePlus,
   Images,
   Loader2,
@@ -132,7 +133,7 @@ function formatRwfPrice(price: number | null | undefined) {
     : "Contact for price";
 }
 
-type AdminTab = "manage" | "add" | "hero" | "settings" | "reviews" | "popular";
+type AdminTab = "manage" | "add" | "hero" | "flash" | "settings" | "reviews" | "popular";
 
 export default function AdminPage() {
   // ── Auth ────────────────────────────────────────────────────────────
@@ -292,13 +293,13 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (!isLoggedIn || activeTab !== "settings") return;
+    if (!isLoggedIn || (activeTab !== "settings" && activeTab !== "flash")) return;
     const timer = window.setTimeout(() => void loadSettings(), 0);
     return () => window.clearTimeout(timer);
   }, [isLoggedIn, activeTab, loadSettings]);
 
   useEffect(() => {
-    if (!isLoggedIn || activeTab !== "settings" || allProducts.length > 0) return;
+    if (!isLoggedIn || (activeTab !== "settings" && activeTab !== "flash") || allProducts.length > 0) return;
     const timer = window.setTimeout(() => void loadAllProducts(), 0);
     return () => window.clearTimeout(timer);
   }, [isLoggedIn, activeTab, allProducts.length, loadAllProducts]);
@@ -655,7 +656,7 @@ export default function AdminPage() {
       const r = await fetch("/api/admin/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(Object.fromEntries(fd.entries())),
+        body: JSON.stringify({ ...settings, ...Object.fromEntries(fd.entries()) }),
       });
       const data = await r.json() as { settings?: Partial<SiteSettings>; error?: string };
       if (!r.ok) { setError(data.error ?? "Could not save settings."); return; }
@@ -903,13 +904,14 @@ export default function AdminPage() {
 
         {/* ── Tabs ── */}
         <div className="admin-tab-bar">
-          {(["manage", "add", "hero", "settings", "reviews", "popular"] as AdminTab[]).map((tab) => {
-            const meta = {
-              manage:   { icon: <Database size={14} />,   label: "All Products" },
-              add:      { icon: <PackagePlus size={14} />, label: "Add Product" },
-              hero:     { icon: <Images size={14} />,      label: "Hero Slides" },
-              settings: { icon: <Settings2 size={14} />,  label: "Site Settings" },
-              reviews:  { icon: <Star size={14} />,       label: "Reviews" },
+            {(["manage", "add", "hero", "flash", "settings", "reviews", "popular"] as AdminTab[]).map((tab) => {
+              const meta = {
+                manage:   { icon: <Database size={14} />,   label: "All Products" },
+                add:      { icon: <PackagePlus size={14} />, label: "Add Product" },
+                hero:     { icon: <Images size={14} />,      label: "Hero Slides" },
+                flash:    { icon: <Flame size={14} />,       label: "Flash Sales" },
+                settings: { icon: <Settings2 size={14} />,  label: "Site Settings" },
+                reviews:  { icon: <Star size={14} />,       label: "Reviews" },
               popular:  { icon: <TrendingUp size={14} />,  label: "Popular" },
             };
             return (
@@ -1518,6 +1520,168 @@ export default function AdminPage() {
         {/* ══════════════════════════════════════════════════
             Tab: Site Settings
         ══════════════════════════════════════════════════ */}
+        {activeTab === "flash" && (
+          <form onSubmit={saveSettings} className="admin-panel-card admin-settings">
+            <div className="admin-field admin-field-full">
+              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 950, color: "#111827" }}>Flash Sales</h2>
+              <p style={{ color: "#64748b", fontSize: 13, margin: 0 }}>
+                Manage the red homepage Flash Sales strip, countdown, card text, old prices, and selected products.
+              </p>
+            </div>
+            <div className="admin-checks admin-field-full">
+              <label>
+                <input
+                  name="flashEnabled"
+                  type="checkbox"
+                  checked={settings.flashEnabled}
+                  onChange={(e) => setSettings((s) => ({ ...s, flashEnabled: e.target.checked }))}
+                />
+                Show Flash Sales on homepage
+              </label>
+            </div>
+            <div className="admin-field">
+              <label>Flash Title</label>
+              <input name="flashTitle" value={settings.flashTitle} onChange={(e) => setSettings((s) => ({ ...s, flashTitle: e.target.value }))} />
+            </div>
+            <div className="admin-field">
+              <label>Center Header Text</label>
+              <input name="flashSubtitle" value={settings.flashSubtitle} onChange={(e) => setSettings((s) => ({ ...s, flashSubtitle: e.target.value }))} />
+              <p className="admin-hint">Shown in the middle when there is no countdown.</p>
+            </div>
+            <div className="admin-field">
+              <label>Countdown Ends At</label>
+              <input name="flashEndsAt" type="datetime-local" value={settings.flashEndsAt} onChange={(e) => setSettings((s) => ({ ...s, flashEndsAt: e.target.value }))} />
+              <div className="admin-flash-quick-actions">
+                <button type="button" onClick={() => setFlashEndsIn(12)}>12h</button>
+                <button type="button" onClick={() => setFlashEndsIn(24)}>24h</button>
+                <button type="button" onClick={() => setFlashEndsIn(72)}>3 days</button>
+                <button type="button" onClick={() => setSettings((s) => ({ ...s, flashEndsAt: "" }))}>No timer</button>
+              </div>
+            </div>
+            <div className="admin-field">
+              <label>Products To Show</label>
+              <input
+                name="flashProductLimit"
+                type="number"
+                min={1}
+                max={12}
+                value={settings.flashProductLimit}
+                onChange={(e) => setSettings((s) => ({ ...s, flashProductLimit: Number(e.target.value) || 6 }))}
+              />
+            </div>
+            <div className="admin-field">
+              <label>See All Label</label>
+              <input name="flashLinkLabel" value={settings.flashLinkLabel} onChange={(e) => setSettings((s) => ({ ...s, flashLinkLabel: e.target.value }))} />
+            </div>
+            <div className="admin-field admin-field-full">
+              <label>See All Link</label>
+              <input name="flashLink" value={settings.flashLink} onChange={(e) => setSettings((s) => ({ ...s, flashLink: e.target.value }))} />
+            </div>
+            <div className="admin-field">
+              <label>Card Badge Text</label>
+              <input name="flashBadgeText" value={settings.flashBadgeText} onChange={(e) => setSettings((s) => ({ ...s, flashBadgeText: e.target.value }))} />
+            </div>
+            <div className="admin-field">
+              <label>Availability Text</label>
+              <input name="flashStockText" value={settings.flashStockText} onChange={(e) => setSettings((s) => ({ ...s, flashStockText: e.target.value }))} />
+            </div>
+            <div className="admin-field">
+              <label>Old Price Discount %</label>
+              <input
+                name="flashDiscountPercent"
+                type="number"
+                min={0}
+                max={90}
+                value={settings.flashDiscountPercent}
+                onChange={(e) => setSettings((s) => ({ ...s, flashDiscountPercent: Number(e.target.value) || 0 }))}
+              />
+            </div>
+            <div className="admin-field admin-field-full">
+              <label>Flash Sales Preview</label>
+              <div className="admin-flash-preview">
+                <div className="admin-flash-preview-header">
+                  <strong>{settings.flashTitle || "Flash Sales"}</strong>
+                  <span>{settings.flashEndsAt ? "Countdown will show here" : settings.flashSubtitle || "Limited time deals"}</span>
+                  <b>{settings.flashLinkLabel || "See All"}</b>
+                </div>
+                <div className="admin-flash-preview-row">
+                  {(selectedFlashProducts.length ? selectedFlashProducts : allProducts).slice(0, Math.min(6, settings.flashProductLimit || 6)).map((product) => (
+                    <div key={product.slug}>
+                      <img src={product.image} alt="" />
+                      <strong>{product.name}</strong>
+                      <span>{product.priceDisplay}</span>
+                      {previewOldPrice(product.price) && <small>{previewOldPrice(product.price)}</small>}
+                      <em>{settings.flashBadgeText || "Flash deal"}</em>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="admin-field admin-field-full">
+              <label>Pick Flash Sale Products</label>
+              <input
+                type="search"
+                value={flashProductSearch}
+                onChange={(e) => setFlashProductSearch(e.target.value)}
+                placeholder="Search product name, slug, or category"
+              />
+              {selectedFlashProducts.length > 0 ? (
+                <div className="admin-flash-selected">
+                  {selectedFlashProducts.map((product) => (
+                    <button key={product.slug} type="button" onClick={() => toggleFlashProduct(product.slug)}>
+                      <img src={product.image} alt="" />
+                      <span>{product.name}</span>
+                      <X size={13} />
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="admin-hint">No flash products selected. The homepage will use the newest available products.</p>
+              )}
+              <div className="admin-flash-picker">
+                {productsLoading ? (
+                  <div className="admin-empty">Loading products...</div>
+                ) : flashProductOptions.length > 0 ? (
+                  flashProductOptions.map((product) => (
+                    <button
+                      key={product.slug}
+                      type="button"
+                      className={flashSlugSet.has(product.slug) ? "selected" : ""}
+                      onClick={() => toggleFlashProduct(product.slug)}
+                    >
+                      <img src={product.image} alt="" />
+                      <span>
+                        <strong>{product.name}</strong>
+                        <small>{product.priceDisplay} · {product.slug}</small>
+                      </span>
+                      {flashSlugSet.has(product.slug) ? <CheckCircle size={17} /> : <Plus size={17} />}
+                    </button>
+                  ))
+                ) : (
+                  <div className="admin-empty">No products match that search.</div>
+                )}
+              </div>
+            </div>
+            <div className="admin-field admin-field-full">
+              <label>Flash Product Slugs</label>
+              <textarea
+                name="flashProductSlugs"
+                rows={4}
+                value={settings.flashProductSlugs}
+                onChange={(e) => setSettings((s) => ({ ...s, flashProductSlugs: e.target.value }))}
+                placeholder="mini-steppers&#10;air-fryer&#10;blender-8in1"
+              />
+              <p className="admin-hint">Advanced: one slug per line, or separate with commas.</p>
+            </div>
+            <div className="admin-field-full">
+              <button type="submit" className="admin-submit" disabled={savingSettings}>
+                {savingSettings ? <Loader2 size={17} className="admin-spin" /> : <ShieldCheck size={17} />}
+                {savingSettings ? "Saving..." : "Save Flash Sales"}
+              </button>
+            </div>
+          </form>
+        )}
+
         {activeTab === "settings" && (
           <form onSubmit={saveSettings} className="admin-panel-card admin-settings">
             <div className="admin-field admin-field-full">
