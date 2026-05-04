@@ -35,6 +35,7 @@ type StorefrontSettings = {
   flashDiscountPercent: number;
   flashProductLimit: number;
   flashProductSlugs: string;
+  flashProductPrices: string;
 };
 
 const defaultStorefrontSettings: StorefrontSettings = {
@@ -49,6 +50,12 @@ const defaultStorefrontSettings: StorefrontSettings = {
   flashDiscountPercent: 25,
   flashProductLimit: 6,
   flashProductSlugs: "",
+  flashProductPrices: "{}",
+};
+
+type FlashProductPrice = {
+  salePrice?: string;
+  oldPrice?: string;
 };
 
 function isFlashSaleLive(endsAt: string) {
@@ -60,6 +67,25 @@ function isFlashSaleLive(endsAt: string) {
 function flashOldPrice(price: number | null, discountPercent: number) {
   if (!price || discountPercent <= 0 || discountPercent >= 100) return null;
   return Math.round(price / (1 - discountPercent / 100));
+}
+
+function parseFlashProductPrices(value: string): Record<string, FlashProductPrice> {
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === "object" ? parsed as Record<string, FlashProductPrice> : {};
+  } catch {
+    return {};
+  }
+}
+
+function formatFlashPrice(value: string | undefined, fallback: string) {
+  const trimmed = value?.trim();
+  if (!trimmed) return fallback;
+  const numeric = Number(trimmed.replace(/[^\d.]/g, ""));
+  if (Number.isFinite(numeric) && numeric > 0 && /^[\d,\s.]+$/.test(trimmed)) {
+    return `${Math.round(numeric).toLocaleString("en-US")} RWF`;
+  }
+  return trimmed;
 }
 
 async function getHeroSlides(): Promise<HeroSlide[]> {
@@ -122,6 +148,10 @@ export default async function HomePage() {
         .slice(0, settings.flashProductLimit)
     : allProducts.slice(0, settings.flashProductLimit);
   const showFlashSales = settings.flashEnabled && isFlashSaleLive(settings.flashEndsAt) && flashDeals.length > 0;
+  const flashProductPrices = parseFlashProductPrices(settings.flashProductPrices);
+  const topViewedProducts = [...allProducts]
+    .sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0))
+    .slice(0, 6);
 
   return (
     <div className="temu-page">
@@ -138,17 +168,19 @@ export default async function HomePage() {
           </div>
           <div className="jumia-flash-row">
             {flashDeals.map((product) => {
-              const oldPrice = flashOldPrice(product.price, settings.flashDiscountPercent);
+              const customPrice = flashProductPrices[product.slug];
+              const priceDisplay = formatFlashPrice(customPrice?.salePrice, product.priceDisplay);
+              const customOldPrice = formatFlashPrice(customPrice?.oldPrice, "");
+              const generatedOldPrice = flashOldPrice(product.price, settings.flashDiscountPercent);
+              const oldPrice = customOldPrice || (generatedOldPrice ? `${generatedOldPrice.toLocaleString()} RWF` : "");
               return (
                 <Link key={product.id} href={`/products/${product.slug}`} className="jumia-flash-card">
                   <span className="jumia-flash-image">
                     <Image src={product.image} alt={product.name} fill sizes="180px" unoptimized />
                   </span>
                   <span className="jumia-flash-name">{product.name}</span>
-                  <span className="jumia-flash-price">{product.priceDisplay}</span>
-                  {oldPrice ? (
-                    <span className="jumia-flash-old">{oldPrice.toLocaleString()} RWF</span>
-                  ) : null}
+                  <span className="jumia-flash-price">{priceDisplay}</span>
+                  {oldPrice ? <span className="jumia-flash-old">{oldPrice}</span> : null}
                   <span className="jumia-flash-badge">{settings.flashBadgeText}</span>
                   <span className="jumia-flash-stock">
                     <span />
@@ -163,12 +195,12 @@ export default async function HomePage() {
 
       <section className="temu-deal-rails">
         <div className="temu-deal-panel">
-          <Link href="/products?sort=best-selling" className="temu-deal-title">
-            <span>Top selling items</span>
+          <Link href="/products?sort=top-viewed" className="temu-deal-title">
+            <span>Top viewed products</span>
             <ChevronRight size={18} />
           </Link>
           <div className="temu-mini-rail">
-            {allProducts.slice(6, 12).map((product) => (
+            {topViewedProducts.map((product) => (
               <Link key={product.id} href={`/products/${product.slug}`} className="temu-mini-deal">
                 <Image src={product.image} alt={product.name} width={170} height={170} unoptimized />
                 <strong>{product.priceDisplay}</strong>

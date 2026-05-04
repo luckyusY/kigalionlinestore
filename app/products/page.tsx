@@ -56,6 +56,7 @@ function ProductsContent() {
         if (typeof b.id === "string") return 1;
         return (b.id as number) - (a.id as number);
       }
+      if (sort === "top-viewed") return (b.viewCount ?? 0) - (a.viewCount ?? 0);
       if (sort === "best-selling") return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
       return 0;
     });

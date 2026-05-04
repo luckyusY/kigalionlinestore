@@ -40,6 +40,7 @@ export async function PUT(request: NextRequest) {
     flashDiscountPercent: Math.max(0, Number(body.flashDiscountPercent || 25) || 0),
     flashProductLimit: Math.min(12, Math.max(1, Number(body.flashProductLimit || 6) || 6)),
     flashProductSlugs: String(body.flashProductSlugs || ""),
+    flashProductPrices: String(body.flashProductPrices || "{}"),
     updatedAt: now,
   };
 

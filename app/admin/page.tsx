@@ -75,6 +75,7 @@ type SiteSettings = {
   flashDiscountPercent: number;
   flashProductLimit: number;
   flashProductSlugs: string;
+  flashProductPrices: string;
 };
 
 type AdminReview = {
@@ -117,6 +118,7 @@ const defaultSettings: SiteSettings = {
   flashDiscountPercent: 25,
   flashProductLimit: 6,
   flashProductSlugs: "",
+  flashProductPrices: "{}",
 };
 
 function slugify(v: string) {
@@ -717,6 +719,36 @@ export default function AdminPage() {
     const discount = Number(settings.flashDiscountPercent) || 0;
     if (!price || discount <= 0 || discount >= 100) return "";
     return `${Math.round(price / (1 - discount / 100)).toLocaleString()} RWF`;
+  }
+
+  function flashPriceMap() {
+    try {
+      const parsed = JSON.parse(settings.flashProductPrices || "{}");
+      return parsed && typeof parsed === "object"
+        ? parsed as Record<string, { salePrice?: string; oldPrice?: string }>
+        : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function updateFlashProductPrice(slug: string, field: "salePrice" | "oldPrice", value: string) {
+    const current = flashPriceMap();
+    const nextProduct = { ...(current[slug] ?? {}), [field]: value };
+    if (!nextProduct.salePrice?.trim() && !nextProduct.oldPrice?.trim()) {
+      delete current[slug];
+    } else {
+      current[slug] = nextProduct;
+    }
+    setSettings((state) => ({ ...state, flashProductPrices: JSON.stringify(current, null, 2) }));
+  }
+
+  function flashSalePriceFor(product: FullProduct) {
+    return flashPriceMap()[product.slug]?.salePrice || product.priceDisplay;
+  }
+
+  function flashOldPriceFor(product: FullProduct) {
+    return flashPriceMap()[product.slug]?.oldPrice || previewOldPrice(product.price);
   }
 
   async function deleteReview(id: string) {
@@ -1609,8 +1641,8 @@ export default function AdminPage() {
                     <div key={product.slug}>
                       <img src={product.image} alt="" />
                       <strong>{product.name}</strong>
-                      <span>{product.priceDisplay}</span>
-                      {previewOldPrice(product.price) && <small>{previewOldPrice(product.price)}</small>}
+                      <span>{flashSalePriceFor(product)}</span>
+                      {flashOldPriceFor(product) && <small>{flashOldPriceFor(product)}</small>}
                       <em>{settings.flashBadgeText || "Flash deal"}</em>
                     </div>
                   ))}
@@ -1637,6 +1669,36 @@ export default function AdminPage() {
                 </div>
               ) : (
                 <p className="admin-hint">No flash products selected. The homepage will use the newest available products.</p>
+              )}
+              {selectedFlashProducts.length > 0 && (
+                <div className="admin-flash-price-table">
+                  <div className="admin-flash-price-head">
+                    <span>Product</span>
+                    <span>Flash price</span>
+                    <span>Old price</span>
+                  </div>
+                  {selectedFlashProducts.map((product) => {
+                    const priceConfig = flashPriceMap()[product.slug] ?? {};
+                    return (
+                      <div key={product.slug} className="admin-flash-price-row">
+                        <div>
+                          <img src={product.image} alt="" />
+                          <strong>{product.name}</strong>
+                        </div>
+                        <input
+                          value={priceConfig.salePrice ?? ""}
+                          onChange={(e) => updateFlashProductPrice(product.slug, "salePrice", e.target.value)}
+                          placeholder={product.priceDisplay}
+                        />
+                        <input
+                          value={priceConfig.oldPrice ?? ""}
+                          onChange={(e) => updateFlashProductPrice(product.slug, "oldPrice", e.target.value)}
+                          placeholder={previewOldPrice(product.price) || "Optional"}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               )}
               <div className="admin-flash-picker">
                 {productsLoading ? (
@@ -1797,8 +1859,8 @@ export default function AdminPage() {
                     <div key={product.slug}>
                       <img src={product.image} alt="" />
                       <strong>{product.name}</strong>
-                      <span>{product.priceDisplay}</span>
-                      {previewOldPrice(product.price) && <small>{previewOldPrice(product.price)}</small>}
+                      <span>{flashSalePriceFor(product)}</span>
+                      {flashOldPriceFor(product) && <small>{flashOldPriceFor(product)}</small>}
                       <em>{settings.flashBadgeText || "Flash deal"}</em>
                     </div>
                   ))}

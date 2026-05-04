@@ -3351,6 +3351,63 @@ html.lenis, html.lenis body { height: auto; }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.admin-flash-price-table {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+.admin-flash-price-head,
+.admin-flash-price-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(120px, 0.45fr) minmax(120px, 0.45fr);
+  gap: 10px;
+  align-items: center;
+}
+.admin-flash-price-head {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.admin-flash-price-row {
+  padding: 8px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #eef2f7;
+}
+.admin-flash-price-row div {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.admin-flash-price-row img {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #f1f5f9;
+}
+.admin-flash-price-row strong {
+  overflow: hidden;
+  color: #111827;
+  font-size: 12px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-flash-price-row input {
+  min-width: 0;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: 12px;
+}
 .admin-flash-picker {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -3579,6 +3636,12 @@ html.lenis, html.lenis body { height: auto; }
   }
   .admin-flash-preview-row div {
     flex: 0 0 132px;
+  }
+  .admin-flash-price-head {
+    display: none;
+  }
+  .admin-flash-price-row {
+    grid-template-columns: 1fr;
   }
 }
 
