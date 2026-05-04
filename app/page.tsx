@@ -26,16 +26,28 @@ const categoryLabels: Record<string, string> = {
 type StorefrontSettings = {
   flashTitle: string;
   flashEnabled: boolean;
+  flashSubtitle: string;
   flashEndsAt: string;
   flashLink: string;
+  flashLinkLabel: string;
+  flashBadgeText: string;
+  flashStockText: string;
+  flashDiscountPercent: number;
+  flashProductLimit: number;
   flashProductSlugs: string;
 };
 
 const defaultStorefrontSettings: StorefrontSettings = {
   flashTitle: "Flash Sales",
   flashEnabled: true,
+  flashSubtitle: "Limited time deals",
   flashEndsAt: "",
   flashLink: "/products?sort=best-selling",
+  flashLinkLabel: "See All",
+  flashBadgeText: "Flash deal",
+  flashStockText: "Deal available now",
+  flashDiscountPercent: 25,
+  flashProductLimit: 6,
   flashProductSlugs: "",
 };
 
@@ -43,6 +55,11 @@ function isFlashSaleLive(endsAt: string) {
   if (!endsAt) return true;
   const end = new Date(endsAt).getTime();
   return Number.isFinite(end) && end > Date.now();
+}
+
+function flashOldPrice(price: number | null, discountPercent: number) {
+  if (!price || discountPercent <= 0 || discountPercent >= 100) return null;
+  return Math.round(price / (1 - discountPercent / 100));
 }
 
 async function getHeroSlides(): Promise<HeroSlide[]> {
@@ -102,8 +119,8 @@ export default async function HomePage() {
     ? selectedFlashSlugs
         .map((slug) => allProducts.find((product) => product.slug === slug))
         .filter((product): product is Product => Boolean(product))
-        .slice(0, 6)
-    : allProducts.slice(0, 6);
+        .slice(0, settings.flashProductLimit)
+    : allProducts.slice(0, settings.flashProductLimit);
   const showFlashSales = settings.flashEnabled && isFlashSaleLive(settings.flashEndsAt) && flashDeals.length > 0;
 
   return (
@@ -114,29 +131,32 @@ export default async function HomePage() {
         <section className="jumia-flash-section">
           <div className="jumia-flash-header">
             <span>{settings.flashTitle}</span>
-            {settings.flashEndsAt ? <FlashCountdown endsAt={settings.flashEndsAt} /> : <strong>Limited time deals</strong>}
+            {settings.flashEndsAt ? <FlashCountdown endsAt={settings.flashEndsAt} /> : <strong>{settings.flashSubtitle}</strong>}
             <Link href={settings.flashLink || "/products?sort=best-selling"}>
-              See All <ChevronRight size={17} />
+              {settings.flashLinkLabel} <ChevronRight size={17} />
             </Link>
           </div>
           <div className="jumia-flash-row">
-            {flashDeals.map((product) => (
-              <Link key={product.id} href={`/products/${product.slug}`} className="jumia-flash-card">
-                <span className="jumia-flash-image">
-                  <Image src={product.image} alt={product.name} fill sizes="180px" unoptimized />
-                </span>
-                <span className="jumia-flash-name">{product.name}</span>
-                <span className="jumia-flash-price">{product.priceDisplay}</span>
-                {product.price ? (
-                  <span className="jumia-flash-old">{Math.round(product.price * 1.25).toLocaleString()} RWF</span>
-                ) : null}
-                <span className="jumia-flash-badge">Flash deal</span>
-                <span className="jumia-flash-stock">
-                  <span />
-                  <small>Deal available now</small>
-                </span>
-              </Link>
-            ))}
+            {flashDeals.map((product) => {
+              const oldPrice = flashOldPrice(product.price, settings.flashDiscountPercent);
+              return (
+                <Link key={product.id} href={`/products/${product.slug}`} className="jumia-flash-card">
+                  <span className="jumia-flash-image">
+                    <Image src={product.image} alt={product.name} fill sizes="180px" unoptimized />
+                  </span>
+                  <span className="jumia-flash-name">{product.name}</span>
+                  <span className="jumia-flash-price">{product.priceDisplay}</span>
+                  {oldPrice ? (
+                    <span className="jumia-flash-old">{oldPrice.toLocaleString()} RWF</span>
+                  ) : null}
+                  <span className="jumia-flash-badge">{settings.flashBadgeText}</span>
+                  <span className="jumia-flash-stock">
+                    <span />
+                    <small>{settings.flashStockText}</small>
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}

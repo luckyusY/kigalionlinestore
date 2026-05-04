@@ -65,8 +65,14 @@ type SiteSettings = {
   facebook: string;
   flashTitle: string;
   flashEnabled: boolean;
+  flashSubtitle: string;
   flashEndsAt: string;
   flashLink: string;
+  flashLinkLabel: string;
+  flashBadgeText: string;
+  flashStockText: string;
+  flashDiscountPercent: number;
+  flashProductLimit: number;
   flashProductSlugs: string;
 };
 
@@ -101,8 +107,14 @@ const defaultSettings: SiteSettings = {
   facebook: "https://web.facebook.com/kigalionlinestore/",
   flashTitle: "Flash Sales",
   flashEnabled: true,
+  flashSubtitle: "Limited time deals",
   flashEndsAt: "",
   flashLink: "/products?sort=best-selling",
+  flashLinkLabel: "See All",
+  flashBadgeText: "Flash deal",
+  flashStockText: "Deal available now",
+  flashDiscountPercent: 25,
+  flashProductLimit: 6,
   flashProductSlugs: "",
 };
 
@@ -698,6 +710,12 @@ export default function AdminPage() {
       ...current,
       flashEndsAt: formatDateTimeLocal(new Date(Date.now() + hours * 60 * 60 * 1000)),
     }));
+  }
+
+  function previewOldPrice(price: number | null) {
+    const discount = Number(settings.flashDiscountPercent) || 0;
+    if (!price || discount <= 0 || discount >= 100) return "";
+    return `${Math.round(price / (1 - discount / 100)).toLocaleString()} RWF`;
   }
 
   async function deleteReview(id: string) {
@@ -1549,6 +1567,11 @@ export default function AdminPage() {
               <input name="flashTitle" value={settings.flashTitle} onChange={(e) => setSettings((s) => ({ ...s, flashTitle: e.target.value }))} />
             </div>
             <div className="admin-field">
+              <label>Center Header Text</label>
+              <input name="flashSubtitle" value={settings.flashSubtitle} onChange={(e) => setSettings((s) => ({ ...s, flashSubtitle: e.target.value }))} />
+              <p className="admin-hint">Shown in the middle when there is no countdown.</p>
+            </div>
+            <div className="admin-field">
               <label>Countdown Ends At</label>
               <input name="flashEndsAt" type="datetime-local" value={settings.flashEndsAt} onChange={(e) => setSettings((s) => ({ ...s, flashEndsAt: e.target.value }))} />
               <div className="admin-flash-quick-actions">
@@ -1561,6 +1584,62 @@ export default function AdminPage() {
             <div className="admin-field admin-field-full">
               <label>See All Link</label>
               <input name="flashLink" value={settings.flashLink} onChange={(e) => setSettings((s) => ({ ...s, flashLink: e.target.value }))} />
+            </div>
+            <div className="admin-field">
+              <label>See All Label</label>
+              <input name="flashLinkLabel" value={settings.flashLinkLabel} onChange={(e) => setSettings((s) => ({ ...s, flashLinkLabel: e.target.value }))} />
+            </div>
+            <div className="admin-field">
+              <label>Products To Show</label>
+              <input
+                name="flashProductLimit"
+                type="number"
+                min={1}
+                max={12}
+                value={settings.flashProductLimit}
+                onChange={(e) => setSettings((s) => ({ ...s, flashProductLimit: Number(e.target.value) || 6 }))}
+              />
+            </div>
+            <div className="admin-field">
+              <label>Card Badge Text</label>
+              <input name="flashBadgeText" value={settings.flashBadgeText} onChange={(e) => setSettings((s) => ({ ...s, flashBadgeText: e.target.value }))} />
+            </div>
+            <div className="admin-field">
+              <label>Availability Text</label>
+              <input name="flashStockText" value={settings.flashStockText} onChange={(e) => setSettings((s) => ({ ...s, flashStockText: e.target.value }))} />
+            </div>
+            <div className="admin-field">
+              <label>Old Price Discount %</label>
+              <input
+                name="flashDiscountPercent"
+                type="number"
+                min={0}
+                max={90}
+                value={settings.flashDiscountPercent}
+                onChange={(e) => setSettings((s) => ({ ...s, flashDiscountPercent: Number(e.target.value) || 0 }))}
+              />
+              <p className="admin-hint">Example: 25 means old price is calculated as before-discount price.</p>
+            </div>
+            <div className="admin-field admin-field-full">
+              <label>Flash Sales Preview</label>
+              <div className="admin-flash-preview">
+                <div className="admin-flash-preview-header">
+                  <strong>{settings.flashTitle || "Flash Sales"}</strong>
+                  <span>{settings.flashEndsAt ? "Countdown will show here" : settings.flashSubtitle || "Limited time deals"}</span>
+                  <b>{settings.flashLinkLabel || "See All"}</b>
+                </div>
+                <div className="admin-flash-preview-row">
+                  {(selectedFlashProducts.length ? selectedFlashProducts : allProducts).slice(0, Math.min(6, settings.flashProductLimit || 6)).map((product) => (
+                    <div key={product.slug}>
+                      <img src={product.image} alt="" />
+                      <strong>{product.name}</strong>
+                      <span>{product.priceDisplay}</span>
+                      {previewOldPrice(product.price) && <small>{previewOldPrice(product.price)}</small>}
+                      <em>{settings.flashBadgeText || "Flash deal"}</em>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="admin-field admin-field-full">
               <label>Flash Product Slugs</label>
