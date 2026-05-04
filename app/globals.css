@@ -2231,9 +2231,17 @@ html.lenis, html.lenis body { height: auto; }
   color: #111;
   background: #fff;
   border: 1px solid rgba(255,255,255,0.3);
-  transition: background 0.16s, transform 0.16s;
+  transition: background 0.16s, color 0.16s, transform 0.16s;
 }
-.footer-socials a:hover { background: #1896e8; color: #fff; transform: translateY(-2px); }
+.footer-socials svg {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+  display: block;
+}
+.footer-socials a[data-platform="tiktok"]:hover { background: #000; color: #fff; transform: translateY(-2px); }
+.footer-socials a[data-platform="instagram"]:hover { background: #e4405f; color: #fff; transform: translateY(-2px); }
+.footer-socials a[data-platform="facebook"]:hover { background: #1877f2; color: #fff; transform: translateY(-2px); }
 .footer-column,
 .footer-contact,
 .footer-action-panel,
