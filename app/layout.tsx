@@ -36,10 +36,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Footer />
             <DiscountPopup />
             <FloatingWhatsApp />
-            <Suspense fallback={null}>
-              <NavigationFeedback />
-            </Suspense>
           </SmoothScroll>
+          <Suspense fallback={null}>
+            <NavigationFeedback />
+          </Suspense>
         </CartProvider>
       </body>
     </html>
