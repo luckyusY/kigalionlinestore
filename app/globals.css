@@ -3157,9 +3157,288 @@ html.lenis, html.lenis body { height: auto; }
   .cart-item-image { width: 74px; height: 74px; }
 }
 
-/* Contact grid */
-.contact-grid { grid-template-columns: 1fr 1fr; }
-@media (max-width: 768px) { .contact-grid { grid-template-columns: 1fr; } }
+/* Contact */
+.contact-page {
+  background: #f8fafc;
+}
+.contact-hero {
+  min-height: 290px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: end;
+  padding: 56px max(18px, calc((100vw - 1180px) / 2)) 46px;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,0.78), rgba(0,0,0,0.42)),
+    radial-gradient(circle at 82% 22%, rgba(132,201,0,0.22), transparent 28%),
+    #101010;
+  color: #fff;
+}
+.contact-hero .section-label {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(132,201,0,0.42);
+  color: #84c900;
+}
+.contact-hero h1 {
+  max-width: 760px;
+  color: #fff;
+  font-size: clamp(2.05rem, 5vw, 4.1rem);
+  font-weight: 950;
+  line-height: 1;
+  margin: 0 0 14px;
+}
+.contact-hero p {
+  max-width: 680px;
+  color: rgba(255,255,255,0.78);
+  font-size: 16px;
+  line-height: 1.7;
+}
+.contact-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.contact-hero-actions a {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 0 16px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 900;
+}
+.contact-hero-actions a:first-child {
+  background: #16a34a;
+}
+.contact-hero-actions a:last-child {
+  border: 1px solid rgba(255,255,255,0.26);
+  background: rgba(255,255,255,0.08);
+}
+.contact-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 28px 18px 56px;
+}
+.contact-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.76fr) minmax(0, 1.24fr);
+  gap: 20px;
+  align-items: stretch;
+}
+.contact-info-stack {
+  display: grid;
+  gap: 12px;
+}
+.contact-card {
+  min-height: 112px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 18px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  color: #111827;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(15,23,42,0.05);
+}
+.contact-card > span {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.contact-card.whatsapp > span { background: #16a34a; }
+.contact-card.call > span { background: #f97316; }
+.contact-card.location > span { background: #2563eb; }
+.contact-card.hours > span { background: #111827; }
+.contact-card strong,
+.contact-card b,
+.contact-card small {
+  display: block;
+}
+.contact-card strong {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.contact-card b {
+  color: #111827;
+  font-size: 18px;
+  line-height: 1.25;
+}
+.contact-card small {
+  color: #64748b;
+  font-size: 12px;
+  margin-top: 5px;
+}
+.contact-map-panel {
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(340px, 1fr);
+  gap: 14px;
+  padding: 18px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 24px rgba(15,23,42,0.05);
+}
+.contact-map-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.contact-map-heading h2,
+.contact-order-heading h2 {
+  color: #111827;
+  font-size: 24px;
+  font-weight: 950;
+  margin: 0;
+}
+.contact-map-heading p {
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: 6px;
+}
+.contact-map-heading a,
+.contact-order-heading a {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  padding: 0 13px;
+  color: #f97316;
+  background: #fff7ed;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.contact-map-frame {
+  position: relative;
+  min-height: 340px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #e5e7eb;
+}
+.contact-map-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.contact-order-section {
+  margin-top: 28px;
+}
+.contact-order-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.contact-step-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.contact-step-card {
+  min-height: 160px;
+  padding: 18px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 24px rgba(15,23,42,0.05);
+}
+.contact-step-card span {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #fff7ed;
+  color: #ea580c;
+  font-size: 12px;
+  font-weight: 950;
+  margin-bottom: 16px;
+}
+.contact-step-card h3 {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 900;
+  margin-bottom: 7px;
+}
+.contact-step-card p {
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.contact-trust-strip {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.contact-trust-strip div {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 8px;
+  background: #111827;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 850;
+}
+@media (max-width: 860px) {
+  .contact-hero {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .contact-hero-actions {
+    justify-content: flex-start;
+  }
+  .contact-layout,
+  .contact-step-grid,
+  .contact-trust-strip {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .contact-hero {
+    padding-top: 38px;
+    padding-bottom: 34px;
+  }
+  .contact-shell {
+    padding-inline: 10px;
+  }
+  .contact-map-heading,
+  .contact-order-heading {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .contact-card {
+    align-items: flex-start;
+  }
+}
 
 /* Card quick-view btn visible on hover */
 .product-img-wrap:hover .card-view-btn { opacity: 1 !important; }
