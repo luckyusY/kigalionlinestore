@@ -95,7 +95,7 @@ export default async function HomePage() {
 
   return (
     <div className="temu-page">
-      <PayweekHero slides={slides} />
+      <PayweekHero slides={slides} recentProducts={allProducts.slice(0, 8)} />
 
       {settings.flashEnabled && flashDeals.length > 0 && (
         <section className="jumia-flash-section">

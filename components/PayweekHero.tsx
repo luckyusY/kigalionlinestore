@@ -17,7 +17,7 @@ import {
   Utensils,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { categories } from "@/lib/products";
+import { categories, type Product } from "@/lib/products";
 import { type HeroSlide, slideCopy } from "@/lib/hero-slides";
 
 const categoryMeta = {
@@ -50,7 +50,7 @@ function displayPrice(value: string) {
   return /\bRWF\b/i.test(trimmed) ? `${withoutCurrency} RWF` : trimmed;
 }
 
-export default function PayweekHero({ slides }: { slides: HeroSlide[] }) {
+export default function PayweekHero({ slides, recentProducts = [] }: { slides: HeroSlide[]; recentProducts?: Product[] }) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
 
@@ -66,6 +66,7 @@ export default function PayweekHero({ slides }: { slides: HeroSlide[] }) {
   if (!slides.length) return null;
 
   const slide = slides[current];
+  const recentProduct = recentProducts[current % recentProducts.length];
   const copy = slideCopy(current);
 
   const goTo = (nextIndex: number) => {
@@ -158,15 +159,18 @@ export default function PayweekHero({ slides }: { slides: HeroSlide[] }) {
           <Store size={28} />
           <span><strong>KOS STORE</strong>Fresh Deals Daily</span>
         </Link>
-        <Link href={slide.link} className="payweek-live-card product-ad">
+        <Link
+          href={recentProduct ? `/products/${recentProduct.slug}` : slide.link}
+          className="payweek-live-card product-ad"
+        >
           <div className="payweek-new-copy">
             <strong>NEW ARRIVALS</strong>
-            <small>{slide.title}</small>
-            <b>{displayPrice(slide.price)}</b>
+            <small>{recentProduct?.name ?? slide.title}</small>
+            <b>{recentProduct?.priceDisplay ?? displayPrice(slide.price)}</b>
           </div>
           <Image
-            src={slide.image}
-            alt={`${slide.title} new arrival`}
+            src={recentProduct?.image ?? slide.image}
+            alt={`${recentProduct?.name ?? slide.title} new arrival`}
             fill
             sizes="218px"
             unoptimized
