@@ -1000,7 +1000,7 @@ export default function AdminPage() {
                 {importingStatic ? (
                   <Loader2 size={18} className="admin-spin" color="#0f766e" />
                 ) : (
-                  <img src="/kos-logo-full.svg" alt="" width={72} height={18} style={{ display: "block" }} />
+                  <img src="/kos-logo.png" alt="" width={72} height={18} style={{ display: "block" }} />
                 )}
               </button>
             </div>

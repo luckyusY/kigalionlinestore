@@ -71,7 +71,7 @@ export default function Header() {
 
       <div className="jumia-main-nav">
         <Link href="/" className="jumia-logo" onClick={() => setMenuOpen(false)} aria-label="KOS - Save Time Buy online">
-          <Image className="kos-logo-image" src="/kos-logo-full.svg" alt="KOS - Save Time Buy online" width={600} height={150} priority />
+          <Image className="kos-logo-image" src="/kos-logo.png" alt="KOS - Save Time Buy online" width={2048} height={512} priority />
         </Link>
 
         <form className="jumia-search" onSubmit={(event) => { event.preventDefault(); doSearch(desktopQ); }}>
