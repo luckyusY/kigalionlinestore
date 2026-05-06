@@ -83,6 +83,10 @@ export async function PUT(
     update.price = Number.isFinite(price) ? price : null;
     if (!body.priceDisplay) update.priceDisplay = formatRwfPrice(update.price as number | null);
   }
+  if ("oldPrice" in body) {
+    const oldPrice = body.oldPrice === null ? null : Number(body.oldPrice);
+    update.oldPrice = Number.isFinite(oldPrice) ? oldPrice : null;
+  }
   if ("inStock"  in body) update.inStock     = Boolean(body.inStock);
   if ("featured" in body) update.featured    = Boolean(body.featured);
 

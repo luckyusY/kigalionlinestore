@@ -86,7 +86,12 @@ const categoryColors: Record<string, { bg: string; text: string }> = {
 };
 
 function productStats(product: Product) {
-  const oldPrice = product.price ? Math.round(product.price * 1.42) : null;
+  const oldPrice =
+    typeof product.oldPrice === "number" && Number.isFinite(product.oldPrice)
+      ? product.oldPrice
+      : typeof product.id === "number" && product.price
+        ? Math.round(product.price * 1.42)
+        : null;
 
   return {
     oldPrice,

@@ -10,6 +10,7 @@ type ProductPayload = {
   slug?: string;
   description?: string;
   price?: number | null;
+  oldPrice?: number | null;
   priceDisplay?: string;
   category?: string;
   image?: string;
@@ -68,6 +69,7 @@ export async function POST(request: NextRequest) {
   const description = body.description?.trim();
   const category = body.category?.trim();
   const price = typeof body.price === "number" && Number.isFinite(body.price) ? body.price : null;
+  const oldPrice = typeof body.oldPrice === "number" && Number.isFinite(body.oldPrice) ? body.oldPrice : null;
   const priceDisplay = body.priceDisplay?.trim() || formatRwfPrice(price);
   const images = Array.isArray(body.images)
     ? Array.from(new Set(body.images.map((image) => image.trim()).filter(Boolean)))
@@ -91,6 +93,7 @@ export async function POST(request: NextRequest) {
     description,
     category,
     price,
+    oldPrice,
     priceDisplay,
     image,
     images: Array.from(new Set([image, ...images])),

@@ -46,6 +46,7 @@ type FullProduct = {
   name: string;
   description: string;
   price: number | null;
+  oldPrice?: number | null;
   priceDisplay: string;
   category: string;
   image: string;
@@ -458,6 +459,8 @@ export default function AdminPage() {
       String(fd.get("description") ?? "");
     const priceVal = String(fd.get("price") ?? "").trim();
     const numericPrice = priceVal ? Number(priceVal) : null;
+    const oldPriceVal = String(fd.get("oldPrice") ?? "").trim();
+    const numericOldPrice = oldPriceVal ? Number(oldPriceVal) : null;
 
     try {
       const r = await fetch("/api/admin/products", {
@@ -467,8 +470,9 @@ export default function AdminPage() {
           name,
           slug: String(fd.get("slug") ?? "") || slugify(name),
           description,
-          price: numericPrice,
-          priceDisplay: formatRwfPrice(numericPrice),
+            price: numericPrice,
+            oldPrice: numericOldPrice,
+            priceDisplay: formatRwfPrice(numericPrice),
           category: String(fd.get("category") ?? ""),
           image: imageUrl || String(fd.get("image") ?? ""),
           images: imageList(imageUrl || String(fd.get("image") ?? ""), imageUrls),
@@ -497,11 +501,12 @@ export default function AdminPage() {
     setPendingDeleteId(null);
     setEditImageUrl(product.image);
     setEditImageUrls(imageList(product.image, product.images ?? []));
-    setEditForm({
-      name: product.name,
-      priceDisplay: product.priceDisplay,
-      price: product.price,
-      category: product.category,
+      setEditForm({
+        name: product.name,
+        priceDisplay: product.priceDisplay,
+        price: product.price,
+        oldPrice: product.oldPrice ?? null,
+        category: product.category,
       description: product.description,
       inStock: product.inStock,
       featured: Boolean(product.featured),
@@ -518,10 +523,11 @@ export default function AdminPage() {
       ?.get("admin-edit-description")
       ?.getContent({ format: "html" });
     const payload = {
-      ...editForm,
-      description: editorDescription || editForm.description,
-      priceDisplay: formatRwfPrice(editForm.price),
-      image: editImageUrl || product.image,
+        ...editForm,
+        description: editorDescription || editForm.description,
+        priceDisplay: formatRwfPrice(editForm.price),
+        oldPrice: editForm.oldPrice ?? null,
+        image: editImageUrl || product.image,
       images: imageList(editImageUrl || product.image, editImageUrls),
     };
 
@@ -564,6 +570,7 @@ export default function AdminPage() {
         slug: product.slug,
         description: product.description,
         price: product.price,
+        oldPrice: product.oldPrice ?? null,
         priceDisplay: product.priceDisplay,
         category: product.category,
         image: product.image,
@@ -1144,6 +1151,11 @@ export default function AdminPage() {
                                 <input type="number" value={editForm.price ?? ""} onChange={(e) => setEditForm((f) => ({ ...f, price: e.target.value ? Number(e.target.value) : null }))} />
                               </div>
                               <div className="admin-field">
+                                <label>Old Price / RRP (RWF)</label>
+                                <input type="number" value={editForm.oldPrice ?? ""} onChange={(e) => setEditForm((f) => ({ ...f, oldPrice: e.target.value ? Number(e.target.value) : null }))} />
+                                <p className="admin-hint">Optional. This is the crossed-out price on product cards.</p>
+                              </div>
+                              <div className="admin-field">
                                 <label>Customer Price Label</label>
                                 <input value={formatRwfPrice(editForm.price)} readOnly />
                                 <p className="admin-hint">Generated automatically from Price (RWF).</p>
@@ -1269,6 +1281,11 @@ export default function AdminPage() {
               <label>Price (RWF)</label>
               <input name="price" type="number" min="0" placeholder="90000" />
               <p className="admin-hint">Leave empty to show Contact for price. RWF is added automatically.</p>
+            </div>
+            <div className="admin-field">
+              <label>Old Price / RRP (RWF)</label>
+              <input name="oldPrice" type="number" min="0" placeholder="125000" />
+              <p className="admin-hint">Optional. Shows as the crossed-out price on product cards.</p>
             </div>
             <div className="admin-field admin-field-full">
               <label>Description</label>
