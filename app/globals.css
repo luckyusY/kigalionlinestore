@@ -1166,11 +1166,13 @@ html.lenis, html.lenis body { height: auto; }
   box-shadow: 0 6px 14px rgba(22,163,74,0.18);
 }
 .temu-cart-button:hover { background: #e85f00; }
-.temu-request-button {
+.temu-out-button {
   background: #b91c1c;
-  text-decoration: none;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.92;
 }
-.temu-request-button:hover { background: #991b1b; }
+.temu-out-button:hover { background: #b91c1c; transform: none; }
 .temu-order-button:hover { background: #12833d; }
 .temu-call-button {
   padding: 0 10px;
@@ -2618,6 +2620,11 @@ html.lenis, html.lenis body { height: auto; }
   color: #fff;
   cursor: pointer;
 }
+.product-cart-button:disabled {
+  background: #b91c1c;
+  cursor: not-allowed;
+  box-shadow: none;
+}
 .product-whatsapp-button {
   background: #16a34a;
   color: #fff;
@@ -3006,9 +3013,11 @@ html.lenis, html.lenis body { height: auto; }
     font-size: 11px;
     font-weight: 750;
   }
-.product-mobile-sticky a {
+.product-mobile-sticky a,
+.product-mobile-sticky button {
     min-width: 132px;
     min-height: 48px;
+    border: 0;
     border-radius: 999px;
     display: inline-flex;
     align-items: center;
@@ -3018,6 +3027,10 @@ html.lenis, html.lenis body { height: auto; }
     color: #fff;
     text-decoration: none;
     font-weight: 950;
+  }
+.product-mobile-sticky button {
+    background: #b91c1c;
+    cursor: not-allowed;
   }
 }
 

@@ -122,9 +122,7 @@ export default async function ProductDetailPage({
   const viewCount = viewCounts[product.slug]?.viewCount ?? 0;
   const isOutOfStock = product.inStock === false;
   const waMsg = encodeURIComponent(
-    isOutOfStock
-      ? `Hi! I'd like to request this product when available: ${product.name}\nPrice: ${product.priceDisplay}\nPlease notify me when it is back in stock.`
-      : `Hi! I'd like to order: ${product.name}\nPrice: ${product.priceDisplay}\nPlease confirm availability and delivery details.`
+    `Hi! I'd like to order: ${product.name}\nPrice: ${product.priceDisplay}\nPlease confirm availability and delivery details.`
   );
 
   return (
@@ -209,11 +207,11 @@ export default async function ProductDetailPage({
                   <strong>{product.priceDisplay}</strong>
                   {stats.oldPrice && <span>RRP {stats.oldPrice.toLocaleString()} RWF</span>}
                 </div>
-                <small>{isOutOfStock ? "Request restock on WhatsApp" : "Confirm final availability on WhatsApp"}</small>
+                <small>{isOutOfStock ? "Currently unavailable" : "Confirm final availability on WhatsApp"}</small>
               </div>
               {isOutOfStock && (
                 <div className="product-stock-notice">
-                  This product is currently out of stock. You can still request it and we will confirm when it is available again.
+                  This product is currently out of stock.
                 </div>
               )}
 
@@ -224,19 +222,23 @@ export default async function ProductDetailPage({
 
               <div className="product-cta-stack">
                 <AddToCartButton product={product} className="product-cart-button" />
-                <a
-                  href={`https://wa.me/250784734956?text=${waMsg}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="product-whatsapp-button"
-                >
-                  <MessageCircle size={18} strokeWidth={2.5} />
-                  {isOutOfStock ? "Request product" : "Order on WhatsApp"}
-                </a>
-                <a href="tel:+250784734956" className="product-call-button">
-                  <Phone size={16} strokeWidth={2.5} />
-                  Call: 0784 734 956
-                </a>
+                {!isOutOfStock && (
+                  <>
+                    <a
+                      href={`https://wa.me/250784734956?text=${waMsg}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="product-whatsapp-button"
+                    >
+                      <MessageCircle size={18} strokeWidth={2.5} />
+                      Order on WhatsApp
+                    </a>
+                    <a href="tel:+250784734956" className="product-call-button">
+                      <Phone size={16} strokeWidth={2.5} />
+                      Call: 0784 734 956
+                    </a>
+                  </>
+                )}
               </div>
 
               <div className="product-trust-grid">
@@ -306,10 +308,14 @@ export default async function ProductDetailPage({
           <span>{product.priceDisplay}</span>
           <small>{isOutOfStock ? "Out of stock" : "In stock"}</small>
         </div>
-        <a href={`https://wa.me/250784734956?text=${waMsg}`} target="_blank" rel="noopener noreferrer">
-          <MessageCircle size={17} />
-          {isOutOfStock ? "Request" : "Order"}
-        </a>
+        {isOutOfStock ? (
+          <button type="button" disabled>Out of stock</button>
+        ) : (
+          <a href={`https://wa.me/250784734956?text=${waMsg}`} target="_blank" rel="noopener noreferrer">
+            <MessageCircle size={17} />
+            Order
+          </a>
+        )}
       </div>
     </div>
   );

@@ -592,7 +592,7 @@ export default function AdminPage() {
 
       const data = await r.json() as { error?: string };
       if (!r.ok) { setError(data.error ?? "Could not update stock status."); return; }
-      setStatus(nextInStock ? "Product is marked in stock." : "Product is visible as out of stock with a request button.");
+      setStatus(nextInStock ? "Product is marked in stock." : "Product is visible as out of stock.");
       setAllProducts((prev) => prev.map((item) =>
         String(item.id) === productId ? { ...item, inStock: nextInStock } : item
       ));
