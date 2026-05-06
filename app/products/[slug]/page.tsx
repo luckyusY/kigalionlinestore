@@ -31,7 +31,7 @@ async function getProduct(slug: string): Promise<Product | undefined> {
     if (doc) {
       const { _id, ...rest } = doc;
       const product = { ...rest, id: _id.toString() } as Product;
-      return product.inStock === false ? undefined : product;
+      return product;
     }
     const deletedStatic = await db.collection("deleted_static_slugs").findOne({ slug });
     if (deletedStatic) return undefined;
@@ -54,8 +54,7 @@ async function getMergedProducts(): Promise<Product[]> {
         (entry) => entry.slug
       )
     );
-    const merged = [...dbProducts, ...staticProducts.filter((product) => !dbSlugs.has(product.slug) && !deletedStaticSlugs.has(product.slug))]
-      .filter((product) => product.inStock !== false);
+    const merged = [...dbProducts, ...staticProducts.filter((product) => !dbSlugs.has(product.slug) && !deletedStaticSlugs.has(product.slug))];
     const viewCounts = await getViewCounts(merged.map((item) => item.slug));
     return merged.map((item) => ({ ...item, ...(viewCounts[item.slug] ?? { viewCount: 0 }) }));
   } catch {
@@ -121,8 +120,11 @@ export default async function ProductDetailPage({
   const stats = productStats(product);
   const [reviewSummary, viewCounts] = await Promise.all([getReviewSummary(product.slug), getViewCounts([product.slug])]);
   const viewCount = viewCounts[product.slug]?.viewCount ?? 0;
+  const isOutOfStock = product.inStock === false;
   const waMsg = encodeURIComponent(
-    `Hi! I'd like to order: ${product.name}\nPrice: ${product.priceDisplay}\nPlease confirm availability and delivery details.`
+    isOutOfStock
+      ? `Hi! I'd like to request this product when available: ${product.name}\nPrice: ${product.priceDisplay}\nPlease notify me when it is back in stock.`
+      : `Hi! I'd like to order: ${product.name}\nPrice: ${product.priceDisplay}\nPlease confirm availability and delivery details.`
   );
 
   return (
@@ -158,11 +160,9 @@ export default async function ProductDetailPage({
                   <span style={{ background: catStyle.bg, color: catStyle.text }}>
                     <Tag size={10} strokeWidth={2.5} /> {product.category}
                   </span>
-                  {product.inStock && (
-                    <span style={{ background: "rgba(220,252,231,0.95)", color: "#15803d" }}>
-                      <CheckCircle size={10} strokeWidth={2.5} /> In Stock
-                    </span>
-                  )}
+                  <span style={{ background: isOutOfStock ? "rgba(254,226,226,0.95)" : "rgba(220,252,231,0.95)", color: isOutOfStock ? "#b91c1c" : "#15803d" }}>
+                    <CheckCircle size={10} strokeWidth={2.5} /> {isOutOfStock ? "Out of Stock" : "In Stock"}
+                  </span>
                 </div>
               </div>
 
@@ -209,8 +209,13 @@ export default async function ProductDetailPage({
                   <strong>{product.priceDisplay}</strong>
                   {stats.oldPrice && <span>RRP {stats.oldPrice.toLocaleString()} RWF</span>}
                 </div>
-                <small>Confirm final availability on WhatsApp</small>
+                <small>{isOutOfStock ? "Request restock on WhatsApp" : "Confirm final availability on WhatsApp"}</small>
               </div>
+              {isOutOfStock && (
+                <div className="product-stock-notice">
+                  This product is currently out of stock. You can still request it and we will confirm when it is available again.
+                </div>
+              )}
 
               <div
                 className="product-description"
@@ -226,7 +231,7 @@ export default async function ProductDetailPage({
                   className="product-whatsapp-button"
                 >
                   <MessageCircle size={18} strokeWidth={2.5} />
-                  Order on WhatsApp
+                  {isOutOfStock ? "Request product" : "Order on WhatsApp"}
                 </a>
                 <a href="tel:+250784734956" className="product-call-button">
                   <Phone size={16} strokeWidth={2.5} />
@@ -299,11 +304,11 @@ export default async function ProductDetailPage({
       <div className="product-mobile-sticky">
         <div>
           <span>{product.priceDisplay}</span>
-          <small>{product.inStock ? "In stock" : "Confirm stock"}</small>
+          <small>{isOutOfStock ? "Out of stock" : "In stock"}</small>
         </div>
         <a href={`https://wa.me/250784734956?text=${waMsg}`} target="_blank" rel="noopener noreferrer">
           <MessageCircle size={17} />
-          Order
+          {isOutOfStock ? "Request" : "Order"}
         </a>
       </div>
     </div>

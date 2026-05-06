@@ -110,8 +110,7 @@ async function getMergedProducts(): Promise<Product[]> {
       )
     );
     const merged = [...dbProducts, ...staticProducts.filter((p) => !dbSlugs.has(p.slug))]
-      .filter((product) => !deletedStaticSlugs.has(product.slug))
-      .filter((product) => product.inStock !== false);
+      .filter((product) => !deletedStaticSlugs.has(product.slug));
     const slugs = merged.map((product) => product.slug);
     const [reviewSummaries, viewCounts] = await Promise.all([getReviewSummaries(slugs), getViewCounts(slugs)]);
     return merged.map((product) => ({

@@ -592,7 +592,7 @@ export default function AdminPage() {
 
       const data = await r.json() as { error?: string };
       if (!r.ok) { setError(data.error ?? "Could not update stock status."); return; }
-      setStatus(nextInStock ? "Product is visible on the website again." : "Product hidden from the website until marked in stock.");
+      setStatus(nextInStock ? "Product is marked in stock." : "Product is visible as out of stock with a request button.");
       setAllProducts((prev) => prev.map((item) =>
         String(item.id) === productId ? { ...item, inStock: nextInStock } : item
       ));
@@ -1074,7 +1074,7 @@ export default function AdminPage() {
                                 fontSize: 12,
                                 fontWeight: 800,
                               }}
-                              title={product.inStock ? "Hide from website" : "Show on website"}
+                              title={product.inStock ? "Mark as out of stock" : "Mark as in stock"}
                             >
                               {stockUpdatingId === productId ? (
                                 <Loader2 size={12} className="admin-spin" />

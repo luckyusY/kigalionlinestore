@@ -1011,6 +1011,21 @@ html.lenis, html.lenis body { height: auto; }
   font-size: 10px;
   font-weight: 900;
 }
+.temu-stock-overlay {
+  position: absolute;
+  inset: auto 8px 8px 8px;
+  z-index: 3;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(185,28,28,0.94);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 950;
+  box-shadow: 0 8px 18px rgba(185,28,28,0.24);
+}
 .temu-product-body {
   padding: 8px 8px 9px;
   display: flex;
@@ -1033,6 +1048,11 @@ html.lenis, html.lenis body { height: auto; }
   font-size: 9px;
   font-weight: 900;
   line-height: 1;
+}
+.temu-card-flags span.out {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fecaca;
 }
 .temu-product-title {
   color: #222;
@@ -1146,6 +1166,11 @@ html.lenis, html.lenis body { height: auto; }
   box-shadow: 0 6px 14px rgba(22,163,74,0.18);
 }
 .temu-cart-button:hover { background: #e85f00; }
+.temu-request-button {
+  background: #b91c1c;
+  text-decoration: none;
+}
+.temu-request-button:hover { background: #991b1b; }
 .temu-order-button:hover { background: #12833d; }
 .temu-call-button {
   padding: 0 10px;
@@ -2559,6 +2584,17 @@ html.lenis, html.lenis body { height: auto; }
 .product-description p,
 .product-description ul,
 .product-description ol { margin-bottom: 10px; }
+.product-stock-notice {
+  margin: -4px 0 18px;
+  border: 1px solid #fecaca;
+  border-radius: 14px;
+  background: #fef2f2;
+  color: #991b1b;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
+}
 .product-cta-stack {
   display: grid;
   gap: 10px;

@@ -27,8 +27,11 @@ function starFill(index: number, averageRating: number) {
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
+  const isOutOfStock = product.inStock === false;
   const waMsg = encodeURIComponent(
-    `Hi! I'd like to order: ${product.name}\nPrice: ${product.priceDisplay}\nDescription: ${product.description}\nPlease confirm availability and delivery.`
+    isOutOfStock
+      ? `Hi! I'd like to request this product when available: ${product.name}\nPrice: ${product.priceDisplay}\nPlease notify me when it is back in stock.`
+      : `Hi! I'd like to order: ${product.name}\nPrice: ${product.priceDisplay}\nDescription: ${product.description}\nPlease confirm availability and delivery.`
   );
   const stats = productStats(product);
   const reviewCount = product.reviewCount ?? 0;
@@ -45,12 +48,13 @@ export default function ProductCard({ product }: { product: Product }) {
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 180px"
         />
         {product.featured && <span className="temu-quick-badge">Quick look</span>}
+        {isOutOfStock && <span className="temu-stock-overlay">Out of stock</span>}
       </Link>
 
       <div className="temu-product-body">
         <div className="temu-card-flags">
           <span>Local</span>
-          {product.inStock && <span>Sale</span>}
+          {isOutOfStock ? <span className="out">Out of stock</span> : <span>Sale</span>}
         </div>
 
         <Link href={`/products/${product.slug}`} className="temu-product-title">
@@ -78,29 +82,42 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
 
         <div className="temu-card-actions">
-          <button
-            type="button"
-            className="temu-cart-button"
-            onClick={() => {
-              addItem(product);
-              setAdded(true);
-              window.setTimeout(() => setAdded(false), 1400);
-            }}
-            aria-label={`Add ${product.name} to cart`}
-          >
-            <ShoppingCart size={14} />
-            {added ? "Added" : "Add to cart"}
-          </button>
+          {isOutOfStock ? (
+            <a
+              href={`https://wa.me/250784734956?text=${waMsg}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="temu-cart-button temu-request-button"
+              aria-label={`Request ${product.name}`}
+            >
+              <MessageCircle size={14} />
+              Request product
+            </a>
+          ) : (
+            <button
+              type="button"
+              className="temu-cart-button"
+              onClick={() => {
+                addItem(product);
+                setAdded(true);
+                window.setTimeout(() => setAdded(false), 1400);
+              }}
+              aria-label={`Add ${product.name} to cart`}
+            >
+              <ShoppingCart size={14} />
+              {added ? "Added" : "Add to cart"}
+            </button>
+          )}
           <div className="temu-contact-actions">
             <a
               href={`https://wa.me/250784734956?text=${waMsg}`}
               target="_blank"
               rel="noopener noreferrer"
               className="temu-order-button"
-              aria-label={`Order ${product.name} on WhatsApp`}
+              aria-label={isOutOfStock ? `Request ${product.name} on WhatsApp` : `Order ${product.name} on WhatsApp`}
             >
               <MessageCircle size={15} />
-              WhatsApp
+              {isOutOfStock ? "Request" : "WhatsApp"}
             </a>
             <a
               href="tel:+250784734956"
