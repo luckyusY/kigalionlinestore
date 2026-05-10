@@ -4,24 +4,13 @@ import { ChevronRight } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import PayweekHero from "@/components/PayweekHero";
 import FlashCountdown from "@/components/FlashCountdown";
-import { categories, products as staticProducts, Product } from "@/lib/products";
+import { defaultCategoryOptions, normalizeCategoryOptions, products as staticProducts, Product, type CategoryOption } from "@/lib/products";
 import { heroSlides as defaultHeroSlides, HeroSlide } from "@/lib/hero-slides";
 import { getDb } from "@/lib/mongodb";
 import { getReviewSummaries } from "@/lib/reviews";
 import { getViewCounts } from "@/lib/views";
 
 export const dynamic = "force-dynamic";
-
-const categoryLabels: Record<string, string> = {
-  Kitchen: "Home & Kitchen",
-  Bathroom: "Beauty & Health",
-  Home: "Home & Living",
-  Fitness: "Sports & Outdoors",
-  Office: "Office & School Supplies",
-  Garden: "Garden & Outdoor",
-  Clothing: "Women's Clothing",
-  Accessories: "Tech Accessories",
-};
 
 type StorefrontSettings = {
   flashTitle: string;
@@ -133,8 +122,18 @@ async function getStorefrontSettings(): Promise<StorefrontSettings> {
   }
 }
 
+async function getCategoryOptions(): Promise<CategoryOption[]> {
+  try {
+    const db = await getDb();
+    const doc = await db.collection("settings").findOne({ key: "site" });
+    return normalizeCategoryOptions(doc?.value?.categories ?? defaultCategoryOptions);
+  } catch {
+    return defaultCategoryOptions;
+  }
+}
+
 export default async function HomePage() {
-  const [allProducts, slides, settings] = await Promise.all([getMergedProducts(), getHeroSlides(), getStorefrontSettings()]);
+  const [allProducts, slides, settings, categoryOptions] = await Promise.all([getMergedProducts(), getHeroSlides(), getStorefrontSettings(), getCategoryOptions()]);
   const featured = allProducts.filter((p) => p.featured);
   const selectedFlashSlugs = settings.flashProductSlugs
     .split(/[\n,]+/)
@@ -220,9 +219,9 @@ export default async function HomePage() {
         <h1>EXPLORE YOUR INTERESTS</h1>
         <div className="temu-category-strip">
           <Link href="/products">Recommended</Link>
-          {categories.filter((category) => category !== "All").map((category) => (
-            <Link key={category} href={`/products?category=${encodeURIComponent(category)}`}>
-              {categoryLabels[category] || category}
+          {categoryOptions.map((category) => (
+            <Link key={category.value} href={`/products?category=${encodeURIComponent(category.value)}`}>
+              {category.label}
             </Link>
           ))}
         </div>

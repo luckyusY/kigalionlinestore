@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { adminUnauthorized, verifyAdminSession } from "@/lib/admin-auth";
+import { defaultCategoryOptions, normalizeCategoryOptions } from "@/lib/products";
 
 export const runtime = "nodejs";
 
@@ -18,6 +19,11 @@ export async function PUT(request: NextRequest) {
 
   const body = await request.json();
   const now = new Date();
+  const db = await getDb();
+  const existing = await db.collection("settings").findOne({ key: "site" });
+  const existingValue = existing?.value && typeof existing.value === "object"
+    ? existing.value as Record<string, unknown>
+    : {};
 
   const settings = {
     storeName: String(body.storeName || "Kigali Online Store"),
@@ -41,10 +47,10 @@ export async function PUT(request: NextRequest) {
     flashProductLimit: Math.min(12, Math.max(1, Number(body.flashProductLimit || 6) || 6)),
     flashProductSlugs: String(body.flashProductSlugs || ""),
     flashProductPrices: String(body.flashProductPrices || "{}"),
+    categories: normalizeCategoryOptions(body.categories ?? existingValue.categories ?? defaultCategoryOptions),
     updatedAt: now,
   };
 
-  const db = await getDb();
   await db.collection("settings").updateOne(
     { key: "site" },
     { $set: { key: "site", value: settings, updatedAt: now } },

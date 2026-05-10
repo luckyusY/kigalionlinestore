@@ -122,7 +122,7 @@ export default async function ProductDetailPage({
   const viewCount = viewCounts[product.slug]?.viewCount ?? 0;
   const isOutOfStock = product.inStock === false;
   const waMsg = encodeURIComponent(
-    `Hi! I'd like to order: ${product.name}\nPrice: ${product.priceDisplay}\nPlease confirm availability and delivery details.`
+      `Hi! I'd like to order: ${product.name}\nPrice: ${product.priceDisplay}\nPlease confirm my order and delivery details.`
   );
 
   return (
@@ -207,7 +207,7 @@ export default async function ProductDetailPage({
                   <strong>{product.priceDisplay}</strong>
                   {stats.oldPrice && <span>RRP {stats.oldPrice.toLocaleString()} RWF</span>}
                 </div>
-                <small>{isOutOfStock ? "Currently unavailable" : "Confirm final availability on WhatsApp"}</small>
+                <small>{isOutOfStock ? "Currently unavailable" : "order now on watsap"}</small>
               </div>
               {isOutOfStock && (
                 <div className="product-stock-notice">
@@ -231,7 +231,7 @@ export default async function ProductDetailPage({
                       className="product-whatsapp-button"
                     >
                       <MessageCircle size={18} strokeWidth={2.5} />
-                      Order on WhatsApp
+                      order now on watsap
                     </a>
                     <a href="tel:+250784734956" className="product-call-button">
                       <Phone size={16} strokeWidth={2.5} />

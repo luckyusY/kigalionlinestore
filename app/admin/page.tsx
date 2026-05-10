@@ -24,11 +24,12 @@ import {
   Settings2,
   ShieldCheck,
   Star,
+  Tag,
   Trash2,
   TrendingUp,
   X,
 } from "lucide-react";
-import { categories } from "@/lib/products";
+import { defaultCategoryOptions, normalizeCategoryOptions, type CategoryOption } from "@/lib/products";
 import { type HeroSlide, heroSlides as defaultHeroSlides } from "@/lib/hero-slides";
 
 type TinyEditor = {
@@ -77,6 +78,7 @@ type SiteSettings = {
   flashProductLimit: number;
   flashProductSlugs: string;
   flashProductPrices: string;
+  categories: CategoryOption[];
 };
 
 type AdminReview = {
@@ -95,8 +97,6 @@ type PopularProduct = FullProduct & {
 declare global {
   interface Window { tinymce?: TinyMCE; }
 }
-
-const adminCategories = categories.filter((c) => c !== "All");
 
 const defaultSettings: SiteSettings = {
   storeName: "Kigali Online Store",
@@ -120,6 +120,7 @@ const defaultSettings: SiteSettings = {
   flashProductLimit: 6,
   flashProductSlugs: "",
   flashProductPrices: "{}",
+  categories: defaultCategoryOptions,
 };
 
 function slugify(v: string) {
@@ -136,7 +137,7 @@ function formatRwfPrice(price: number | null | undefined) {
     : "Contact for price";
 }
 
-type AdminTab = "manage" | "add" | "hero" | "flash" | "settings" | "reviews" | "popular";
+type AdminTab = "manage" | "add" | "categories" | "hero" | "flash" | "settings" | "reviews" | "popular";
 
 export default function AdminPage() {
   // ── Auth ────────────────────────────────────────────────────────────
@@ -283,7 +284,7 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (!isLoggedIn || activeTab !== "manage") return;
+    if (!isLoggedIn || (activeTab !== "manage" && activeTab !== "categories")) return;
     const timer = window.setTimeout(() => void loadAllProducts(), 0);
     return () => window.clearTimeout(timer);
   }, [isLoggedIn, activeTab, loadAllProducts]);
@@ -292,14 +293,18 @@ export default function AdminPage() {
     const r = await fetch("/api/admin/settings");
     const data = await r.json() as { settings?: Partial<SiteSettings>; error?: string };
     if (!r.ok) { setError(data.error ?? "Could not load settings."); return; }
-    setSettings({ ...defaultSettings, ...data.settings });
+    setSettings({
+      ...defaultSettings,
+      ...data.settings,
+      categories: normalizeCategoryOptions(data.settings?.categories ?? defaultCategoryOptions),
+    });
   }, []);
 
   useEffect(() => {
-    if (!isLoggedIn || (activeTab !== "settings" && activeTab !== "flash")) return;
+    if (!isLoggedIn) return;
     const timer = window.setTimeout(() => void loadSettings(), 0);
     return () => window.clearTimeout(timer);
-  }, [isLoggedIn, activeTab, loadSettings]);
+  }, [isLoggedIn, loadSettings]);
 
   useEffect(() => {
     if (!isLoggedIn || (activeTab !== "settings" && activeTab !== "flash") || allProducts.length > 0) return;
@@ -669,10 +674,80 @@ export default function AdminPage() {
       });
       const data = await r.json() as { settings?: Partial<SiteSettings>; error?: string };
       if (!r.ok) { setError(data.error ?? "Could not save settings."); return; }
-      setSettings({ ...defaultSettings, ...data.settings });
+      setSettings({
+        ...defaultSettings,
+        ...data.settings,
+        categories: normalizeCategoryOptions(data.settings?.categories ?? defaultCategoryOptions),
+      });
       setStatus("Site settings saved.");
     } catch {
       setError("Save failed — check your connection.");
+    } finally {
+      setSavingSettings(false);
+    }
+  }
+
+  const adminCategoryOptions = normalizeCategoryOptions(settings.categories);
+
+  function updateCategoryOption(index: number, field: keyof CategoryOption, value: string) {
+    setSettings((current) => ({
+      ...current,
+      categories: normalizeCategoryOptions(current.categories).map((category, i) =>
+        i === index ? { ...category, [field]: value } : category
+      ),
+    }));
+  }
+
+  function addCategoryOption() {
+    const value = `Category ${adminCategoryOptions.length + 1}`;
+    setSettings((current) => ({
+      ...current,
+      categories: [...normalizeCategoryOptions(current.categories), { value, label: value }],
+    }));
+  }
+
+  function removeCategoryOption(index: number) {
+    const category = adminCategoryOptions[index];
+    const isInUse = allProducts.some((product) => product.category === category.value);
+    if (isInUse && !window.confirm(`Remove "${category.label}" from the selection? Existing products in this category will keep their saved category.`)) {
+      return;
+    }
+    setSettings((current) => {
+      const next = normalizeCategoryOptions(current.categories).filter((_, i) => i !== index);
+      return { ...current, categories: next.length ? next : defaultCategoryOptions };
+    });
+  }
+
+  function moveCategoryOption(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= adminCategoryOptions.length) return;
+    setSettings((current) => {
+      const next = [...normalizeCategoryOptions(current.categories)];
+      [next[index], next[target]] = [next[target], next[index]];
+      return { ...current, categories: next };
+    });
+  }
+
+  async function saveCategorySettings() {
+    setSavingSettings(true);
+    setError("");
+    setStatus("");
+    try {
+      const r = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...settings, categories: normalizeCategoryOptions(settings.categories) }),
+      });
+      const data = await r.json() as { settings?: Partial<SiteSettings>; error?: string };
+      if (!r.ok) { setError(data.error ?? "Could not save categories."); return; }
+      setSettings({
+        ...defaultSettings,
+        ...data.settings,
+        categories: normalizeCategoryOptions(data.settings?.categories ?? defaultCategoryOptions),
+      });
+      setStatus("Categories saved.");
+    } catch {
+      setError("Save failed. Check your connection.");
     } finally {
       setSavingSettings(false);
     }
@@ -943,10 +1018,11 @@ export default function AdminPage() {
 
         {/* ── Tabs ── */}
         <div className="admin-tab-bar">
-            {(["manage", "add", "hero", "flash", "settings", "reviews", "popular"] as AdminTab[]).map((tab) => {
+            {(["manage", "add", "categories", "hero", "flash", "settings", "reviews", "popular"] as AdminTab[]).map((tab) => {
               const meta = {
                 manage:   { icon: <Database size={14} />,   label: "All Products" },
                 add:      { icon: <PackagePlus size={14} />, label: "Add Product" },
+                categories: { icon: <Tag size={14} />, label: "Categories" },
                 hero:     { icon: <Images size={14} />,      label: "Hero Slides" },
                 flash:    { icon: <Flame size={14} />,       label: "Flash Sales" },
                 settings: { icon: <Settings2 size={14} />,  label: "Site Settings" },
@@ -1142,8 +1218,8 @@ export default function AdminPage() {
                               </div>
                               <div className="admin-field">
                                 <label>Category</label>
-                                <select value={editForm.category ?? "Kitchen"} onChange={(e) => setEditForm((f) => ({ ...f, category: e.target.value }))}>
-                                  {adminCategories.map((c) => <option key={c} value={c}>{c}</option>)}
+                                <select value={editForm.category ?? adminCategoryOptions[0]?.value ?? "Kitchen"} onChange={(e) => setEditForm((f) => ({ ...f, category: e.target.value }))}>
+                                  {adminCategoryOptions.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}
                                 </select>
                               </div>
                               <div className="admin-field">
@@ -1261,6 +1337,55 @@ export default function AdminPage() {
         {/* ══════════════════════════════════════════════════
             Tab: Add Product
         ══════════════════════════════════════════════════ */}
+        {activeTab === "categories" && (
+          <div className="admin-panel-card">
+            <div className="admin-field admin-field-full">
+              <label>Storefront Categories</label>
+              <p className="admin-hint" style={{ margin: 0 }}>
+                Rename the customer-facing label, add new categories for product listings, or reorder the homepage filter strip.
+              </p>
+            </div>
+            {adminCategoryOptions.map((category, index) => {
+              const productCount = allProducts.filter((product) => product.category === category.value).length;
+              return (
+                <div key={`${category.value}-${index}`} className="admin-field admin-field-full" style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10, alignItems: "end" }}>
+                  <div>
+                    <label>Display Name</label>
+                    <input
+                      value={category.label}
+                      onChange={(e) => updateCategoryOption(index, "label", e.target.value)}
+                      placeholder="Home & Kitchen"
+                    />
+                  </div>
+                  <div>
+                    <label>Product Value</label>
+                    <input
+                      value={category.value}
+                      onChange={(e) => updateCategoryOption(index, "value", e.target.value)}
+                      placeholder="Kitchen"
+                    />
+                    <p className="admin-hint">{productCount} product{productCount === 1 ? "" : "s"} use this value.</p>
+                  </div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button type="button" onClick={() => moveCategoryOption(index, -1)} disabled={index === 0} style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer" }}>Up</button>
+                    <button type="button" onClick={() => moveCategoryOption(index, 1)} disabled={index === adminCategoryOptions.length - 1} style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer" }}>Down</button>
+                    <button type="button" onClick={() => removeCategoryOption(index)} style={{ padding: "10px 12px", borderRadius: 10, border: "1px solid #fee2e2", background: "#fff1f2", color: "#b91c1c", cursor: "pointer" }}>Remove</button>
+                  </div>
+                </div>
+              );
+            })}
+            <div className="admin-field admin-field-full" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <button type="button" onClick={addCategoryOption} style={{ padding: "10px 16px", borderRadius: 10, border: "1.5px solid #e5e7eb", background: "#fff", fontWeight: 800, cursor: "pointer" }}>
+                <Plus size={15} /> Add Category
+              </button>
+              <button type="button" onClick={() => void saveCategorySettings()} className="admin-submit" disabled={savingSettings}>
+                {savingSettings ? <Loader2 size={17} className="admin-spin" /> : <Save size={17} />}
+                {savingSettings ? "Saving..." : "Save Categories"}
+              </button>
+            </div>
+          </div>
+        )}
+
         {activeTab === "add" && (
           <form onSubmit={saveProduct} className="admin-panel-card">
             <div className="admin-field admin-field-full">
@@ -1273,8 +1398,8 @@ export default function AdminPage() {
             </div>
             <div className="admin-field">
               <label>Category</label>
-              <select name="category" defaultValue="Kitchen" required>
-                {adminCategories.map((c) => <option key={c} value={c}>{c}</option>)}
+              <select name="category" defaultValue={adminCategoryOptions[0]?.value ?? "Kitchen"} required>
+                {adminCategoryOptions.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}
               </select>
             </div>
             <div className="admin-field">

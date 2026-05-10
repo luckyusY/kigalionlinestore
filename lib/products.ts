@@ -333,8 +333,57 @@ export const categories = [
   "Office",
   "Garden",
   "Clothing",
+  "Kids",
   "Accessories",
 ];
+
+export const categoryLabels: Record<string, string> = {
+  All: "Recommended",
+  Kitchen: "Home & Kitchen",
+  Bathroom: "Beauty & Health",
+  Home: "Home & Living",
+  Fitness: "Sports & Outdoors",
+  Office: "Office & School Supplies",
+  Garden: "Garden & Outdoor",
+  Clothing: "Women's Clothing",
+  Kids: "Kids",
+  Accessories: "Accessories",
+};
+
+export type CategoryOption = {
+  value: string;
+  label: string;
+};
+
+export const defaultCategoryOptions: CategoryOption[] = categories
+  .filter((category) => category !== "All")
+  .map((category) => ({
+    value: category,
+    label: categoryLabels[category] || category,
+  }));
+
+export function normalizeCategoryOptions(value: unknown): CategoryOption[] {
+  if (!Array.isArray(value)) return defaultCategoryOptions;
+
+  const seen = new Set<string>();
+  const normalized = value
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const option = item as Partial<CategoryOption>;
+      const categoryValue = String(option.value || option.label || "").trim();
+      const label = String(option.label || categoryValue).trim();
+      if (!categoryValue || !label || seen.has(categoryValue)) return null;
+      seen.add(categoryValue);
+      return { value: categoryValue, label };
+    })
+    .filter((item): item is CategoryOption => Boolean(item));
+
+  return normalized.length ? normalized : defaultCategoryOptions;
+}
+
+export function categoryOptionsWithAll(options: CategoryOption[]) {
+  return [{ value: "All", label: categoryLabels.All }, ...normalizeCategoryOptions(options)];
+}
 
 export function getProductBySlug(slug: string): Product | undefined {
   return products.find((p) => p.slug === slug);

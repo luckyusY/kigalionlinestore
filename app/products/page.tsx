@@ -2,26 +2,15 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { categories, numericId, products as staticProducts, Product } from "@/lib/products";
+import { categoryOptionsWithAll, defaultCategoryOptions, numericId, products as staticProducts, Product, type CategoryOption } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
 import ProductGridSkeleton from "@/components/ProductGridSkeleton";
-
-const categoryLabels: Record<string, string> = {
-  All: "Recommended",
-  Kitchen: "Home & Kitchen",
-  Bathroom: "Beauty & Health",
-  Home: "Home & Living",
-  Fitness: "Sports & Outdoors",
-  Office: "Office & School Supplies",
-  Garden: "Garden & Outdoor",
-  Clothing: "Women's Clothing",
-  Accessories: "Tech Accessories",
-};
 
 function ProductsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>(defaultCategoryOptions);
   const [productsLoading, setProductsLoading] = useState(true);
 
   useEffect(() => {
@@ -30,6 +19,15 @@ function ProductsContent() {
       .then((data) => { if (Array.isArray(data.products)) setAllProducts(data.products); })
       .catch(() => setAllProducts(staticProducts))
       .finally(() => setProductsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((data: { categories?: CategoryOption[] }) => {
+        if (Array.isArray(data.categories)) setCategoryOptions(data.categories);
+      })
+      .catch(() => setCategoryOptions(defaultCategoryOptions));
   }, []);
 
   const selectedCategory = searchParams.get("category") || "All";
@@ -95,14 +93,14 @@ function ProductsContent() {
       </section>
 
       <section className="temu-category-strip" aria-label="Product categories">
-        {categories.map((category) => (
+        {categoryOptionsWithAll(categoryOptions).map((category) => (
           <button
-            key={category}
+            key={category.value}
             type="button"
-            className={selectedCategory === category ? "active" : ""}
-            onClick={() => applyFilter(category, searchQuery)}
+            className={selectedCategory === category.value ? "active" : ""}
+            onClick={() => applyFilter(category.value, searchQuery)}
           >
-            {categoryLabels[category] || category}
+            {category.label}
           </button>
         ))}
       </section>
