@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   Truck,
 } from "lucide-react";
+import { SHOP_ENABLED } from "@/lib/site-features";
 
 const companyLinks = ["About Kigali Online Store", "Contact us", "Delivery areas", "Customer support", "Quality guarantee"];
 const serviceLinks = ["How to order", "Return and refund policy", "Delivery information", "Report suspicious activity", "Product availability"];
@@ -80,12 +81,12 @@ export default function Footer() {
         <FooterList title="Customer service" items={serviceLinks} />
         <FooterList title="Help" items={helpLinks} />
 
-        <div className="footer-column">
+        {SHOP_ENABLED && <div className="footer-column">
           <h4>Shop categories</h4>
           {shopLinks.map((link) => (
             <Link key={link.href} href={link.href}>{link.label}</Link>
           ))}
-        </div>
+        </div>}
 
         <div className="footer-action-panel">
           <div>

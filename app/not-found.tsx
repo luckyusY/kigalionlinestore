@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SHOP_ENABLED } from "@/lib/site-features";
 
 export default function NotFound() {
   return (
@@ -14,12 +15,12 @@ export default function NotFound() {
           >
             Go Home
           </Link>
-          <Link
+          {SHOP_ENABLED && <Link
             href="/products"
             className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-6 py-3 rounded-full transition-colors"
           >
             Browse Products
-          </Link>
+          </Link>}
         </div>
       </div>
     </div>

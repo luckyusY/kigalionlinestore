@@ -2,8 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { MessageCircle, Minus, Plus, Trash2 } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
+import { SHOP_ENABLED } from "@/lib/site-features";
 
 function checkoutMessage(items: ReturnType<typeof useCart>["items"]) {
   const lines = items.map((item, index) =>
@@ -13,6 +15,8 @@ function checkoutMessage(items: ReturnType<typeof useCart>["items"]) {
 }
 
 export default function CartPage() {
+  if (!SHOP_ENABLED) notFound();
+
   const { items, updateQuantity, removeItem, clearCart } = useCart();
   const total = items.reduce((sum, item) => sum + (item.price ?? 0) * item.quantity, 0);
   const checkoutUrl = `https://wa.me/250784734956?text=${checkoutMessage(items)}`;

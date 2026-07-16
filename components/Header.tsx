@@ -16,11 +16,12 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { categories } from "@/lib/products";
+import { SHOP_ENABLED } from "@/lib/site-features";
 import { useCart } from "@/components/CartProvider";
 
 const MOBILE_NAV = [
   { href: "/", label: "Home" },
-  { href: "/products", label: "Products" },
+  ...(SHOP_ENABLED ? [{ href: "/products", label: "Products" }] : []),
   { href: "/contact", label: "Contact" },
 ];
 
@@ -37,6 +38,11 @@ export default function Header() {
     (query: string) => {
       const trimmed = query.trim();
       if (!trimmed) return;
+      if (!SHOP_ENABLED) {
+        router.push("/contact");
+        setMenuOpen(false);
+        return;
+      }
       router.push(`/products?search=${encodeURIComponent(trimmed)}`);
       setMenuOpen(false);
     },
@@ -44,8 +50,8 @@ export default function Header() {
   );
 
   return (
-    <header className="site-header">
-      <div className="jumia-promo-banner">
+      <header className="site-header">
+      {SHOP_ENABLED && <div className="jumia-promo-banner">
         <Link href="/products?sort=best-selling" className="jumia-promo-inner">
           <span className="jumia-promo-spark" aria-hidden="true" />
           <span className="jumia-promo-title">
@@ -57,13 +63,16 @@ export default function Header() {
             0784 734 956
           </span>
         </Link>
-      </div>
+      </div>}
 
       <div className="jumia-service-strip">
-        <Link href="/products?sort=best-selling" className="jumia-sell-link">
+        {SHOP_ENABLED ? <Link href="/products?sort=best-selling" className="jumia-sell-link">
           <BadgeCheck size={13} fill="currentColor" />
           Shop Kigali Deals
-        </Link>
+        </Link> : <Link href="/contact" className="jumia-sell-link">
+          <BadgeCheck size={13} fill="currentColor" />
+          Contact Kigali Online Store
+        </Link>}
         <span>KOS OFFICIAL</span>
         <span>SECURE PAY</span>
         <span>FAST DELIVERY</span>
@@ -74,7 +83,7 @@ export default function Header() {
           <Image className="kos-logo-image" src="/kos-logo.png" alt="KOS - Save Time Buy online" width={2048} height={512} priority />
         </Link>
 
-        <form className="jumia-search" onSubmit={(event) => { event.preventDefault(); doSearch(desktopQ); }}>
+        {SHOP_ENABLED && <form className="jumia-search" onSubmit={(event) => { event.preventDefault(); doSearch(desktopQ); }}>
           <Search size={24} strokeWidth={2.5} />
           <input
             type="text"
@@ -84,7 +93,7 @@ export default function Header() {
             aria-label="Search Kigali Store"
           />
           <button type="submit">Search</button>
-        </form>
+        </form>}
 
         <div className="hidden md:flex jumia-actions">
           <Link href="/contact" aria-label="KOS Store contact">
@@ -99,11 +108,11 @@ export default function Header() {
             <MessageCircle size={24} />
             <span>WhatsApp</span>
           </a>
-          <Link href="/cart" aria-label="Cart" className="jumia-cart-link">
+          {SHOP_ENABLED && <Link href="/cart" aria-label="Cart" className="jumia-cart-link">
             <ShoppingCart size={25} />
             <span>Cart</span>
             {count > 0 && <b>{count}</b>}
-          </Link>
+          </Link>}
         </div>
 
         <motion.button
@@ -126,7 +135,7 @@ export default function Header() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
           >
-            <form onSubmit={(event) => { event.preventDefault(); doSearch(mobileQ); }}>
+            {SHOP_ENABLED && <form onSubmit={(event) => { event.preventDefault(); doSearch(mobileQ); }}>
               <div className="mobile-search-wrap">
                 <input
                   className="mobile-search-input"
@@ -140,14 +149,14 @@ export default function Header() {
                   <Search size={18} color="#fff" />
                 </button>
               </div>
-            </form>
+            </form>}
 
             {MOBILE_NAV.map((item) => (
               <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)} className="mobile-nav-link">
                 {item.label}
               </Link>
             ))}
-            {HEADER_CATEGORIES.map((category) => (
+            {SHOP_ENABLED && HEADER_CATEGORIES.map((category) => (
               <Link
                 key={category}
                 href={`/products?category=${encodeURIComponent(category)}`}
@@ -168,14 +177,14 @@ export default function Header() {
               <MessageCircle size={16} strokeWidth={2.5} />
               WhatsApp Order / 0784 734 956
             </a>
-            <Link href="/products?sort=best-selling" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
+            {SHOP_ENABLED && <Link href="/products?sort=best-selling" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
               <Store size={16} />
               Shop Kigali Deals
-            </Link>
-            <Link href="/cart" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
+            </Link>}
+            {SHOP_ENABLED && <Link href="/cart" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
               <ShoppingCart size={16} />
               Cart {count > 0 ? `(${count})` : ""}
-            </Link>
+            </Link>}
           </motion.div>
         )}
       </AnimatePresence>

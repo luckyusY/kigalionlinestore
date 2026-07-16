@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import {
   ArrowRight,
   CheckCircle,
@@ -18,8 +17,8 @@ export const metadata: Metadata = {
 };
 
 const steps = [
-  { n: "01", title: "Browse Products", desc: "Find the item you want on the website." },
-  { n: "02", title: "Tap Order", desc: "Use WhatsApp, call, or add the product to your cart." },
+  { n: "01", title: "Contact Us", desc: "Tell us what product you are looking for." },
+  { n: "02", title: "Share Details", desc: "Use WhatsApp or call so we can check availability." },
   { n: "03", title: "We Confirm", desc: "We confirm availability, price, and delivery details." },
   { n: "04", title: "Delivery", desc: "Your order is delivered in Kigali and nearby areas." },
 ];
@@ -127,9 +126,9 @@ export default function ContactPage() {
                 <div className="section-label">How To Order</div>
                 <h2>Simple ordering in four steps</h2>
               </div>
-              <Link href="/products">
-                Browse Products <ArrowRight size={15} />
-              </Link>
+              <a href="https://wa.me/250784734956?text=Hello!%20I'd%20like%20to%20ask%20about%20available%20products." target="_blank" rel="noopener noreferrer">
+                Ask On WhatsApp <ArrowRight size={15} />
+              </a>
             </div>
           </FadeIn>
 
