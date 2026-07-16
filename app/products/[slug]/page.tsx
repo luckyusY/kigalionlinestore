@@ -21,7 +21,6 @@ import ProductReviews from "@/components/ProductReviews";
 import ProductViewTracker from "@/components/ProductViewTracker";
 import AddToCartButton from "@/components/AddToCartButton";
 import { FadeIn, StaggerGrid, StaggerItem } from "@/components/FadeIn";
-import { SHOP_ENABLED } from "@/lib/site-features";
 
 export const dynamic = "force-dynamic";
 
@@ -64,8 +63,6 @@ async function getMergedProducts(): Promise<Product[]> {
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  if (!SHOP_ENABLED) return {};
-
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) return {};
@@ -109,8 +106,6 @@ export default async function ProductDetailPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  if (!SHOP_ENABLED) notFound();
-
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) notFound();

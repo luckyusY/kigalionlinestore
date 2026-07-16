@@ -9,7 +9,6 @@ import { heroSlides as defaultHeroSlides, HeroSlide } from "@/lib/hero-slides";
 import { getDb } from "@/lib/mongodb";
 import { getReviewSummaries } from "@/lib/reviews";
 import { getViewCounts } from "@/lib/views";
-import { SHOP_ENABLED } from "@/lib/site-features";
 
 export const dynamic = "force-dynamic";
 
@@ -134,29 +133,6 @@ async function getCategoryOptions(): Promise<CategoryOption[]> {
 }
 
 export default async function HomePage() {
-  if (!SHOP_ENABLED) {
-    return (
-      <div className="temu-page">
-        <section className="contact-hero">
-          <div>
-            <div className="section-label">Kigali Online Store</div>
-            <h1>Contact us directly for available products</h1>
-            <p>
-              The online shop is currently hidden. Reach us on WhatsApp or by phone
-              and we will confirm availability, pricing, and delivery in Kigali.
-            </p>
-          </div>
-          <div className="contact-hero-actions">
-            <a href="https://wa.me/250784734956?text=Hello!%20I'd%20like%20to%20ask%20about%20available%20products." target="_blank" rel="noopener noreferrer">
-              WhatsApp Us
-            </a>
-            <a href="tel:+250784734956">Call Now</a>
-          </div>
-        </section>
-      </div>
-    );
-  }
-
   const [allProducts, slides, settings, categoryOptions] = await Promise.all([getMergedProducts(), getHeroSlides(), getStorefrontSettings(), getCategoryOptions()]);
   const featured = allProducts.filter((p) => p.featured);
   const selectedFlashSlugs = settings.flashProductSlugs
